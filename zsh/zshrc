@@ -65,6 +65,7 @@ export NVM_DIR="$HOME/.nvm"
 
 # ||| EXPORTS |||
 export PATH="~/.config/bin:$PATH"
+export PATH="~/scripts/:$PATH"
 export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-17.0.9.0.9-3.fc39.aarch64//"
 export PATH="/usr/lib/jvm/java-17-openjdk-17.0.9.0.9-3.fc39.aarch64/bin:$PATH"
 
@@ -77,8 +78,7 @@ alias e="exit ; clear"
 alias fzf='ag -l -g "" | fzf'
 alias szh="source $ZSHRC"
 alias ezh="lvim $ZSHRC"
-
-alias dtfiles="/usr/bin/git --git-dir=$HOME/dotfiles --work-tree=$HOME"
+alias open="xdg-open"
 
 alias cln42="rm -vrf ex*/.vscode ;
              rm -vrf ex*/*swp    ;
@@ -92,6 +92,10 @@ alias gst="git status -b"
 alias gls="git ls-files"
 alias grm="git rm --cached"
 alias gck="git checkout"
+alias gcm="git commit -m"
+alias gad="git add"
+alias grs="git restore --staged"
+alias gps="git push"
 
 alias gcln42="grm -vrf ex*/.vscode ;
               grm -vrf ex*/*swp    ;
