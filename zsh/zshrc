@@ -78,8 +78,7 @@ alias e="exit ; clear"
 alias fzf='ag -l -g "" | fzf'
 alias szh="source $ZSHRC"
 alias ezh="lvim $ZSHRC"
-
-alias dtfiles="/usr/bin/git --git-dir=$HOME/dotfiles --work-tree=$HOME"
+alias open="xdg-open"
 
 alias cln42="rm -vrf ex*/.vscode ;
              rm -vrf ex*/*swp    ;
@@ -94,6 +93,8 @@ alias gls="git ls-files"
 alias grm="git rm --cached"
 alias gck="git checkout"
 alias gcm="git commit -m"
+alias gad="git add"
+alias grs="git restore --staged"
 
 alias gcln42="grm -vrf ex*/.vscode ;
               grm -vrf ex*/*swp    ;
