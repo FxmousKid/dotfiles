@@ -72,7 +72,7 @@ export PATH="/usr/lib/jvm/java-17-openjdk-17.0.9.0.9-3.fc39.aarch64/bin:$PATH"
 
 # ||| ALIASES |||
 alias ccw="cc -Wall -Wextra -Werror"
-alias atuin="~/.cargo/bin/atuin"
+alias norm="norminette -R CheckForbiddenSourceHeader"
 alias cl="clear"
 alias e="exit ; clear" 
 alias fzf='ag -l -g "" | fzf'
@@ -80,7 +80,6 @@ alias szh="source $ZSHRC"
 alias ezh="lvim $ZSHRC"
 alias open="xdg-open"
 alias elc="lvim ~/.config/lvim/config.lua && echo $?" 
-
 
 alias cln42="rm -vrf ex*/.vscode ;
              rm -vrf ex*/*swp    ;
