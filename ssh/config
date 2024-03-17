@@ -1,0 +1,15 @@
+## This is my SSH config
+
+
+# Personal GitHub account :
+Host github.com
+    HostName github.com
+    IdentityFile ~/.ssh/id_rsa_perso
+    AddKeysToAgent yes
+
+# Ecole 42 GitHub account :
+Host 42.github.com
+    HostName github.com
+    IdentityFile ~/.ssh/id_rsa_42
+    AddKeysToAgent yes
+
