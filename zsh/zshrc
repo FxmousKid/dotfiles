@@ -95,6 +95,7 @@ alias gck="git checkout"
 alias gcm="git commit -m"
 alias gad="git add"
 alias grs="git restore --staged"
+alias gps="git push"
 
 alias gcln42="grm -vrf ex*/.vscode ;
               grm -vrf ex*/*swp    ;
