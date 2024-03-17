@@ -79,6 +79,8 @@ alias fzf='ag -l -g "" | fzf'
 alias szh="source $ZSHRC"
 alias ezh="lvim $ZSHRC"
 alias open="xdg-open"
+alias elc="lvim ~/.config/lvim/config.lua && echo $?" 
+
 
 alias cln42="rm -vrf ex*/.vscode ;
              rm -vrf ex*/*swp    ;
