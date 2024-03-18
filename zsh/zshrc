@@ -65,13 +65,12 @@ export NVM_DIR="$HOME/.nvm"
 
 # ||| EXPORTS |||
 export PATH="~/.config/bin:$PATH"
-export PATH="~/scripts/:$PATH"
 export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-17.0.9.0.9-3.fc39.aarch64//"
 export PATH="/usr/lib/jvm/java-17-openjdk-17.0.9.0.9-3.fc39.aarch64/bin:$PATH"
 
-
 # ||| ALIASES |||
 alias ccw="cc -Wall -Wextra -Werror"
+alias atuin="~/.cargo/bin/atuin"
 alias norm="norminette -R CheckForbiddenSourceHeader"
 alias cl="clear"
 alias e="exit ; clear" 
