@@ -79,6 +79,7 @@ alias szh="source $ZSHRC"
 alias ezh="lvim $ZSHRC"
 alias open="xdg-open"
 alias elc="lvim ~/.config/lvim/config.lua && echo $?" 
+alias cmk="compiledb make" #Used for clangd config file, this is a saver
 
 alias cln42="rm -vrf ex*/.vscode ;
              rm -vrf ex*/*swp    ;
