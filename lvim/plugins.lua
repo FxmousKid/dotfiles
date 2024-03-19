@@ -17,21 +17,25 @@ local core_plugins = {
     "shortcuts/no-neck-pain.nvim",
         version = "*"
   },
-  {
-    "nvim-neo-tree/neo-tree.nvim",
-    branch = "v3.x",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-      "nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
-      "3rd/image.nvim", -- Optional image support in preview window: See `# Preview Mode` for more information
-    },
-   lazy = false,
-  },
-  {
+-- {
+--   "nvim-neo-tree/neo-tree.nvim",
+--    branch = "v3.x",
+--    dependencies = {
+--      "nvim-lua/plenary.nvim",
+--      "nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
+--      "3rd/image.nvim", -- Optional image support in preview window: See `# Preview Mode` for more information
+--    },
+--   lazy = false,
+--  },
+	{
+		"nvim-telescope/telescope-file-browser.nvim",
+		dependencies = { "nvim-telescope/telescope.nvim", "nvim-lua/plenary.nvim" }
+	},
+
+	{
       "MunifTanjim/nui.nvim",
        lazy = false,
   },
-
     -- Debugging
   {
     "mfussenegger/nvim-dap",
@@ -72,29 +76,16 @@ local core_plugins = {
     lazy = true,
     enabled = lvim.builtin.dap.active,
   },
-  {
-    "Diogo-ss/42-header.nvim",
-    lazy = false,
-    config = function()
-        local header = require("42header")
-        header.setup({
-            default_map = true, -- default Mapping <F1> in normal mode
-            auto_update = true,  -- update header when saving
-        })
-    end
-  },
-  {
-  "jackMort/ChatGPT.nvim",
-    event = "VeryLazy",
-    config = function()
-      require("chatgpt").setup()
-    end,
-    dependencies = {
-      "MunifTanjim/nui.nvim",
-      "nvim-lua/plenary.nvim",
-      "folke/trouble.nvim",
-      "nvim-telescope/telescope.nvim"
-    }
+ {
+   "Diogo-ss/42-header.nvim",
+   lazy = false,
+   config = function()
+       local header = require("42header")
+       header.setup({
+           default_map = false, -- default Mapping <F1> in normal mode
+           auto_update = true,
+		})
+   end
   },
   {
     "mg979/vim-visual-multi",
@@ -102,9 +93,31 @@ local core_plugins = {
   {
     "mfussenegger/nvim-jdtls",
   },
-------- END OF MANUALLY ADDED PLUGINS
---
---
+	{
+		"folke/noice.nvim",
+		event = "VeryLazy",
+		opts = {
+			-- add any options here
+		},
+		dependencies = {
+			-- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
+			"MunifTanjim/nui.nvim",
+			-- OPTIONAL:
+			--   `nvim-notify` is only needed, if you want to use the notification view.
+			--   If not available, we use `mini` as the fallback
+			"rcarriga/nvim-notify",
+		}
+	},
+
+---- install Markdown preview, without yarn or npm
+--  {
+--    "iamcco/markdown-preview.nvim",
+--    cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+--    ft = { "markdown" },
+--    build = function() vim.fn["mkdp#util#install"]() end,
+--  },
+--------- END OF MANUALLY ADDED PLUGINS
+
 
   {
     "williamboman/mason.nvim",
@@ -235,8 +248,8 @@ local core_plugins = {
     dependencies = { "nvim-treesitter/nvim-treesitter", "hrsh7th/nvim-cmp" },
   },
 
-  -- Treesitter
-  {
+  -- Treesitter   
+ {
     "nvim-treesitter/nvim-treesitter",
     -- run = ":TSUpdate",
     config = function()

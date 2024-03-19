@@ -65,20 +65,20 @@ export NVM_DIR="$HOME/.nvm"
 
 # ||| EXPORTS |||
 export PATH="~/.config/bin:$PATH"
-export PATH="~/scripts/:$PATH"
 export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-17.0.9.0.9-3.fc39.aarch64//"
 export PATH="/usr/lib/jvm/java-17-openjdk-17.0.9.0.9-3.fc39.aarch64/bin:$PATH"
-
 
 # ||| ALIASES |||
 alias ccw="cc -Wall -Wextra -Werror"
 alias atuin="~/.cargo/bin/atuin"
+alias norm="norminette -R CheckForbiddenSourceHeader"
 alias cl="clear"
 alias e="exit ; clear" 
 alias fzf='ag -l -g "" | fzf'
 alias szh="source $ZSHRC"
 alias ezh="lvim $ZSHRC"
 alias open="xdg-open"
+alias elc="lvim ~/.config/lvim/config.lua && echo $?" 
 
 alias cln42="rm -vrf ex*/.vscode ;
              rm -vrf ex*/*swp    ;
@@ -96,6 +96,7 @@ alias gcm="git commit -m"
 alias gad="git add"
 alias grs="git restore --staged"
 alias gps="git push"
+alias gdf="git diff"
 
 alias gcln42="grm -vrf ex*/.vscode ;
               grm -vrf ex*/*swp    ;
@@ -109,4 +110,11 @@ alias gcln42="grm -vrf ex*/.vscode ;
 eval "$(atuin init zsh)"
 
 
+# ||| Changes to bash options |||
+unsetopt BEEP 
+
+
 # ||| GLOBAL ENV VARS |||
+
+# opam configuration
+[[ ! -r /home/famouskid/.opam/opam-init/init.zsh ]] || source /home/famouskid/.opam/opam-init/init.zsh  > /dev/null 2> /dev/null
