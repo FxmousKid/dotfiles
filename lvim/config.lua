@@ -5,11 +5,12 @@
 
 
 -- typing Interactions 
+vim.opt.expandtab = false
 vim.opt.tabstop = 4
 vim.opt.softtabstop = 4
 vim.opt.shiftwidth = 4
 vim.opt.mouse = "a"
-vim.opt.smartindent = true
+--vim.opt.smartindent = true
 
 
 -- editor interactions
@@ -18,8 +19,18 @@ vim.opt.nu = true
 vim.opt.showcmd = true
 
 
+-- Fixing treesitter "invalid node at position x" bug
+lvim.builtin.treesitter.rainbow = {
+	enable = false}
+
+lvim.builtin.illuminate = {active = false}
+
 -- lvim appearance
 lvim.builtin.lualine.options.theme = "horizon"
+
+-- 42Header setup
+vim.g.user  = "inazaria"
+vim.g.mail = "inazaria@student.42.fr"
 
 -- Blinking Cursor
 vim.opt.guicursor = {
