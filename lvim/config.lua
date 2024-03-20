@@ -38,3 +38,11 @@ vim.opt.guicursor = {
   'i-ci:ver25-Cursor/lCursor-blinkwait1000-blinkon100-blinkoff100',
   'r:hor50-Cursor/lCursor-blinkwait100-blinkon100-blinkoff100'
 }
+
+-- Keymaps
+local keymap_opts = { noremap = true, silent = true }
+vim.keymap.set({'n','i'}, '<leader>l', function() vim.cmd.DocsViewToggle() end, keymap_opts)
+
+
+
+
