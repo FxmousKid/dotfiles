@@ -108,6 +108,15 @@ local core_plugins = {
 			"rcarriga/nvim-notify",
 		}
 	},
+    {
+		"amrbashir/nvim-docs-view",
+		lazy = true,
+		cmd  = "DocsViewToggle",
+		opts = {
+			position = "bottom",
+			height   = 4
+		}
+	},
 
 ---- install Markdown preview, without yarn or npm
 --  {
