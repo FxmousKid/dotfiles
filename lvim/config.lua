@@ -12,10 +12,7 @@ vim.opt.shiftwidth = 4
 vim.opt.mouse = "a"
 --vim.opt.smartindent = true
 
-
 -- editor interactions
-vim.opt.relativenumber = true
-vim.opt.nu = true
 vim.opt.showcmd = true
 
 
