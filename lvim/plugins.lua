@@ -11,6 +11,9 @@ local core_plugins = {
 --
 -- THESE ARE THE MANUALLY ADDED PLUGINS
   {
+      "github/copilot.vim",
+  },
+  {
     "pocco81/auto-save.nvim"
   },
   {
@@ -97,15 +100,27 @@ local core_plugins = {
 		"folke/noice.nvim",
 		event = "VeryLazy",
 		opts = {
-			-- add any options here
+			lsp = {
+				signature = {
+					auto_open = {
+						typeitrigger = false, -- Automatically show signature help when typing a trigger character from the LSP
+					},
+				},
+			},
 		},
 		dependencies = {
 			-- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
 			"MunifTanjim/nui.nvim",
 			-- OPTIONAL:
-			--   `nvim-notify` is only needed, if you want to use the notification view.
-			--   If not available, we use `mini` as the fallback
-			"rcarriga/nvim-notify",
+		},
+	},
+    {
+		"amrbashir/nvim-docs-view",
+		lazy = true,
+		cmd  = "DocsViewToggle",
+		opts = {
+			position = "bottom",
+			height   = 4
 		}
 	},
 

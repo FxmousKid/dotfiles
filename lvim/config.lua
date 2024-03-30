@@ -12,10 +12,7 @@ vim.opt.shiftwidth = 4
 vim.opt.mouse = "a"
 --vim.opt.smartindent = true
 
-
 -- editor interactions
-vim.opt.relativenumber = true
-vim.opt.nu = true
 vim.opt.showcmd = true
 
 
@@ -38,3 +35,11 @@ vim.opt.guicursor = {
   'i-ci:ver25-Cursor/lCursor-blinkwait1000-blinkon100-blinkoff100',
   'r:hor50-Cursor/lCursor-blinkwait100-blinkon100-blinkoff100'
 }
+
+-- Keymaps
+local keymap_opts = { noremap = true, silent = true }
+vim.keymap.set({'n','i'}, '<leader>l', function() vim.cmd.DocsViewToggle() end, keymap_opts)
+vim.keymap.set({'n','i'}, '<leader>p', function() vim.cmd.noh() end, keymap_opts)
+
+
+
