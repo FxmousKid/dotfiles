@@ -79,12 +79,12 @@ alias szh="source $ZSHRC"
 alias ezh="lvim $ZSHRC"
 alias open="xdg-open"
 alias elc="lvim ~/.config/lvim/config.lua && echo $?"
-
+alias trsh="cd $HOME/.local/share/Trash/files"
 
 alias cmk="compiledb make" #Used for clangd config file, this is a saver
-alias visualiser="~/Desktop/Ecole42/42Cursus/42CursusPerso/42Cursus-Push_swap/push_swap_visualizer/build/bin/visualizer && rm imgui.ini"
-alias francinette="$HOME"/francinette/tester.sh
-alias paco="$HOME"/francinette/tester.sh
+alias visualiser="~/Desktop/Ecole42/42Cursus/Tools/push_swap_visualizer/build/bin/visualizer && rm imgui.ini"
+alias francinette="~/Desktop/Ecole42/42Cursus/Tools/francinette/tester.sh"
+alias paco="~/Desktop/Ecole42/42Cursus/Tools/francinette/tester.sh"
 
 alias cln42="rm -vrf ex*/.vscode ;
              rm -vrf ex*/*swp    ;
@@ -126,6 +126,3 @@ export EDITOR="~/.local/bin/lvim"
 
 # opam configuration
 [[ ! -r /home/famouskid/.opam/opam-init/init.zsh ]] || source /home/famouskid/.opam/opam-init/init.zsh  > /dev/null 2> /dev/null
-
-alias francinette=/home/famouskid/francinette/tester.sh
-alias paco=/home/famouskid/francinette/tester.sh
