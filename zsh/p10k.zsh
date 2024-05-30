@@ -57,7 +57,8 @@
     newline                   # \n
     virtualenv                # python virtual environment
     prompt_char               # prompt symbol
-  )
+	status					  # exit status of last command
+)
 
   # Right prompt segments.
   typeset -g POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(
@@ -65,7 +66,8 @@
     # command_execution_time  # previous command duration
     # virtualenv              # python virtual environment
     # context                 # user@host
-    time                      # current time
+	battery                   # battery level
+	time                      # current time
     # =========================[ Line #2 ]=========================
     newline                   # \n
   )
@@ -190,10 +192,13 @@
   # If p10k is already loaded, reload configuration.
   # This works even with POWERLEVEL9K_DISABLE_HOT_RELOAD=true.
   (( ! $+functions[p10k] )) || p10k reload
+
+  POWERLEVEL9K_DIR_MAX_LENGTH=3 
 }
 
 # Tell `p10k configure` which file it should overwrite.
 typeset -g POWERLEVEL9K_CONFIG_FILE=${${(%):-%x}:a}
+
 
 (( ${#p10k_config_opts} )) && setopt ${p10k_config_opts[@]}
 'builtin' 'unset' 'p10k_config_opts'

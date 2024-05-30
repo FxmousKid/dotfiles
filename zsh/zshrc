@@ -83,8 +83,8 @@ alias trsh="cd $HOME/.local/share/Trash/files"
 
 alias cmk="compiledb make" #Used for clangd config file, this is a saver
 alias visualiser="~/Desktop/Ecole42/42Cursus/Tools/push_swap_visualizer/build/bin/visualizer && rm imgui.ini"
-alias francinette="~/Desktop/Ecole42/42Cursus/Tools/francinette/tester.sh"
-alias paco="~/Desktop/Ecole42/42Cursus/Tools/francinette/tester.sh"
+alias francinette="~/francinette/tester.sh"
+alias paco="~/francinette/tester.sh"
 
 alias cln42="rm -vrf ex*/.vscode ;
              rm -vrf ex*/*swp    ;

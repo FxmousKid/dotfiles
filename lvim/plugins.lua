@@ -17,6 +17,9 @@ local core_plugins = {
     "pocco81/auto-save.nvim"
   },
   {
+	"Djancyp/better-comments.nvim"
+  },
+  {
     "shortcuts/no-neck-pain.nvim",
         version = "*"
   },
