@@ -79,9 +79,11 @@ alias szh="source $ZSHRC"
 alias ezh="lvim $ZSHRC"
 alias open="xdg-open"
 alias elc="lvim ~/.config/lvim/config.lua && echo $?"
-alias trsh="cd $HOME/.local/share/Trash/files"
+alias trsh="export prev=$PWD && cd $HOME/.local/share/Trash/files"
+alias l="exa"
+alias ltr="exa --tree && echo "" && tree | tail -n 1"
 
-alias cmk="compiledb make" #Used for clangd config file, this is a saver
+alias cmk="compiledb make" #Used for clangd config file, this [compiledb] is a saver
 alias visualiser="~/Desktop/Ecole42/42Cursus/Tools/push_swap_visualizer/build/bin/visualizer && rm imgui.ini"
 alias francinette="~/francinette/tester.sh"
 alias paco="~/francinette/tester.sh"
@@ -103,6 +105,7 @@ alias gad="git add"
 alias grs="git restore --staged"
 alias gps="git push"
 alias gdf="git diff"
+alias gcl="git clone"
 
 alias gcln42="grm -vrf ex*/.vscode ;
               grm -vrf ex*/*swp    ;
@@ -126,3 +129,5 @@ export EDITOR="~/.local/bin/lvim"
 
 # opam configuration
 [[ ! -r /home/famouskid/.opam/opam-init/init.zsh ]] || source /home/famouskid/.opam/opam-init/init.zsh  > /dev/null 2> /dev/null
+alias ryujinx="gamemoderun DOTNET_EnableAlternateStackCheck=1 GDK_BACKEND=x11 /home/famouskid/.local/share/Ryujinx/Ryujinx"
+export PATH=/home/famouskid/.local/funcheck/host:$PATH
