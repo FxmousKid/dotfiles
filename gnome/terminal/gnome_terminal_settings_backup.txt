@@ -1,0 +1,24 @@
+[legacy]
+always-check-default-terminal=false
+
+[legacy/keybindings]
+copy='<Alt>c'
+paste='<Alt>v'
+preferences='<Alt>comma'
+
+[legacy/profiles:/:b1dcc9dd-5262-4d8d-a863-c897e6d979b9]
+audible-bell=false
+background-color='rgb(23,24,36)'
+background-transparency-percent=11
+bold-is-bright=false
+cursor-blink-mode='on'
+cursor-shape='underline'
+font='Monospace 12'
+foreground-color='rgb(208,207,204)'
+palette=['rgb(23,20,33)', 'rgb(192,28,40)', 'rgb(88,240,141)', 'rgb(162,115,76)', 'rgb(83,190,243)', 'rgb(163,71,186)', 'rgb(42,161,179)', 'rgb(208,207,204)', 'rgb(94,92,100)', 'rgb(246,97,81)', 'rgb(51,218,122)', 'rgb(233,173,12)', 'rgb(42,123,222)', 'rgb(192,97,203)', 'rgb(217,217,214)', 'rgb(255,255,255)']
+scroll-on-output=true
+scrollback-lines=20000
+use-system-font=false
+use-theme-colors=false
+use-transparent-background=true
+visible-name='Iyan'

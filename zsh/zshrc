@@ -70,10 +70,12 @@ export NVM_DIR="$HOME/.nvm"
 
 # ||| EXPORTS |||
 export PATH="~/.config/bin:$PATH"
-export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-17.0.9.0.9-3.fc39.aarch64//"
+export PATH="~/.yazi/target/release:$PATH"
 export PATH="/usr/lib/jvm/java-17-openjdk-17.0.9.0.9-3.fc39.aarch64/bin:$PATH"
+export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-17.0.9.0.9-3.fc39.aarch64//"
 
 # ||| ALIASES |||
+alias yazi="$HOME/.yazi/target/release/yazi"
 alias ccw="cc -Wall -Wextra -Werror"
 alias atuin="~/.cargo/bin/atuin"
 alias norm="norminette -R CheckForbiddenSourceHeader"
@@ -84,7 +86,10 @@ alias szh="source $ZSHRC"
 alias ezh="lvim $ZSHRC"
 alias open="xdg-open"
 alias elc="lvim ~/.config/lvim/config.lua && echo $?"
-alias trsh="export prev=$PWD && cd $HOME/.local/share/Trash/files"
+
+alias trsh="alias prev=\"cd \$PWD\" &&
+			cd \"$HOME/.local/share/Trash/files\""
+
 alias l="exa"
 alias ltr="exa --tree && echo "" && tree | tail -n 1"
 
