@@ -104,6 +104,11 @@ alias cln42="rm -vrf ex*/.vscode ;
              rm -vrf a.out       ;
              rm -vrf ex*/a.out   ;"
 
+# Application Aliases
+alias code="/usr/bin/code --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration"
+alias discord="/usr/bin/armcord --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration"
+alias obsidian="~/.local/bin/Obsidian-1.6.7-arm64.AppImage --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration"
+
 
 # ||| GIT ALIASES |||
 alias gst="git status -b"
