@@ -18,27 +18,27 @@
     
 
   # Bash configs
-  ~/.bash_profile:
-  ~/.bashrc: 
-  ~/.bash_logout: 
+  ~/.bash_profile: bash/bash_profile
+  ~/.bashrc: bash/bashrc 
+  ~/.bash_logout: bash/bash_logout
   
   # Git configs
-  ~/.gitconfig:
+  ~/.gitconfig: git/gitconfig
  
   # Miscellaneous
   ~/.tmux.conf: tmux/tmux.conf
   ~/.Xmodmap: Xmodmap
   
   # zsh files
-  ~/.zshrc: zsh/
-  ~/.p10k.zsh: p10k.zsh
-  ~/.zsh_history: zsh_history
+  ~/.zshrc: zsh/zshrc
+  ~/.p10k.zsh: zsh/p10k.zsh
 
-  # Lunarvim configsw
-  ~/.config/lvim/config.lua: nvim/config.lua #main config for lvim
+  # Lunarvim configs
+  ~/.config/lvim/config.lua: lvim/config.lua #main config for lvim
+  ~/.config/lvim/lazy-lock.json: lvim/lazy-lock.json #main config for lvim
   ~/.local/share/lunarvim/lvim/lua/lvim/plugins.lua: 
     if: [ uname -s == "Linux" ]
-    path: nvim/plugins.lua #Plugins for Lazy with lvim
+    path: lvim/plugins.lua #Plugins for Lazy with lvim
     
 
 # ---------------------------------------------------------------------------------------------
