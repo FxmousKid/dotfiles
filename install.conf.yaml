@@ -1,11 +1,11 @@
 - clean: ['~', '~/.config', '~/.local/share/lunarvim/lvim/lua/lvim']
 
 - defaults:
-  link:
-  create: true
+    link:
+    create: true
 
 - shell:
-  - [git submodule update --init --recursive, "Updating submodules"]
+    - [git submodule update --init --recursive, "Updating submodules"]
   
 
 
@@ -18,27 +18,27 @@
     
 
   # Bash configs
-  ~/.bash_profile: bash/bash_profile
-  ~/.bashrc: bash/bashrc 
-  ~/.bash_logout: bash/bash_logout
+    ~/.bash_profile: bash/bash_profile
+    ~/.bashrc: bash/bashrc 
+    ~/.bash_logout: bash/bash_logout
   
-  # Git configs
-  ~/.gitconfig: git/gitconfig
+    # Git configs
+    ~/.gitconfig: git/gitconfig
  
-  # Miscellaneous
-  ~/.tmux.conf: tmux/tmux.conf
-  ~/.Xmodmap: Xmodmap
+    # Miscellaneous
+    ~/.tmux.conf: tmux/tmux.conf
+    ~/.Xmodmap: Xmodmap
   
-  # zsh files
-  ~/.zshrc: zsh/zshrc
-  ~/.p10k.zsh: zsh/p10k.zsh
+    # zsh files
+    ~/.zshrc: zsh/zshrc
+    ~/.p10k.zsh: zsh/p10k.zsh
 
-  # Lunarvim configs
-  ~/.config/lvim/config.lua: lvim/config.lua
-  ~/.config/lvim/lazy-lock.json: lvim/lazy-lock.json
-  ~/.config/lvim/lua/plugins.lua: lvim/plugins.lua
-  ~/.config/lvim/lua/options.lua : lvim/options.lua
-  ~/.config/lvim/lua/keybinds.lua: lvim/keybinds.lua
+    # Lunarvim configs
+    ~/.config/lvim/config.lua: lvim/config.lua
+    ~/.config/lvim/lazy-lock.json: lvim/lazy-lock.json
+    ~/.config/lvim/lua/plugins.lua: lvim/plugins.lua
+    ~/.config/lvim/lua/options.lua : lvim/options.lua
+    ~/.config/lvim/lua/keybinds.lua: lvim/keybinds.lua
 
 # ---------------------------------------------------------------------------------------------
 # --  Install
