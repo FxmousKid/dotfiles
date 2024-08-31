@@ -1,5 +1,12 @@
-- clean: ['~']
+- clean: ['~', '~/.config', '~/.local/share/lunarvim/lvim/lua/lvim']
 
+- defaults:
+  link:
+  create: true
+
+- shell:
+  - [git submodule update --init --recursive, "Updating submodules"]
+  
 
 
 # ---------------------------------------------------------------------------------------------
@@ -7,27 +14,32 @@
 # ---------------------------------------------------------------------------------------------
 
 - link:
-    # Bash configs
-    ~/.bash_profile: bash_profile
-    ~/.bashrc: bashrc
-    ~/.bash_logout: bash_logout
-    
-    # Git configs
-    ~/.gitconfig: gitconfig
-   
-    # Miscellaneous
-    ~/.tmux.conf: tmux.conf
-    ~/.Xmodmap: Xmodmap
-    
-    # zsh files
-    ~/.zshrc: zshrc
-    ~/.p10k.zsh: p10k.zsh
-    ~/.zsh_history: zsh_history
 
-    # Lunarvim configsw
-    ~/.config/lvim/config.lua: config.lua #main config for lvim
-    ~/.local/share/lunarvim/lvim/lua/lvim/plugins.lua: plugins.lua #Plugins for Lazy with lvim
+    
 
+  # Bash configs
+  ~/.bash_profile:
+  ~/.bashrc: 
+  ~/.bash_logout: 
+  
+  # Git configs
+  ~/.gitconfig:
+ 
+  # Miscellaneous
+  ~/.tmux.conf: tmux/tmux.conf
+  ~/.Xmodmap: Xmodmap
+  
+  # zsh files
+  ~/.zshrc: zsh/
+  ~/.p10k.zsh: p10k.zsh
+  ~/.zsh_history: zsh_history
+
+  # Lunarvim configsw
+  ~/.config/lvim/config.lua: nvim/config.lua #main config for lvim
+  ~/.local/share/lunarvim/lvim/lua/lvim/plugins.lua: 
+    if: [ uname -s == "Linux" ]
+    path: nvim/plugins.lua #Plugins for Lazy with lvim
+    
 
 # ---------------------------------------------------------------------------------------------
 # --  Install

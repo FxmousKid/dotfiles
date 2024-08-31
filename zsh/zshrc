@@ -62,22 +62,25 @@ export NVM_DIR="$HOME/.nvm"
 
 
 
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh # i dont even know what this shit does..
+# To customize prompt, run `p10k configure` or edit $HOME/.p10k.zsh.
+[[ ! -f $HOME/.p10k.zsh ]] || source ~/.p10k.zsh # i dont even know what this shit does..
 
 
 # XDG Directories
 
 # ||| EXPORTS |||
-export PATH="~/.config/bin:$PATH"
-export PATH="~/.yazi/target/release:$PATH"
+export PATH="$HOME/Documents/Scripts/build/bin:$PATH"
+export PATH="$HOME/.local/funcheck/host:$PATH"
+export PATH="$HOME/.atuin/bin:$PATH"
+export PATH="$HOME/.config/bin:$PATH"
+export PATH="$HOME/.yazi/target/release:$PATH"
 export PATH="/usr/lib/jvm/java-17-openjdk-17.0.9.0.9-3.fc39.aarch64/bin:$PATH"
+
 export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-17.0.9.0.9-3.fc39.aarch64//"
 
 # ||| ALIASES |||
-alias yazi="$HOME/.yazi/target/release/yazi"
+alias y="$HOME/.yazi/target/release/yazi"
 alias ccw="cc -Wall -Wextra -Werror"
-alias atuin="~/.cargo/bin/atuin"
 alias norm="norminette -R CheckForbiddenSourceHeader"
 alias cl="clear"
 alias e="exit ; clear" 
@@ -85,7 +88,7 @@ alias fzf='ag -l -g "" | fzf'
 alias szh="source $ZSHRC"
 alias ezh="lvim $ZSHRC"
 alias open="xdg-open"
-alias elc="lvim ~/.config/lvim/config.lua && echo $?"
+alias elc="lvim $HOME/.config/lvim/config.lua && echo $?"
 
 alias trsh="alias prev=\"cd \$PWD\" &&
 			cd \"$HOME/.local/share/Trash/files\""
@@ -94,9 +97,9 @@ alias l="exa"
 alias ltr="exa --tree && echo "" && tree | tail -n 1"
 
 alias cmk="compiledb make" #Used for clangd config file, this [compiledb] is a saver
-alias visualiser="~/Desktop/Ecole42/42Cursus/Tools/push_swap_visualizer/build/bin/visualizer && rm imgui.ini"
-alias francinette="~/francinette/tester.sh"
-alias paco="~/francinette/tester.sh"
+alias visualiser="$HOME/Desktop/Ecole42/42Cursus/Tools/push_swap_visualizer/build/bin/visualizer && rm imgui.ini"
+alias francinette="$HOME/francinette/tester.sh"
+alias paco="$HOME/francinette/tester.sh"
 
 alias cln42="rm -vrf ex*/.vscode ;
              rm -vrf ex*/*swp    ;
@@ -107,10 +110,10 @@ alias cln42="rm -vrf ex*/.vscode ;
 # Application Aliases
 alias code="/usr/bin/code --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration"
 alias discord="/usr/bin/armcord --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration"
-alias obsidian="~/.local/bin/Obsidian-1.6.7-arm64.AppImage --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration"
+alias obsidian="$HOME/.local/bin/Obsidian-1.6.7-arm64.AppImage --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration"
 
 
-# ||| GIT ALIASES |||
+# Git Aliases
 alias gst="git status -b"
 alias gls="git ls-files"
 alias grm="git rm --cached"
@@ -120,7 +123,7 @@ alias gad="git add"
 alias grs="git restore --staged"
 alias gps="git push"
 alias gdf="git diff"
-alias gcl="git clone"
+alias gcl="git clone --recurse-submodules"
 
 alias gcln42="grm -vrf ex*/.vscode ;
               grm -vrf ex*/*swp    ;
@@ -128,7 +131,10 @@ alias gcln42="grm -vrf ex*/.vscode ;
               grm -vrf a.out       ;
               grm -vrf ex*/a.out   ;"
 
-
+alias docfr="mkdir -p $HOME/Documents/France/ ; 
+			 cd $HOME/Documents/France/ ;
+			 rclone sync GoogleDrive:France . --progress ;
+			 yazi"
 
 # ||| evals |||
 eval "$(atuin init zsh)"
@@ -139,10 +145,11 @@ unsetopt BEEP
 
 
 # ||| GLOBAL ENV VARS |||
-export EDITOR="~/.local/bin/lvim"
+export EDITOR="$HOME/.local/bin/lvim"
 
 
 # opam configuration
-[[ ! -r /home/famouskid/.opam/opam-init/init.zsh ]] || source /home/famouskid/.opam/opam-init/init.zsh  > /dev/null 2> /dev/null
-alias ryujinx="gamemoderun DOTNET_EnableAlternateStackCheck=1 GDK_BACKEND=x11 /home/famouskid/.local/share/Ryujinx/Ryujinx"
-export PATH=/home/famouskid/.local/funcheck/host:$PATH
+[[ ! -r $HOME/.opam/opam-init/init.zsh ]] || source $HOME/.opam/opam-init/init.zsh  > /dev/null 2> /dev/null
+alias ryujinx="gamemoderun DOTNET_EnableAlternateStackCheck=1 GDK_BACKEND=x11 $HOME/.local/share/Ryujinx/Ryujinx"
+
+. "$HOME/.atuin/bin/env"

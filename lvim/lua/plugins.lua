@@ -7,6 +7,10 @@ lvim.plugins = {
 	{	"mfussenegger/nvim-jdtls"},
 	{	"j-hui/fidget.nvim" },
 
+	{ "ellisonleao/gruvbox.nvim",
+		priority = 1000 ,
+		config = true
+	},
 
 	{
 		"shortcuts/no-neck-pain.nvim",
