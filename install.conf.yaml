@@ -34,14 +34,12 @@
   ~/.p10k.zsh: zsh/p10k.zsh
 
   # Lunarvim configs
-  ~/.config/lvim/config.lua: lvim/config.lua #main config for lvim
-  ~/.config/lvim/lazy-lock.json: lvim/lazy-lock.json #main config for lvim
-  ~/.local/share/lunarvim/lvim/lua/lvim/plugins.lua: 
-    if: [ uname -s == "Linux" ]
-    path: lvim/plugins.lua #Plugins for Lazy with lvim
-    
+  ~/.config/lvim/config.lua: lvim/config.lua
+  ~/.config/lvim/lazy-lock.json: lvim/lazy-lock.json
+  ~/.config/lvim/lua/plugins.lua: lvim/plugins.lua
+  ~/.config/lvim/lua/options.lua : lvim/options.lua
+  ~/.config/lvim/lua/keybinds.lua: lvim/keybinds.lua
 
 # ---------------------------------------------------------------------------------------------
 # --  Install
 # ---------------------------------------------------------------------------------------------
-
