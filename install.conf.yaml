@@ -36,9 +36,9 @@
     # Lunarvim configs
     ~/.config/lvim/config.lua: lvim/config.lua
     ~/.config/lvim/lazy-lock.json: lvim/lazy-lock.json
-    ~/.config/lvim/lua/plugins.lua: lvim/plugins.lua
-    ~/.config/lvim/lua/options.lua : lvim/options.lua
-    ~/.config/lvim/lua/keybinds.lua: lvim/keybinds.lua
+    ~/.config/lvim/lua/plugins.lua: lvim/lua/plugins.lua
+    ~/.config/lvim/lua/options.lua : lvim/lua/options.lua
+    ~/.config/lvim/lua/keybinds.lua: lvim//luakeybinds.lua
 
 # ---------------------------------------------------------------------------------------------
 # --  Install
