@@ -1,3 +1,55 @@
+IS_SUDO=0
+function check_and_install_packages {
+	# Checks if fastfetch is install
+	if command -v $1 &> /dev/null; then
+		return
+	fi
+
+	# loops on some popular distros install
+	if [[ -f /etc/os-release && $IS_SUDO -eq 0 ]] ; then 
+		echo "Enter Password to install $1"
+		IS_SUDO=1
+	fi
+	if [ -f /etc/os-release ]; then
+		. /etc/os-release
+		case "$ID" in 
+			fedora-asahi-remix | fedora)
+				sudo dnf install $1
+				;;
+			arch)
+				sudo pacman -S $1
+				;;
+			debian)
+				sudo apt install $1
+				;;
+			ubuntu)
+				echo "Please install $1 in the correct way from their github"
+				;;
+			*)
+				echo "Sorry, your distro $ID is not supported for auto-download, please post a pull request\
+					on my dotfiles repo for the .zshrc file to add to this section a case for your distro" 
+				;;
+		esac
+	else
+		echo "Unable to read /etc/os-release"
+		return		
+	fi
+}
+
+
+function check_and_install_all_packages {
+	check_and_install_packages "fastfetch"
+	check_and_install_packages "go"
+	check_and_install_packages "glow"
+	check_and_install_packages "strace"
+}
+
+check_and_install_all_packages
+
+alias fastfetch_fedora_linux="fastfetch --logo \"fedora-linux\" --logo-padding-top 2"
+fastfetch_fedora_linux
+
+# XDG Directories
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_CACHE_HOME="$HOME/.cache"
@@ -50,23 +102,22 @@ compinit
 
 #--------- Powerlevel10k x Pure prompt via Zinit
 zinit ice depth=1; zinit light romkatv/powerlevel10k
-#--------- End of Powerlevel10k x Pure prompt 
-
-
-
-#--------- NODE VERSION MANAGER
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-#--------- NODE VERSION MANAGER
-
 
 
 # To customize prompt, run `p10k configure` or edit $HOME/.p10k.zsh.
 [[ ! -f $HOME/.p10k.zsh ]] || source ~/.p10k.zsh # i dont even know what this shit does..
+#--------- End of Powerlevel10k x Pure prompt 
 
 
-# XDG Directories
+
+#--------- Node Version Manager
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+#--------- Node Version Manager
+
+
+
 
 # ||| EXPORTS |||
 export PATH="$HOME/Documents/Scripts/build/bin:$PATH"
@@ -75,7 +126,6 @@ export PATH="$HOME/.atuin/bin:$PATH"
 export PATH="$HOME/.config/bin:$PATH"
 export PATH="$HOME/.yazi/target/release:$PATH"
 export PATH="/usr/lib/jvm/java-17-openjdk-17.0.9.0.9-3.fc39.aarch64/bin:$PATH"
-
 export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-17.0.9.0.9-3.fc39.aarch64//"
 
 # ||| ALIASES |||
@@ -84,11 +134,12 @@ alias ccw="cc -Wall -Wextra -Werror"
 alias norm="norminette -R CheckForbiddenSourceHeader"
 alias cl="clear"
 alias e="exit ; clear" 
-alias fzf='ag -l -g "" | fzf'
-alias szh="source $ZSHRC"
+alias fzf='ag -l -g "" | fzf' # fuzzy-finder
+alias szh="source $ZSHRC" # source-zshrc
 alias ezh="lvim $ZSHRC"
 alias open="xdg-open"
-alias elc="lvim $HOME/.config/lvim/config.lua && echo $?"
+alias elc="lvim $HOME/.config/lvim/config.lua" # edit-lunarvim-config
+alias elp="lvim $HOME/.config/lvim/lua/plugins.lua" # edit-lunarvim-plugins
 
 alias trsh="alias prev=\"cd \$PWD\" &&
 			cd \"$HOME/.local/share/Trash/files\""
@@ -98,19 +149,15 @@ alias ltr="exa --tree && echo "" && tree | tail -n 1"
 
 alias cmk="compiledb make" #Used for clangd config file, this [compiledb] is a saver
 alias visualiser="$HOME/Desktop/Ecole42/42Cursus/Tools/push_swap_visualizer/build/bin/visualizer && rm imgui.ini"
-alias francinette="$HOME/francinette/tester.sh"
-alias paco="$HOME/francinette/tester.sh"
-
-alias cln42="rm -vrf ex*/.vscode ;
-             rm -vrf ex*/*swp    ;
-             rm -vrf .vscode     ;
-             rm -vrf a.out       ;
-             rm -vrf ex*/a.out   ;"
+# alias francinette="$HOME/francinette/tester.sh"
+# alias paco="$HOME/francinette/tester.sh"
 
 # Application Aliases
+alias ij="/opt/idea-IC/bin/idea.sh --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration"
 alias code="/usr/bin/code --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration"
 alias discord="/usr/bin/armcord --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration"
 alias obsidian="$HOME/.local/bin/Obsidian-1.6.7-arm64.AppImage --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration"
+alias ryujinx="gamemoderun DOTNET_EnableAlternateStackCheck=1 GDK_BACKEND=x11 $HOME/.local/share/Ryujinx/Ryujinx"
 
 
 # Git Aliases
@@ -125,19 +172,15 @@ alias gps="git push"
 alias gdf="git diff"
 alias gcl="git clone --recurse-submodules"
 
-alias gcln42="grm -vrf ex*/.vscode ;
-              grm -vrf ex*/*swp    ;
-              grm -vrf .vscode     ;
-              grm -vrf a.out       ;
-              grm -vrf ex*/a.out   ;"
-
 alias docfr="mkdir -p $HOME/Documents/France/ ; 
 			 cd $HOME/Documents/France/ ;
 			 rclone sync GoogleDrive:France . --progress ;
 			 yazi"
 
+
 # ||| evals |||
 eval "$(atuin init zsh)"
+eval "$(starship init zsh)"
 
 
 # ||| Changes to bash options |||
@@ -150,6 +193,6 @@ export EDITOR="$HOME/.local/bin/lvim"
 
 # opam configuration
 [[ ! -r $HOME/.opam/opam-init/init.zsh ]] || source $HOME/.opam/opam-init/init.zsh  > /dev/null 2> /dev/null
-alias ryujinx="gamemoderun DOTNET_EnableAlternateStackCheck=1 GDK_BACKEND=x11 $HOME/.local/share/Ryujinx/Ryujinx"
+
 
 . "$HOME/.atuin/bin/env"
