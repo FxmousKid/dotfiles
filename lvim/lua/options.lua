@@ -9,6 +9,18 @@ vim.opt.mouse = "a"
 -- editor interactions
 vim.opt.showcmd = true
 
+-- Hack to enable colorscheme changing : https://github.com/LunarVim/LunarVim/issues/3932#issuecomment-1466563537
+-- lvim.lsp.on_attach_callback = function(client, _)
+--     client.server_capabilities.semanticTokensProvider = nil
+-- end
+
+-- Changing the theme
+lvim.colorscheme = 'lunar'
+lvim.transparent_window = true
+
+-- Disabling default plugins
+lvim.builtin.gitsigns.active = false
+
 
 -- Fixing treesitter "invalid node at position x" bug
 lvim.builtin.treesitter.rainbow = {
