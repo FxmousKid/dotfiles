@@ -7,10 +7,24 @@ lvim.plugins = {
 	{	"mfussenegger/nvim-jdtls"},
 	{	"j-hui/fidget.nvim" },
 
-	{ "ellisonleao/gruvbox.nvim",
+
+	-- Color Themes
+	{
+		"ellisonleao/gruvbox.nvim",
 		priority = 1000 ,
 		config = true
 	},
+	{
+		'sainnhe/gruvbox-material',
+		lazy = false,
+		priority = 1000,
+		config = function()
+			-- Optionally configure and load the colorscheme
+			-- directly inside the plugin declaration.
+			vim.g.gruvbox_material_enable_italic = true
+			vim.cmd.colorscheme('gruvbox-material')
+		end
+    },
 
 	{
 		"shortcuts/no-neck-pain.nvim",
@@ -23,6 +37,11 @@ lvim.plugins = {
 			"nvim-telescope/telescope.nvim",
 			"nvim-lua/plenary.nvim"
 		}
+	},
+
+	{
+		"echasnovski/mini.surround",
+		version = false
 	},
 
 	{
@@ -107,7 +126,16 @@ lvim.plugins = {
 			position = "top",
 			height = 6,
 		},
+	},
+
+	-- install without yarn or npm
+	{
+		"iamcco/markdown-preview.nvim",
+		cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+		ft = { "markdown" },
+		build = function() vim.fn["mkdp#util#install"]() end,
 	}
+
 	--{
 	-- 	"neovim/nvim-lspconfig",
 	-- 	opts = {
