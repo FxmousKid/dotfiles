@@ -7,3 +7,5 @@
 [user]
 	email = iyan005@outlook.com
 	name = FxmousKid
+[credential]
+	helper = libsecret
