@@ -1,3 +1,5 @@
-require('options')
-require('keybinds')
-require('plugins')
+reload('user.config')
+
+reload('options')
+reload('keybinds')
+reload('plugins')

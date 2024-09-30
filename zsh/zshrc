@@ -169,7 +169,8 @@ alias visualiser="$HOME/Desktop/Ecole42/42Cursus/Tools/push_swap_visualizer/buil
 # Application Aliases
 alias hypr="Hyprland"
 alias ij="/opt/idea-IC/bin/idea.sh --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration"
-alias chr="/usr/bin/chromium-browser --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration &"
+alias chr="/usr/bin/chromium-browser --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration\
+	-enable-features=TouchpadOverscrollHistoryNavigation &"
 alias code="/usr/bin/code --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration"
 alias discord="/usr/bin/armcord --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration"
 alias obsidian="$HOME/.local/bin/Obsidian-1.6.7-arm64.AppImage --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration"
@@ -180,7 +181,10 @@ alias ryujinx="gamemoderun DOTNET_EnableAlternateStackCheck=1 GDK_BACKEND=x11 $H
 alias gst="git status -b"
 alias gls="git ls-files"
 alias grm="git rm --cached"
+alias gmr="git merge"
+alias gft="git fetch"
 alias gck="git checkout"
+alias gsw="git switch"
 alias gcm="git commit -m"
 alias gad="git add"
 alias grs="git restore --staged"
