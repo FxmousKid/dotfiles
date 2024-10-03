@@ -4,3 +4,7 @@
 [user]
 	email = iyan005@outlook.com
 	name = FxmousKid
+[http]
+	postBuffer = 52428800
+[core]
+	compression = 0
