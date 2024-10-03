@@ -49,13 +49,27 @@ function check_and_install_lazygit {
 	check_and_install_packages "lazygit"
 }
 
+function check_and_install_starship {
+	if [[ $(command -v starship &> /dev/null) -ne 0 ]]; then
+		if [[ $IS_SUDO -ne 1]]; then
+			sudo curl -sS https://starship.rs/install.sh | sh
+		else
+			echo "Please enable sudo mode to install starship"
+			sudo curl -sS https://starship.rs/install.sh | sh
+			IS_SUDO=1
+		fi
+	fi
+}
+
 function check_and_install_all_packages {
 	check_and_install_packages "fastfetch"
 	check_and_install_packages "go"
 	check_and_install_packages "glow"
 	check_and_install_packages "strace"
 	check_and_install_packages "tree"
+	check_and_install_packages "gh"
 	check_and_install_lazygit
+	check_and_install_starship
 }
 
 check_and_install_all_packages
@@ -107,6 +121,7 @@ plug "zsh-users/zsh-autosuggestions"
 plug "zap-zsh/supercharge"
 plug "zap-zsh/zap-prompt"
 plug "zsh-users/zsh-syntax-highlighting"
+plug "romkatv/powerlevel10k"
 
 # Load and initialise completion system
 autoload -Uz compinit
