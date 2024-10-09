@@ -5,7 +5,7 @@ vim.g.loaded_netrwPlugin = 1
 -- optionally enable 24-bit colour
 vim.opt.termguicolors = true
 
-reload('user.config')
+-- reload('user.config')
 
 reload('options')
 reload('keybinds')
