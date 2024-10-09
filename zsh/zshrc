@@ -37,6 +37,7 @@ function check_and_install_packages {
 }
 
 function check_and_install_lazygit {
+
 	if [[ $(command -v lazygit &> /dev/null) -ne 0 ]]; then
 		if [[ $IS_SUDO -eq 1 ]]; then
 			sudo dnf copr enable atim/lazygit -y
@@ -49,35 +50,49 @@ function check_and_install_lazygit {
 	check_and_install_packages "lazygit"
 }
 
-function check_and_install_starship {
-	if [[ $(command -v starship &> /dev/null) -ne 0 ]]; then
-		if [[ $IS_SUDO -ne 1]]; then
-			sudo curl -sS https://starship.rs/install.sh | sh
+function check_and_install_zellij {
+	if [[ $(command -v zellij &> /dev/null) -ne 0 ]]; then
+		if [[ $IS_SUDO -eq 1 ]]; then
+			sudo dnf copr enable varlad/zellij
 		else
-			echo "Please enable sudo mode to install starship"
-			sudo curl -sS https://starship.rs/install.sh | sh
+			echo "Please enable sudo mode to enable the zellij copr repository"		
+			sudo dnf copr enable varlad/zellij
 			IS_SUDO=1
 		fi
 	fi
+	check_and_install_packages "zellij"
 }
+
 
 function check_and_install_all_packages {
 	check_and_install_packages "fastfetch"
 	check_and_install_packages "go"
 	check_and_install_packages "glow"
 	check_and_install_packages "strace"
+	check_and_install_packages "ltrace"
 	check_and_install_packages "tree"
 	check_and_install_packages "gh"
 	check_and_install_lazygit
-	check_and_install_starship
+	# check_and_install_starship
+	check_and_install_zellij
 }
 
 check_and_install_all_packages
+fastfetch
 
-alias fastfetch_fedora_linux="fastfetch --logo \"fedora-linux\" --logo-padding-top 2"
-fastfetch_fedora_linux
+if [[ $(command -v yazi &> /dev/null) -ne 1 ]]; then
+	function y() {
+		local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
+		yazi "$@" --cwd-file="$tmp"
+		if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+			builtin cd -- "$cwd"
+		fi
+		rm -f -- "$tmp"
+	}
+fi
 
 # XDG Directories
+
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_CACHE_HOME="$HOME/.cache"
@@ -148,17 +163,17 @@ export NVM_DIR="$HOME/.nvm"
 
 
 
-# ||| EXPORTS |||
+# ||| Path additions |||
+export PATH="$JAVA_HOME/bin:$PATH"
 export PATH="$HOME/Documents/Scripts/build/bin:$PATH"
 export PATH="$HOME/.local/funcheck/host:$PATH"
 export PATH="$HOME/.atuin/bin:$PATH"
 export PATH="$HOME/.config/bin:$PATH"
 export PATH="$HOME/.yazi/target/release:$PATH"
 export PATH="/usr/lib/java/bin:$PATH"
-export JAVA_HOME="/usr/lib/jvm/java/"
 
 # ||| ALIASES |||
-alias y="$HOME/.yazi/target/release/yazi"
+alias fixchr="rm -rf ~/.config/chromium/Singleton*"
 alias ccw="cc -Wall -Wextra -Werror"
 alias norm="norminette -R CheckForbiddenSourceHeader"
 alias cl="clear"
@@ -174,6 +189,7 @@ alias trsh="alias prev=\"cd \$PWD\" &&
 			cd \"$HOME/.local/share/Trash/files\""
 
 alias l="exa"
+alias z="zellij"
 alias ltr="exa --tree && echo "" && tree | tail -n 1"
 
 alias cmk="compiledb make" #Used for clangd config file, this [compiledb] is a saver
@@ -216,7 +232,6 @@ alias docfr="mkdir -p $HOME/Documents/France/ ;
 
 # ||| evals |||
 eval "$(atuin init zsh)"
-eval "$(starship init zsh)"
 
 
 # ||| Changes to bash options |||
@@ -225,10 +240,14 @@ unsetopt BEEP
 
 # ||| GLOBAL ENV VARS |||
 export EDITOR="$HOME/.local/bin/lvim"
-
+export JAVA_HOME="/usr/lib/jvm/java-21-openjdk-21.0.4.0.7-2.fc40.aarch64/"
+export ZELLIJ_CONFIG_DIR="$XDG_CONFIG_HOME/zellij"
 
 # opam configuration
 [[ ! -r $HOME/.opam/opam-init/init.zsh ]] || source $HOME/.opam/opam-init/init.zsh  > /dev/null 2> /dev/null
 
+# zsh settings
+bindkey -v
 
-. "$HOME/.atuin/bin/env"
+# Command to run after the shell is loaded
+# fastfetch
