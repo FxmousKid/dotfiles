@@ -1,1 +1,4 @@
 export PATH="$HOME/bin:$PATH"
+. "$HOME/.cargo/env"
+
+. "$HOME/.atuin/bin/env"

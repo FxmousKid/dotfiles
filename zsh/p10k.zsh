@@ -57,7 +57,8 @@
     newline                   # \n
     virtualenv                # python virtual environment
     prompt_char               # prompt symbol
-  )
+	status					  # exit status of last command
+)
 
   # Right prompt segments.
   typeset -g POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(
@@ -65,7 +66,8 @@
     # command_execution_time  # previous command duration
     # virtualenv              # python virtual environment
     # context                 # user@host
-    time                      # current time
+	battery                   # battery level
+	time                      # current time
     # =========================[ Line #2 ]=========================
     newline                   # \n
   )
@@ -179,7 +181,7 @@
   #   - verbose: Enable instant prompt and print a warning when detecting console output during
   #              zsh initialization. Choose this if you've never tried instant prompt, haven't
   #              seen the warning, or if you are unsure what this all means.
-  typeset -g POWERLEVEL9K_INSTANT_PROMPT=verbose
+  typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
 
   # Hot reload allows you to change POWERLEVEL9K options after Powerlevel10k has been initialized.
   # For example, you can type POWERLEVEL9K_BACKGROUND=red and see your prompt turn red. Hot reload
@@ -190,10 +192,13 @@
   # If p10k is already loaded, reload configuration.
   # This works even with POWERLEVEL9K_DISABLE_HOT_RELOAD=true.
   (( ! $+functions[p10k] )) || p10k reload
+
+  POWERLEVEL9K_DIR_MAX_LENGTH=3 
 }
 
 # Tell `p10k configure` which file it should overwrite.
 typeset -g POWERLEVEL9K_CONFIG_FILE=${${(%):-%x}:a}
+
 
 (( ${#p10k_config_opts} )) && setopt ${p10k_config_opts[@]}
 'builtin' 'unset' 'p10k_config_opts'

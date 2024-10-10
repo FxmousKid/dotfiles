@@ -1,3 +1,102 @@
+IS_SUDO=0
+function check_and_install_packages {
+	# Checks if fastfetch is install
+	if [[ $(command -v $1 &> /dev/null) -ne 1 ]]; then
+		return
+	fi
+
+	# loops on some popular distros install
+	if [[ -f /etc/os-release && $IS_SUDO -eq 0 ]] ; then 
+		echo "Enter Password to install $1"
+		IS_SUDO=1
+	fi
+	if [ -f /etc/os-release ]; then
+		. /etc/os-release
+		case "$ID" in 
+			fedora-asahi-remix | fedora)
+				sudo dnf install $1
+				;;
+			arch)
+				sudo pacman -S $1
+				;;
+			debian)
+				sudo apt install $1
+				;;
+			ubuntu)
+				echo "Please install $1 in the correct way from their github"
+				;;
+			*)
+				echo "Sorry, your distro $ID is not supported for auto-download, please post a pull request\
+					on my dotfiles repo for the .zshrc file to add to this section a case for your distro" 
+				;;
+		esac
+	else
+		echo "Unable to read /etc/os-release"
+		return		
+	fi
+}
+
+function check_and_install_lazygit {
+
+	if [[ $(command -v lazygit &> /dev/null) -ne 0 ]]; then
+		if [[ $IS_SUDO -eq 1 ]]; then
+			sudo dnf copr enable atim/lazygit -y
+		else
+			echo "Please enable the atim/lazygit copr repository"
+			sudo dnf copr enable atim/lazygit -y
+			IS_SUDO=1
+		fi
+	fi
+	check_and_install_packages "lazygit"
+}
+
+function check_and_install_zellij {
+	if [[ $(command -v zellij &> /dev/null) -ne 0 ]]; then
+		if [[ $IS_SUDO -eq 1 ]]; then
+			sudo dnf copr enable varlad/zellij
+		else
+			echo "Please enable sudo mode to enable the zellij copr repository"		
+			sudo dnf copr enable varlad/zellij
+			IS_SUDO=1
+		fi
+	fi
+	check_and_install_packages "zellij"
+}
+
+
+function check_and_install_all_packages {
+	check_and_install_packages "fastfetch"
+	check_and_install_packages "go"
+	check_and_install_packages "glow"
+	check_and_install_packages "strace"
+	check_and_install_packages "ltrace"
+	check_and_install_packages "tree"
+	check_and_install_packages "gh"
+	check_and_install_lazygit
+	# check_and_install_starship
+	check_and_install_zellij
+}
+
+check_and_install_all_packages
+fastfetch
+
+if [[ $(command -v yazi &> /dev/null) -ne 1 ]]; then
+	function y() {
+		local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
+		yazi "$@" --cwd-file="$tmp"
+		if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+			builtin cd -- "$cwd"
+		fi
+		rm -f -- "$tmp"
+	}
+fi
+
+# XDG Directories
+
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_CACHE_HOME="$HOME/.cache"
+
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
@@ -37,6 +136,7 @@ plug "zsh-users/zsh-autosuggestions"
 plug "zap-zsh/supercharge"
 plug "zap-zsh/zap-prompt"
 plug "zsh-users/zsh-syntax-highlighting"
+plug "romkatv/powerlevel10k"
 
 # Load and initialise completion system
 autoload -Uz compinit
@@ -46,65 +146,88 @@ compinit
 
 #--------- Powerlevel10k x Pure prompt via Zinit
 zinit ice depth=1; zinit light romkatv/powerlevel10k
+
+
+# To customize prompt, run `p10k configure` or edit $HOME/.p10k.zsh.
+[[ ! -f $HOME/.p10k.zsh ]] || source ~/.p10k.zsh # i dont even know what this shit does..
 #--------- End of Powerlevel10k x Pure prompt 
 
 
 
-#--------- NODE VERSION MANAGER
+#--------- Node Version Manager
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-#--------- NODE VERSION MANAGER
+#--------- Node Version Manager
 
 
 
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh # i dont even know what this shit does..
 
-
-
-# ||| EXPORTS |||
-export PATH="~/.config/bin:$PATH"
-export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-17.0.9.0.9-3.fc39.aarch64//"
-export PATH="/usr/lib/jvm/java-17-openjdk-17.0.9.0.9-3.fc39.aarch64/bin:$PATH"
+# ||| Path additions |||
+export PATH="$JAVA_HOME/bin:$PATH"
+export PATH="$HOME/Documents/Scripts/build/bin:$PATH"
+export PATH="$HOME/.local/funcheck/host:$PATH"
+export PATH="$HOME/.atuin/bin:$PATH"
+export PATH="$HOME/.config/bin:$PATH"
+export PATH="$HOME/.yazi/target/release:$PATH"
+export PATH="/usr/lib/java/bin:$PATH"
 
 # ||| ALIASES |||
+alias fixchr="rm -rf ~/.config/chromium/Singleton*"
 alias ccw="cc -Wall -Wextra -Werror"
-alias atuin="~/.cargo/bin/atuin"
 alias norm="norminette -R CheckForbiddenSourceHeader"
 alias cl="clear"
 alias e="exit ; clear" 
-alias fzf='ag -l -g "" | fzf'
-alias szh="source $ZSHRC"
+alias fzf='ag -l -g "" | fzf' # fuzzy-finder
+alias szh="source $ZSHRC" # source-zshrc
 alias ezh="lvim $ZSHRC"
 alias open="xdg-open"
-alias elc="lvim ~/.config/lvim/config.lua && echo $?" 
-alias cmk="compiledb make" #Used for clangd config file, this is a saver
+alias elc="lvim $HOME/.config/lvim/config.lua" # edit-lunarvim-config
+alias elp="lvim $HOME/.config/lvim/lua/plugins.lua" # edit-lunarvim-plugins
 
-alias cln42="rm -vrf ex*/.vscode ;
-             rm -vrf ex*/*swp    ;
-             rm -vrf .vscode     ;
-             rm -vrf a.out       ;
-             rm -vrf ex*/a.out   ;"
+alias trsh="alias prev=\"cd \$PWD\" &&
+			cd \"$HOME/.local/share/Trash/files\""
+
+alias l="exa"
+alias z="zellij"
+alias ltr="exa --tree && echo "" && tree | tail -n 1"
+
+alias cmk="compiledb make" #Used for clangd config file, this [compiledb] is a saver
+alias visualiser="$HOME/Desktop/Ecole42/42Cursus/Tools/push_swap_visualizer/build/bin/visualizer && rm imgui.ini"
+# alias francinette="$HOME/francinette/tester.sh"
+# alias paco="$HOME/francinette/tester.sh"
+
+# Application Aliases
+alias hypr="Hyprland"
+alias ij="/opt/idea-IC/bin/idea.sh --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration"
+alias chr="/usr/bin/chromium-browser --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration\
+	-enable-features=TouchpadOverscrollHistoryNavigation &"
+alias code="/usr/bin/code --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration"
+alias discord="/usr/bin/armcord --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration"
+alias obsidian="$HOME/.local/bin/Obsidian-1.6.7-arm64.AppImage --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration"
+alias ryujinx="gamemoderun DOTNET_EnableAlternateStackCheck=1 GDK_BACKEND=x11 $HOME/.local/share/Ryujinx/Ryujinx"
 
 
-# ||| GIT ALIASES |||
+# Git Aliases
 alias gst="git status -b"
 alias gls="git ls-files"
 alias grm="git rm --cached"
+alias gmr="git merge"
+alias gft="git fetch"
 alias gck="git checkout"
+alias gsw="git switch"
 alias gcm="git commit -m"
 alias gad="git add"
 alias grs="git restore --staged"
 alias gps="git push"
 alias gdf="git diff"
+alias gcl="git clone --recurse-submodules"
+alias tgt="tree -I ./.git"
 
-alias gcln42="grm -vrf ex*/.vscode ;
-              grm -vrf ex*/*swp    ;
-              grm -vrf .vscode     ;
-              grm -vrf a.out       ;
-              grm -vrf ex*/a.out   ;"
-
+alias docfr="mkdir -p $HOME/Documents/France/ ; 
+			 cd $HOME/Documents/France/ ;
+			 rclone sync GoogleDrive:France . --progress ;
+			 yazi"
 
 
 # ||| evals |||
@@ -116,8 +239,15 @@ unsetopt BEEP
 
 
 # ||| GLOBAL ENV VARS |||
-export EDITOR="~/.local/bin/lvim"
-
+export EDITOR="$HOME/.local/bin/lvim"
+export JAVA_HOME="/usr/lib/jvm/java-21-openjdk-21.0.4.0.7-2.fc40.aarch64/"
+export ZELLIJ_CONFIG_DIR="$XDG_CONFIG_HOME/zellij"
 
 # opam configuration
-[[ ! -r /home/famouskid/.opam/opam-init/init.zsh ]] || source /home/famouskid/.opam/opam-init/init.zsh  > /dev/null 2> /dev/null
+[[ ! -r $HOME/.opam/opam-init/init.zsh ]] || source $HOME/.opam/opam-init/init.zsh  > /dev/null 2> /dev/null
+
+# zsh settings
+bindkey -v
+
+# Command to run after the shell is loaded
+# fastfetch
