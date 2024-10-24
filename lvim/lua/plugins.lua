@@ -26,6 +26,16 @@ lvim.plugins = {
 	},
 
 	{
+		"folke/todo-comments.nvim",
+		dependencies = { "nvim-lua/plenary.nvim" },
+		opts = {
+			-- your configuration comes here
+			-- or leave it empty to use the default settings
+			-- refer to the configuration section below
+		}
+	},
+
+	{
 		"shortcuts/no-neck-pain.nvim",
 		version = "*"
 	},
@@ -200,7 +210,7 @@ lvim.plugins = {
 					-- make sure they don't collide with the navigation keymaps
 					-- If you remove `j` and `k` from below, you can navigate in the plugin
 					-- dictionary = "sadflewcmpghio",
-					dictionary = "asfghl;wertyuiop",
+					dictionary = "asdfghl;wertyuiop",
 				},
 				navigate = {
 					-- In case you changed your mind, provide a keybind that lets you
