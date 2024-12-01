@@ -26,6 +26,42 @@ lvim.plugins = {
 	},
 
 	{
+		"meznaric/key-analyzer.nvim",
+		opts = {}
+	},
+
+    {
+        'brianhuster/live-preview.nvim',
+        dependencies = {
+            --'brianhuster/autosave.nvim',  -- Not required, but recomended for autosaving and sync scrolling
+            'nvim-telescope/telescope.nvim' -- Not required, but recommended for integrating with Telescope
+        },
+        opts = {
+
+
+			commands = {
+				start = 'LivePreview', -- Command to start the live preview server and open the default browser.
+				stop = 'StopPreview', -- Command to stop the live preview. 
+			},
+			port = 5500, -- Port to run the live preview server on.
+			autokill = false, -- If true, the plugin will autokill other processes running on the same port (except for Neovim) when starting the server.
+			browser = 'default', -- Terminal command to open the browser for live-previewing (eg. 'firefox', 'flatpak run com.vivaldi.Vivaldi'). By default, it will use the default browser.
+			dynamic_root = false, -- If true, the plugin will set the root directory to the previewed file's directory. If false, the root directory will be the current working directory (`:lua print(vim.uv.cwd())`).
+			sync_scroll = false, -- If true, the plugin will sync the scrolling in the browser as you scroll in the Markdown files in Neovim.
+			telescope = {
+				true, -- If true, the plugin will automatically load the `Telescope livepreview` extension.
+			},
+		},
+	},
+
+	{
+		"olrtg/nvim-emmet",
+		config = function()
+			vim.keymap.set({ "n", "v" }, '<leader>xe', require('nvim-emmet').wrap_with_abbreviation)
+		end,
+	},
+
+	{
 		"folke/todo-comments.nvim",
 		dependencies = { "nvim-lua/plenary.nvim" },
 		opts = {
@@ -139,11 +175,23 @@ lvim.plugins = {
 
 	-- install without yarn or npm
 	{
-		"iamcco/markdown-preview.nvim",
-		cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
-		ft = { "markdown" },
-		build = function() vim.fn["mkdp#util#install"]() end,
+		"wallpants/github-preview.nvim",
+		cmd = { "GithubPreviewToggle" },
+		keys = { "<leader>mpt" },
+		opts = {
+			-- config goes here
+		},
+		config = function(_, opts)
+			local gpreview = require("github-preview")
+			gpreview.setup(opts)
+
+			local fns = gpreview.fns
+			vim.keymap.set("n", "<leader>mpt", fns.toggle)
+			vim.keymap.set("n", "<leader>mps", fns.single_file_toggle)
+			vim.keymap.set("n", "<leader>mpd", fns.details_tags_toggle)
+		end,
 	},
+
 
 	--{
 	-- 	"neovim/nvim-lspconfig",
@@ -198,6 +246,10 @@ lvim.plugins = {
 	--  }
 	{
 		"leath-dub/snipe.nvim",
+
+		-- Apparent fix for issue #8 i posted
+		branch = "snipe2",
+
 		keys = {
 			{";;", function () require("snipe").open_buffer_menu() end, desc = "Open Snipe buffer menu"}
 		},

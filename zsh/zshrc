@@ -4,7 +4,6 @@ function check_and_install_packages {
 	if [[ $(command -v $1 &> /dev/null) -ne 1 ]]; then
 		return
 	fi
-
 	# loops on some popular distros install
 	if [[ -f /etc/os-release && $IS_SUDO -eq 0 ]] ; then 
 		echo "Enter Password to install $1"
@@ -52,7 +51,7 @@ function check_and_install_lazygit {
 
 function check_and_install_zellij {
 	if [[ $(command -v zellij &> /dev/null) -ne 0 ]]; then
-		if [[ $IS_SUDO -eq 1 ]]; then
+		if [[ $IS_SUDO -ne 0 ]]; then
 			sudo dnf copr enable varlad/zellij
 		else
 			echo "Please enable sudo mode to enable the zellij copr repository"		
@@ -61,6 +60,18 @@ function check_and_install_zellij {
 		fi
 	fi
 	check_and_install_packages "zellij"
+}
+
+function check_and_install_zap {
+	if [[ $(command -v zap &> /dev/null) -ne 0 ]]; then
+		if [[ $IS_SUDO -ne 0 ]]; then
+			zsh <(curl -s https://raw.githubusercontent.com/zap-zsh/zap/master/install.zsh) --keep --branch release-v1
+		else
+			echo "Please enable sudo mode to download zap zsh plugin manager"
+			zsh <(curl -s https://raw.githubusercontent.com/zap-zsh/zap/master/install.zsh) --keep --branch release-v1
+			IS_SUDO=1
+		fi
+	fi
 }
 
 
@@ -161,16 +172,21 @@ export NVM_DIR="$HOME/.nvm"
 #--------- Node Version Manager
 
 
+# ||| GLOBAL ENV VARS |||
+export EDITOR="$HOME/.local/bin/lvim"
+export ZELLIJ_CONFIG_DIR="$XDG_CONFIG_HOME/zellij"
+export GRADLE_HOME="/opt/gradle/gradle-8.10.2"
 
 
 # ||| Path additions |||
-export PATH="$JAVA_HOME/bin:$PATH"
+# export JAVA_HOME="/usr/lib/jvm/java-21-openjdk-21.0.4.0.7-2.fc40.aarch64/"
+export PATH="$GRADLE_HOME/bin:$PATH"
 export PATH="$HOME/Documents/Scripts/build/bin:$PATH"
 export PATH="$HOME/.local/funcheck/host:$PATH"
 export PATH="$HOME/.atuin/bin:$PATH"
 export PATH="$HOME/.config/bin:$PATH"
 export PATH="$HOME/.yazi/target/release:$PATH"
-export PATH="/usr/lib/java/bin:$PATH"
+# export PATH="/usr/lib/java/bin:$PATH"
 
 # ||| ALIASES |||
 alias fixchr="rm -rf ~/.config/chromium/Singleton*"
@@ -178,6 +194,7 @@ alias ccw="cc -Wall -Wextra -Werror"
 alias norm="norminette -R CheckForbiddenSourceHeader"
 alias cl="clear"
 alias e="exit ; clear" 
+alias t="exa --tree --level=1 --sort=type"
 alias fzf='ag -l -g "" | fzf' # fuzzy-finder
 alias szh="source $ZSHRC" # source-zshrc
 alias ezh="lvim $ZSHRC"
@@ -222,6 +239,7 @@ alias grs="git restore --staged"
 alias gps="git push"
 alias gdf="git diff"
 alias gcl="git clone --recurse-submodules"
+alias greset="git reset --hard HEAD"
 alias tgt="tree -I ./.git"
 
 alias docfr="mkdir -p $HOME/Documents/France/ ; 
@@ -237,11 +255,6 @@ eval "$(atuin init zsh)"
 # ||| Changes to bash options |||
 unsetopt BEEP 
 
-
-# ||| GLOBAL ENV VARS |||
-export EDITOR="$HOME/.local/bin/lvim"
-export JAVA_HOME="/usr/lib/jvm/java-21-openjdk-21.0.4.0.7-2.fc40.aarch64/"
-export ZELLIJ_CONFIG_DIR="$XDG_CONFIG_HOME/zellij"
 
 # opam configuration
 [[ ! -r $HOME/.opam/opam-init/init.zsh ]] || source $HOME/.opam/opam-init/init.zsh  > /dev/null 2> /dev/null
