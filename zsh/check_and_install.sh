@@ -86,10 +86,18 @@ check_and_install_atuin() {
     fi
 }
 
+check_and_install_zap_zsh() {
+    if command -v zap > /dev/null 2>&1; then
+        return
+    fi
+    # Portable POSIX-compatible zsh invocation
+    zsh -c "$(curl -s https://raw.githubusercontent.com/zap-zsh/zap/master/install.zsh) --branch release-v1 --keep"
+}
+
 check_and_install_all_packages() {
     check_and_install_packages "fastfetch"
-    mkdir ~/config/fastfetch
-    ln -sf ~/.dotfiles/fastfetch/config.jsonc ~/.config/fastfetch/
+	rm -rf ~/.config/fastfetch
+    ln -sf ~/.dotfiles/fastfetch ~/.config/
     check_and_install_packages "go"
     check_and_install_packages "glow"
     check_and_install_packages "strace"
@@ -99,20 +107,17 @@ check_and_install_all_packages() {
     check_and_install_lazygit
     check_and_install_yazi
     check_and_install_zellij
+	rm -rf ~/.config/zellij/
+	ln -sf ~/.dotfiles/zellij/ ~/.config/
     check_and_install_atuin
-}
+	check_and_install_zap_zsh
 
-check_and_install_zap_zsh() {
-    if command -v zap > /dev/null 2>&1; then
-        return
-    fi
-    # Portable POSIX-compatible zsh invocation
-    zsh -c "$(curl -s https://raw.githubusercontent.com/zap-zsh/zap/master/install.zsh) --branch release-v1 --keep"
+
 }
 
 #--------- Node Version Manager
 # Only install NVM if not already installed
-if [ ! -d "$HOME/.nvm" ]; then
+if [ ! -d "$NVM_DIR/nvm" ]; then
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.2/install.sh | sh
 fi
 
