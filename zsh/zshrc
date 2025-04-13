@@ -48,10 +48,13 @@ compinit
 #--------- End of Powerlevel10k x Pure prompt 
 
 
-export NVM_DIR="$HOME/Tools/nvm"
 export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}/Tools" ] && printf %s "${HOME}/Tools/nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
 #--------- Node Version Manager
+
+
+# Binaries
+export PATH="$RELEASES/nvim-linux-arm64/bin:$PATH"
 
 
 # ||| Path additions |||
@@ -61,9 +64,6 @@ export PATH="$HOME/.config/bin:$PATH"
 export PATH="$HOME/.yazi/target/release:$PATH"
 export PATH="/usr/lib/java/bin:$PATH"
 
-# Binaries
-RELEASES="$HOME/Releases"
-export PATH="$RELEASES/nvim-linux-arm64/bin:$PATH"
 
 # ||| ALIASES |||
 alias fixchr="rm -rf ~/.config/chromium/Singleton*"
@@ -85,7 +85,7 @@ alias l="exa"
 alias z="zellij"
 alias ltr="exa --tree && echo "" && tree | tail -n 1"
 
-alias cmk="compiledb make" #Used for clangd config file, this [compiledb] is a saver
+alias cmk="make fclean && compiledb make" #Used for clangd config file, this [compiledb] is a saver
 alias visualiser="$HOME/Desktop/Ecole42/42Cursus/Tools/push_swap_visualizer/build/bin/visualizer && rm imgui.ini"
 # alias francinette="$HOME/francinette/tester.sh"
 # alias paco="$HOME/francinette/tester.sh"
@@ -128,12 +128,6 @@ fi
 unsetopt BEEP 
 
 
-# ||| GLOBAL ENV VARS |||
-export EDITOR="$HOME/.local/bin/lvim"
-export JAVA_HOME="/usr/lib/jvm/java-21-openjdk-21.0.4.0.7-2.fc40.aarch64/"
-export ZELLIJ_CONFIG_DIR="$XDG_CONFIG_HOME/zellij"
-
-
 # Application Aliases
 alias chr="/usr/bin/chromium-browser --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration\
 	-enable-features=TouchpadOverscrollHistoryNavigation &"
@@ -141,12 +135,6 @@ alias chr="/usr/bin/chromium-browser --ozone-platform-hint=auto --enable-feature
 
 # opam configuration
 [[ ! -r $HOME/.opam/opam-init/init.zsh ]] || source $HOME/.opam/opam-init/init.zsh  > /dev/null 2> /dev/null
-
-
-# ||| GLOBAL ENV VARS |||
-export EDITOR="$HOME/.local/bin/lvim"
-export ZELLIJ_CONFIG_DIR="$XDG_CONFIG_HOME/zellij"
-
 
 # Command to run after the shell is loaded
 # fastfetch
