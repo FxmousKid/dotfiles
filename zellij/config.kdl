@@ -241,7 +241,8 @@ copy_command: "wl-copy"
 //   - true (default)
 //   - false
 //
-// pane_frames true
+pane_frames false
+
 
 // Toggle between having Zellij lay out panes according to a predefined set of layouts whenever possible
 // Options:
@@ -280,12 +281,12 @@ copy_command: "wl-copy"
 // Default: default
 
 //theme "tokyo-night"
-theme "tokyo-night"
+theme "dracula"
 
 // The name of the default layout to load on startup
 // Default: "default"
 //
-//default_layout ""
+default_layout "compact"
 
 // Choose the mode that zellij uses when starting up.
 // Default: normal
