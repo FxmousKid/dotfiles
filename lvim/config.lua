@@ -44,5 +44,5 @@ vim.opt.termguicolors = true
 -- })
 
 reload('options')
-reload('keybinds')
+require('keybinds')
 reload('plugins')
