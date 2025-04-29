@@ -1,9 +1,12 @@
 [credential "https://github.com"]
 	helper = !/usr/bin/gh auth git-credential
 [user]
-	email = iyan005@outlook.com
-	name = FxmousKid
+	email = "36068362+FxmousKid@users.noreply.github.com"
+	name = "Iyan Nazarian"
+	signingkey = A2D774BA8BB11777
 [http]
 	postBuffer = 52428800
 [core]
 	compression = 0
+[commit]
+	gpgsign = yes
