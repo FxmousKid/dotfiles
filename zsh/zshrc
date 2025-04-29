@@ -139,3 +139,12 @@ alias chr="/usr/bin/chromium-browser --ozone-platform-hint=auto --enable-feature
 # Command to run after the shell is loaded
 # fastfetch
 # . "$HOME/.atuin/bin/env"
+
+# pnpm
+export PNPM_HOME="/home/fxmouskid/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+# pnpm end
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
