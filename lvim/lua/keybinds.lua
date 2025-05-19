@@ -43,6 +43,8 @@ vim.keymap.set('n', '<Space>ts', function() telescope.lsp_document_symbols() end
 vim.keymap.set('n', '<Space>tr', function() telescope.lsp_references() end, vim.tbl_extend("force", keymap_opts, { desc = "References" }))
 vim.keymap.set('n', '<Space>td', function() telescope.lsp_definitions() end, vim.tbl_extend("force", keymap_opts, { desc = "Definitions" }))
 vim.keymap.set('n', '<Space>ti', function() telescope.lsp_implementations() end, vim.tbl_extend("force", keymap_opts, { desc = "Implementations" }))
+-- adding Telescope projects to keybinds
+vim.keymap.set('n', '<Space>tp', function() telescope.projects() end, vim.tbl_extend("force", keymap_opts, { desc = "Projects" }))
 
 -- which key for telescope
 local wk = require("which-key")
@@ -59,6 +61,7 @@ wk.register({
     r = { "<cmd>Telescope lsp_references<cr>", "References" },
     d = { "<cmd>Telescope lsp_definitions<cr>", "Definitions" },
     i = { "<cmd>Telescope lsp_implementations<cr>", "Implementations" },
+	p = { "<cmd>Telescope projects<cr>", "Projects" },
   }
 }, { prefix = "<Space>" })
 
