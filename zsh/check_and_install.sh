@@ -104,6 +104,7 @@ check_and_install_all_packages() {
     check_and_install_packages "ltrace"
     check_and_install_packages "tree"
     check_and_install_packages "gh"
+    check_and_install_packages "git-delta"
     check_and_install_lazygit
     check_and_install_yazi
     check_and_install_zellij
