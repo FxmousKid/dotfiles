@@ -66,7 +66,7 @@ export PATH="/usr/lib/java/bin:$PATH"
 
 
 # ||| ALIASES |||
-alias fixchr="rm -rf ~/.config/chromium/Singleton*"
+alias fixchr="rm -rf ~/.config/chromium/Singleton*" # Ecole42 chrome issue fix
 alias ccw="cc -Wall -Wextra -Werror"
 alias norm="norminette -R CheckForbiddenSourceHeader"
 alias cl="clear"
@@ -90,6 +90,9 @@ alias cmk="make fclean && compiledb make" #Used for clangd config file, this [co
 alias visualiser="$HOME/Desktop/Ecole42/42Cursus/Tools/push_swap_visualizer/build/bin/visualizer && rm imgui.ini"
 # alias francinette="$HOME/francinette/tester.sh"
 # alias paco="$HOME/francinette/tester.sh"
+
+alias lzg="lazygit"
+alias lzd='docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v /yourpath/config:/.config/jesseduffield/lazydocker lazyteam/lazydocker'
 
 # Application Aliases
 alias chr="/usr/bin/chromium-browser --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration\

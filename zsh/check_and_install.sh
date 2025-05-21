@@ -94,26 +94,34 @@ check_and_install_zap_zsh() {
     zsh -c "$(curl -s https://raw.githubusercontent.com/zap-zsh/zap/master/install.zsh) --branch release-v1 --keep"
 }
 
+move_trash() {
+	if [ -d ~/.local/share/Trash ]; then
+		mv $1 ~/.local/share/Trash
+	fi
+}
+
 check_and_install_all_packages() {
     check_and_install_packages "fastfetch"
-	rm -rf ~/.config/fastfetch
+	move_trash ~/.config/fastfetch/
     ln -sf ~/.dotfiles/fastfetch ~/.config/
     check_and_install_packages "go"
     check_and_install_packages "glow"
     check_and_install_packages "strace"
     check_and_install_packages "ltrace"
     check_and_install_packages "tree"
+    check_and_install_packages "alacritty"
+	ln -sf ~/.dotfiles/alacritty ~/.config/
     check_and_install_packages "gh"
     check_and_install_packages "git-delta"
+	move_trash ~/.gitconfig
+	ln -sf ~/.dotfiles/git/gitconfig ~/.gitconfig
     check_and_install_lazygit
     check_and_install_yazi
     check_and_install_zellij
-	rm -rf ~/.config/zellij/
+	move_trash ~/.config/zellij
 	ln -sf ~/.dotfiles/zellij/ ~/.config/
     check_and_install_atuin
 	check_and_install_zap_zsh
-
-
 }
 
 #--------- Node Version Manager

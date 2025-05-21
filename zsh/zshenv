@@ -37,3 +37,4 @@ export NPM_BIN="$NPM_PATH/bin"
 
 # zellij
 export ZELLIJ_CONFIG_DIR="$XDG_CONFIG_HOME/zellij"
+. "$HOME/.cargo/env"
