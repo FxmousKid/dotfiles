@@ -17,6 +17,7 @@
 
 [delta]
     navigate = true  # use n and N to move between diff sections
+	side-by-side = true  # side-by-side diff
 	# dark = true or light = true, or omit for auto-detection
 
 [merge]
