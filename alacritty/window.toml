@@ -1,0 +1,5 @@
+[window]
+# blur = true
+# opacity = 0.8
+# decorations = "Buttonless"
+title = "Terminal"
