@@ -8,9 +8,11 @@
 export RELEASES="$HOME/Releases"
 
 # XDG Directoriess
+export HOME="/home/fxmouskid/"
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_CACHE_HOME="$HOME/.cache"
+export XDG_MUSIC_DIR="$HOME/Music"
 
 
 # zsh stuff
@@ -33,6 +35,9 @@ export GOCACHE="$XDG_CACHE_HOME/go-build"
 # NPM
 export NPM_PATH="$XDG_CONFIG_HOME/node_modules"
 export NPM_BIN="$NPM_PATH/bin"
+
+# mpd stuff
+export MPD_HOST="/home/fxmouskid/.config/mpd/socket"
 
 
 # zellij

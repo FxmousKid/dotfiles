@@ -1,5 +1,9 @@
 [window]
-# blur = true
-# opacity = 0.8
-# decorations = "Buttonless"
-title = "Terminal"
+title = "Alacritty"
+# startup_mode = "Fullscreen"
+
+[window.padding]
+x = 3
+y = 10
+
+

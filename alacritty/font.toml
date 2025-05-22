@@ -1,23 +1,23 @@
 # Font configuration : jetbrain mono
 [font]
-size = 12.0
+size = 12
 
-# [normal]
-normal.family = "JetBrains Mono"
-normal.style = "Regular"
+[font.normal]
+family = "JetBrains Mono"
+style = "SemiBold"
 
-# [bold]
-bold.family = "JetBrains Mono"
-bold.style = "Heavy"
+[font.bold]
+family = "JetBrains Mono"
+style = "Bold"
 
-# [bold_italic]
-bold_italic.family = "JetBrains Mono"
-bold_italic.style = "Heavy Italic"
+[font.bold_italic]
+family = "JetBrains Mono"
+style = "Heavy Italic"
 
-# [italic]
-italic.family = "JetBrains Mono"
-italic.style = "Medium Italic"
+[font.italic]
+family = "JetBrains Mono"
+style = "Medium Italic"
 
-# [offset]
-offset.x = 0
-offset.y = 1
+[font.offset]
+x = 0
+y = 1
