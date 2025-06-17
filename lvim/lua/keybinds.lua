@@ -26,6 +26,12 @@ vim.keymap.set({ 'n', 'i' }, '<leader>p', function() vim.cmd.noh() end,
 vim.keymap.set({ 'n', 'i' }, '<leader>-', function() vim.cmd.MarkdownPreviewToggle() end,
   vim.tbl_extend("force", keymap_opts, { desc = "Toggle Markdown Preview" }))
 
+
+-- LSP keybinds
+vim.keymap.set({ 'n', 'i' }, '<leader>ls', ':LspStop<CR>',
+  vim.tbl_extend("force", keymap_opts, { desc = "Stop LSP" }))
+
+
 -- Copilot keybinds
 vim.keymap.set({ 'n', 'i' }, '<leader>cd', ':Copilot disable<CR>',
   vim.tbl_extend("force", keymap_opts, { desc = "Disable Copilot" }))
