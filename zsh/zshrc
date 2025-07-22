@@ -5,6 +5,7 @@ fastfetch --logo fedora_small
 if command -v yazi &> /dev/null; then
 	function y() {
 		local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
+		export EDITOR="$HOME/.local/bin/lvim"
 		yazi "$@" --cwd-file="$tmp"
 		if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
 			builtin cd -- "$cwd"
@@ -99,7 +100,6 @@ alias chr="/usr/bin/chromium-browser --ozone-platform-hint=auto --enable-feature
 	-enable-features=TouchpadOverscrollHistoryNavigation &"
 #alias ryujinx="gamemoderun DOTNET_EnableAlternateStackCheck=1 GDK_BACKEND=x11 $HOME/.local/share/Ryujinx/Ryujinx"
 
-
 # Git Aliases
 alias gst="git status -b"
 alias gls="git ls-files"
@@ -123,6 +123,7 @@ alias docfr="mkdir -p $HOME/Documents/France/ ;
 			 rclone sync GoogleDrive:France . --progress ;
 			 yazi"
 
+alias wpscan="docker run -it --rm wpscanteam/wpscan"
 
 # ||| evals |||
 if command -v atuin &> /dev/null; then
@@ -153,4 +154,5 @@ case ":$PATH:" in
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
 # pnpm end
+
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
