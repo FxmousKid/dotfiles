@@ -1,10 +1,24 @@
 [credential "https://github.com"]
-	helper = 
 	helper = !/usr/bin/gh auth git-credential
+
 [user]
-	email = iyan005@outlook.com
-	name = FxmousKid
-[http]
-	postBuffer = 52428800
+	email = "36068362+FxmousKid@users.noreply.github.com"
+	name = "Iyan Nazarian"
+	signingkey = A2D774BA8BB11777
+
+[commit]
+	gpgsign = yes
+
 [core]
-	compression = 0
+	pager = delta
+
+[interactive]
+	diffFilter = delta --color-only
+
+[delta]
+    navigate = true  # use n and N to move between diff sections
+	side-by-side = true  # side-by-side diff
+	# dark = true or light = true, or omit for auto-detection
+
+[merge]
+    conflictstyle = zdiff3

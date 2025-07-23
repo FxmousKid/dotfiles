@@ -19,7 +19,7 @@ lvim.colorscheme = 'lunar'
 lvim.transparent_window = true
 
 -- Disabling default plugins
-lvim.builtin.gitsigns.active = false
+lvim.builtin.gitsigns.active = true
 
 
 -- Fixing treesitter "invalid node at position x" bug

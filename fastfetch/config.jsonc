@@ -89,6 +89,11 @@
             "key": "  Uptime ",
             "keyColor": "magenta"
         },
+		{
+			"type": "battery",
+			"key": "  Battery ",
+			"KeyColor": "magenta"
+		},
         {
             "type": "custom",
             "format": "\u001b[90m└────────────────────────────────────────────────────┘"

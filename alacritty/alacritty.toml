@@ -1,0 +1,15 @@
+[general]
+
+import = [
+	"~/.config/alacritty/font.toml",
+	"~/.config/alacritty/window.toml",
+	"~/.config/alacritty/3024-theme.toml",
+]
+
+# hot reload for config
+live_config_reload = true
+
+
+
+[env]
+TERM = "xterm-256color"
