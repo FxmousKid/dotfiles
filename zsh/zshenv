@@ -38,7 +38,6 @@ export NPM_BIN="$NPM_PATH/bin"
 # mpd stuff
 export MPD_HOST="$XDG_CONFIG_HOME/mpd/socket"
 
-
 # zellij
 export ZELLIJ_CONFIG_DIR="$XDG_CONFIG_HOME/zellij"
 . "$HOME/.cargo/env"
