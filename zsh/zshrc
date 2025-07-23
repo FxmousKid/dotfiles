@@ -1,4 +1,6 @@
-fastfetch --logo fedora_small
+if command -v fastfetch &> /dev/null; then
+	fastfetch --logo fedora_small
+fi
 
 
 # Setup for yazi to cd into current location on exit
