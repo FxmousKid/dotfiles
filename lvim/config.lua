@@ -8,8 +8,6 @@ vim.opt.termguicolors = true
 vim.api.nvim_set_hl(0, 'Comment', { fg = '#f699cd', italic = true })
 vim.api.nvim_set_hl(0, "@comment", { link = "Comment" })
 
-lvim.builtin.telescope.defaults.layout_strategy = "horizontal"
-
 reload('options')
 require('keybinds')
 reload('plugins')
