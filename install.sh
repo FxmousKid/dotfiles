@@ -74,7 +74,9 @@ setup_symlinks() {
 	ln -sf "${DOTFILES}/alacritty" "${XDG_CONFIG_HOME}/"
 	ln -sf "${DOTFILES}/zellij" "${XDG_CONFIG_HOME}/"
 	ln -sf "${DOTFILES}/lvim" "${XDG_CONFIG_HOME}/"
+	ln -sf "${DOTFILES}/bob" "${XDG_CONFIG_HOME}/"
 }
+
 
 test() { 
 	echo ""
