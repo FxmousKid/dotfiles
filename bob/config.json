@@ -1,0 +1,9 @@
+{
+  "enable_nightly_info": true, 
+  "enable_release_build": false, 
+  "downloads_location": "$HOME/Releases/", 
+  "installation_location": "$HOME/Releases/nvim-bin", 
+  "version_sync_file_location": "$HOME/Releases/nvim-bin/nvim.version", 
+  "rollback_limit": 3, 
+  "github_mirror": "https://github.com"
+}
