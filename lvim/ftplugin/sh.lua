@@ -14,10 +14,10 @@ opts.cmd = { "bash-language-server", "start" }
 opts.settings = {
   bashIde = {
     -- Keep your env override exactly as in upstream
-    globPattern = vim.env.GLOB_PATTERN or "*@(.sh|.inc|.bash|.command)",
+    globPattern = vim.env.GLOB_PATTERN or "*@(.sh|.inc|.bash|.command|.zsh|.bashrc|.bash_profile|.profile|.zshrc|.zprofile|.zlogin|.zlogout)",
   },
 }
-opts.filetypes = { "bash", "sh" }
+opts.filetypes = { "bash", "sh", "zsh"}
 opts.single_file_support = true
 
 -- root_dir equivalent:
