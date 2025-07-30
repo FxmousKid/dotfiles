@@ -1,11 +1,29 @@
 lvim.plugins = {
 	{ "github/copilot.vim" },
+
 	-- {	"pocco81/auto-save.nvim" },
+	--
+	{ "p00f/clangd_extensions.nvim" },
 	{ "Djancyp/better-comments.nvim" },
 	{ "mg979/vim-visual-multi" },
 	{ "mfussenegger/nvim-jdtls" },
-	{ "j-hui/fidget.nvim" },
+	{ "j-hui/fidget.nvim" }, -- Better Notifications
 
+
+	-- Better Navigation
+	-- {
+	-- 	"folke/flash.nvim",
+	-- 	event = "VeryLazy",
+	-- 	opts = {},
+	-- 	-- stylua: ignore
+	-- 	keys = {
+	-- 		{ "s", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
+	-- 		{ "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
+	-- 		{ "r", mode = "o", function() require("flash").remote() end, desc = "Remote Flash" },
+	-- 		{ "R", mode = { "o", "x" }, function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
+	-- 		{ "<c-s>", mode = { "c" }, function() require("flash").toggle() end, desc = "Toggle Flash Search" },
+	-- 	},
+	-- },
 
 	-- Color Themes
 	{
@@ -55,13 +73,6 @@ lvim.plugins = {
 	},
 
 	{
-		"olrtg/nvim-emmet",
-		config = function()
-			vim.keymap.set({ "n", "v" }, '<leader>xe', require('nvim-emmet').wrap_with_abbreviation)
-		end,
-	},
-
-	{
 		"folke/todo-comments.nvim",
 		dependencies = { "nvim-lua/plenary.nvim" },
 		opts = {
@@ -69,11 +80,6 @@ lvim.plugins = {
 			-- or leave it empty to use the default settings
 			-- refer to the configuration section below
 		}
-	},
-
-	{
-		"shortcuts/no-neck-pain.nvim",
-		version = "*"
 	},
 
 	{
@@ -85,44 +91,39 @@ lvim.plugins = {
 	},
 
 	{
-		"echasnovski/mini.surround",
-		version = false
-	},
-
-	{
 		"MunifTanjim/nui.nvim",
 		lazy = false
 	},
 
-	{
-		"mfussenegger/nvim-dap",
-		lazy = true,
-		dependencies = {
-			"rcarriga/nvim-dap-ui",
-		},
-		enabled = lvim.builtin.dap.active,
+	-- {
+	-- 	"mfussenegger/nvim-dap",
+	-- 	lazy = true,
+	-- 	dependencies = {
+	-- 		"rcarriga/nvim-dap-ui",
+	-- 	},
+	-- 	enabled = lvim.builtin.dap.active,
 
-		config = function()
-			require("lvim.core.dap").setup()
-			local dap = require("lvim.core.dap")
-			local dapui = require("dapui")
-			dap.listeners.before.attach.dapui_config = function()
-				dapui.open()
-			end
-			dap.listeners.before.launch.dapui_config = function()
-				dapui.open()
-			end
-			dap.listeners.before.event_terminated.dapui_config = function()
-				dapui.close()
-			end
-			dap.listeners.before.event_exited.dapui_config = function()
-				dapui.close()
-			end
+	-- 	config = function()
+	-- 		require("lvim.core.dap").setup()
+	-- 		local dap = require("lvim.core.dap")
+	-- 		local dapui = require("dapui")
+	-- 		dap.listeners.before.attach.dapui_config = function()
+	-- 			dapui.open()
+	-- 		end
+	-- 		dap.listeners.before.launch.dapui_config = function()
+	-- 			dapui.open()
+	-- 		end
+	-- 		dap.listeners.before.event_terminated.dapui_config = function()
+	-- 			dapui.close()
+	-- 		end
+	-- 		dap.listeners.before.event_exited.dapui_config = function()
+	-- 			dapui.close()
+	-- 		end
 
-			vim.keymap.set('n', '<Leader>dt', dap.toggle_breakpoint, {})
-			vim.keymap.set('n', "<leader>dc", dap.continue, {})
-		end,
-	},
+	-- 		vim.keymap.set('n', '<Leader>dt', dap.toggle_breakpoint, {})
+	-- 		vim.keymap.set('n', "<leader>dc", dap.continue, {})
+	-- 	end,
+	-- },
 
 	{
 		"rcarriga/nvim-dap-ui",
@@ -196,8 +197,26 @@ lvim.plugins = {
 		 "OXY2DEV/markview.nvim",
 		lazy = false,
 		-- For `nvim-treesitter` users.
-		priority = 49,
-	}
+		-- priority = 49,
+		opts = {
+			experimental = {
+				check_rtp_message = false
+			}
+		}
+	},
+
+
+
+
+	-- NEEDS NVIM > 11.0 BUT NVIM > 11.0 Breaks Treesitter (at least in lvim stable)
+	-- {
+	-- 	"olimorris/codecompanion.nvim",
+	-- 	opts = {},
+	-- 	dependencie = {
+	-- 		"nvim-lua/plenary.nvim",
+	-- 		"nvim-treesitter/nvim-treesitter",
+	-- 	},
+	-- },
 
 
 	--{
