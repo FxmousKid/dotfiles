@@ -78,7 +78,6 @@ setup_symlinks() {
 	ln -sf "${DOTFILES}/bob" "${XDG_CONFIG_HOME}/"
 }
 
-
 test() { 
 	echo ""
 	echo "-------- TESTING --------"
