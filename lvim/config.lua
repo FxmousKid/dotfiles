@@ -21,6 +21,9 @@ lvim.format_on_save = false
 lvim.colorscheme = "lunar"
 lvim.leader = "space"
 
+vim.opt.softtabstop = 8
+vim.opt.shiftwidth = 8
+vim.opt.tabstop = 8
 
 lvim.builtin.alpha.active = true
 lvim.builtin.alpha.mode = "dashboard"
