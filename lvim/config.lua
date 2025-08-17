@@ -2,13 +2,21 @@
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 
+-- important config
 require('options')
 require('keybinds')
 require('plugins')
 
+-- plugins config
 require('user.telescope')
 require('user.nvim-tree_config')
+require('user.neogen')
 
+-- snippets
+require('snippets.c')
+
+-- commands
+reload('custom_commands.FoldBlockComments')
 
 -- optionally enable 24-bit colour
 vim.opt.termguicolors = true
@@ -36,3 +44,6 @@ lvim.builtin.terminal.direction = 'float'
 lvim.builtin.breadcrumbs.active = true
 lvim.builtin.treesitter.highlight.enabled = true
 lvim.builtin.dap.active = true
+
+
+-- Put this in your init.lua (or a Lua file you source)

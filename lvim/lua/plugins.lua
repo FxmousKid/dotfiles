@@ -9,6 +9,13 @@ lvim.plugins = {
 	{ "mfussenegger/nvim-jdtls" },
 	{ "j-hui/fidget.nvim" }, -- Better Notifications
 
+	{
+		"danymat/neogen",
+		config = true,
+		-- Uncomment next line if you want to follow only stable versions
+		-- version = "*" 
+	},
+
 
 	-- Better Navigation
 	-- {
