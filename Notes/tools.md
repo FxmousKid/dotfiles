@@ -24,3 +24,17 @@
 
 ### Bash checker
 - shellcheck : https://www.shellcheck.net/
+
+### zig
+- zig : https://github.com/ziglang/zig/wiki/Install-Zig-from-a-Package-Manager
+
+### ly display manager
+- ly : https://github.com/fairyglade/ly
+
+
+# Dev
+
+## C
+
+### Doxygen Theme
+- doxygen-theme : https://jothepro.github.io/doxygen-awesome-css/
