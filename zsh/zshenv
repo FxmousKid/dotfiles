@@ -43,3 +43,6 @@ export ZELLIJ_CONFIG_DIR="$XDG_CONFIG_HOME/zellij"
 if [ -f "$HOME/.cargo/env" ];then 
 	. "$HOME/.cargo/env"
 fi
+
+# GPG
+export GPG_TTY=$(tty)
