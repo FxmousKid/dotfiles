@@ -53,9 +53,12 @@ compinit
 #--------- End of Powerlevel10k x Pure prompt 
 
 
-export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}/Tools" ] && printf %s "${HOME}/Tools/nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
-#--------- Node Version Manager
+# if [[ -d "$HOME/.nvm" ]]; then
+	# [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+# 	export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}/Tools" ] && printf %s "${HOME}/Tools/nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+# 	[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
+# fi
+# #--------- Node Version Manager
 
 
 # Binaries
@@ -156,6 +159,7 @@ alias chr="/usr/bin/chromium-browser --ozone-platform-hint=auto --enable-feature
 # fastfetch
 # . "$HOME/.atuin/bin/env"
 
+
 # pnpm
 export PNPM_HOME="/home/fxmouskid/.local/share/pnpm"
 case ":$PATH:" in
@@ -164,4 +168,3 @@ case ":$PATH:" in
 esac
 # pnpm end
 
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion

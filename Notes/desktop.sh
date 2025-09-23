@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# This is a scrpit to set up my desktop wherever i work
+# This is a scrpit to set up my "desktop wherever i work
 
 INITIAL_DIR="$(pwd)"
 
