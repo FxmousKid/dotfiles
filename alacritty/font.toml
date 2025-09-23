@@ -2,20 +2,36 @@
 [font]
 size = 12
 
+# [font.normal]
+# family = "JetBrains Mono"
+# style = "SemiBold"
+
+# [font.bold]
+# family = "JetBrains Mono"
+# style = "Bold"
+
+# [font.bold_italic]
+# family = "JetBrains Mono"
+# style = "Heavy Italic"
+
+# [font.italic]
+# family = "JetBrains Mono"
+# style = "Medium Italic"
+
 [font.normal]
-family = "JetBrains Mono"
+family = "JetBrainsMono Nerd Font"
 style = "SemiBold"
 
 [font.bold]
-family = "JetBrains Mono"
+family = "JetBrainsMono Nerd Font"
 style = "Bold"
 
 [font.bold_italic]
-family = "JetBrains Mono"
+family = "JetBrainsMono Nerd Font"
 style = "Heavy Italic"
 
 [font.italic]
-family = "JetBrains Mono"
+family = "JetBrainsMono Nerd Font"
 style = "Medium Italic"
 
 [font.offset]
