@@ -9,6 +9,11 @@ import = [
 # hot reload for config
 live_config_reload = true
 
+[keyboard]
+bindings = [
+	{ key = "J", mods = "Alt", chars = "\u001bj" },
+	{ key = "K", mods = "Alt", chars = "\u001bk" },
+]
 
 
 [env]
