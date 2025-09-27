@@ -161,10 +161,15 @@ alias chr="/usr/bin/chromium-browser --ozone-platform-hint=auto --enable-feature
 
 
 # pnpm
-export PNPM_HOME="/home/fxmouskid/.local/share/pnpm"
+export PNPM_HOME="$HOME/.local/share/pnpm"
 case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
 # pnpm end
 
+# The following lines have been added by Docker Desktop to enable Docker CLI completions.
+fpath=("$HOME/.docker/completions" $fpath)
+autoload -Uz compinit
+compinit
+# End of Docker CLI completions
