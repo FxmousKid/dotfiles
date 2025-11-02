@@ -11,6 +11,7 @@ require('plugins')
 require('user.telescope')
 require('user.nvim-tree_config')
 require('user.neogen')
+require('user.codesnap')
 
 -- snippets
 require('snippets.c')
