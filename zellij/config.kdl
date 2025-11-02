@@ -3,6 +3,7 @@
 //
 
 keybinds clear-defaults=true {
+
     locked {
         bind "Ctrl g" { SwitchToMode "normal"; }
     }
@@ -28,6 +29,12 @@ keybinds clear-defaults=true {
         bind "z" { TogglePaneFrames; SwitchToMode "normal"; }
     }
     tab {
+        bind "Shift Left" {
+        	MoveTab "Left"
+        }
+        bind "Shift Right" {
+        	MoveTab "Right"
+        }
         bind "left" { GoToPreviousTab; }
         bind "down" { GoToNextTab; }
         bind "up" { GoToPreviousTab; }
@@ -84,7 +91,7 @@ keybinds clear-defaults=true {
         bind "l" { MovePane "right"; }
         bind "n" { MovePane; }
         bind "p" { MovePaneBackwards; }
-        bind "Ctrl q" { SwitchToMode "normal"; }
+        bind "Ctrl 1" { SwitchToMode "normal"; }
         bind "tab" { MovePane; }
     }
     scroll {
@@ -113,7 +120,7 @@ keybinds clear-defaults=true {
             }
             SwitchToMode "normal"
         }
-        bind "Ctrl o" { SwitchToMode "normal"; }
+        bind "Ctrl s" { SwitchToMode "normal"; }
         bind "p" {
             LaunchOrFocusPlugin "plugin-manager" {
                 floating true
@@ -151,16 +158,16 @@ keybinds clear-defaults=true {
         bind "Alt o" { MoveTab "right"; }
     }
     shared_except "locked" "move" {
-        bind "Ctrl q" { SwitchToMode "move"; }
+        bind "Ctrl 1" { SwitchToMode "move"; }
     }
     shared_except "locked" "session" {
-        bind "Ctrl o" { SwitchToMode "session"; }
+        bind "Ctrl s" { SwitchToMode "session"; }
     }
     shared_except "locked" "scroll" "search" "tmux" {
         bind "Ctrl b" { SwitchToMode "tmux"; }
     }
     shared_except "locked" "scroll" "search" {
-        bind "Ctrl s" { SwitchToMode "scroll"; }
+        bind "Ctrl s" { SwitchToMode "session"; }
     }
     shared_except "locked" "tab" {
         bind "Ctrl t" { SwitchToMode "tab"; }
@@ -353,8 +360,8 @@ pane_frames false
 // Examples:
 //
 // copy_command "xclip -selection clipboard" // x11
-copy_command "wl-copy"                    // wayland
-// copy_command "pbcopy"                     // osx
+// copy_command "wl-copy"                    // wayland
+ copy_command "pbcopy"                     // osx
 // 
 // copy_command "pbcopy"
  
