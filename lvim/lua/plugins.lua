@@ -1,7 +1,7 @@
 lvim.plugins = {
 	{ "github/copilot.vim" },
 	-- {	"pocco81/auto-save.nvim" },
-	{ "mistricky/codesnap.nvim", build = "make" },
+	{ "fxmouskid/codesnap.nvim", build = "make" },
 	{ "p00f/clangd_extensions.nvim" },
 	{ "Djancyp/better-comments.nvim" },
 	{ "mg979/vim-visual-multi" },
@@ -146,6 +146,19 @@ lvim.plugins = {
 		config = function()
 			local header = require("42header")
 			header.setup({
+				default_map = false, -- default mapping <F1> in normal mode
+				auto_update = true,
+			})
+		end,
+	},
+	{
+		"fxmouskid/uparis-header.nvim",
+		lazy = false,
+		config = function()
+			local header = require("uparis-header")
+			header.setup({
+				user = "Iyan Nazarian",
+				mail = "iyan.nazarian@etu.u-paris.fr",
 				default_map = false, -- default mapping <F1> in normal mode
 				auto_update = true,
 			})
