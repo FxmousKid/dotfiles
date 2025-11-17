@@ -1,7 +1,7 @@
 lvim.plugins = {
 	{ "github/copilot.vim" },
 	-- {	"pocco81/auto-save.nvim" },
-	{ "fxmouskid/codesnap.nvim", build = "make" },
+	{ "fxmouskid/codesnap.nvim", build = "make build_generator" },
 	{ "p00f/clangd_extensions.nvim" },
 	{ "Djancyp/better-comments.nvim" },
 	{ "mg979/vim-visual-multi" },
