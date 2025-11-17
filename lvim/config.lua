@@ -18,6 +18,8 @@ require('snippets.c')
 
 -- commands
 reload('custom_commands.FoldBlockComments')
+reload('custom_commands.GitDiffCommit')
+reload('custom_commands.QfDelete')
 
 -- optionally enable 24-bit colour
 vim.opt.termguicolors = true
@@ -47,4 +49,16 @@ lvim.builtin.treesitter.highlight.enabled = true
 lvim.builtin.dap.active = true
 
 
--- Put this in your init.lua (or a Lua file you source)
+---- So our overrides survive colorscheme changes:
+vim.api.nvim_create_autocmd("ColorScheme", {
+  callback = function()
+    -- Softer backgrounds for diff
+    vim.api.nvim_set_hl(0, "DiffAdd",    { fg = "NONE", bg = "#193824" })
+    vim.api.nvim_set_hl(0, "DiffChange", { fg = "NONE", bg = "#1b2838" })
+    vim.api.nvim_set_hl(0, "DiffDelete", { fg = "#553333", bg = "#2a1717" })
+    vim.api.nvim_set_hl(0, "DiffText",   { fg = "NONE", bg = "#34485e", bold = true })
+  end,
+})
+
+-- Apply once on startup too
+vim.api.nvim_exec_autocmds("ColorScheme", {})

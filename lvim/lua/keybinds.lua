@@ -69,3 +69,44 @@ vim.keymap.set({ 'n', 'i' }, '<leader>cd', ':Copilot disable<CR>',
 	vim.tbl_extend("force", keymap_opts, { desc = "Disable Copilot" }))
 vim.keymap.set({ 'n', 'i' }, '<leader>ce', ':Copilot enable<CR>',
 	vim.tbl_extend("force", keymap_opts, { desc = "Enable Copilot" }))
+
+
+vim.keymap.set("n", "<leader>gg", function()
+        -- 1. Go to quickfix window
+        local info = vim.fn.getqflist({ winid = 0 })
+        local qf_win = info.winid or 0
+
+        if qf_win == 0 or not vim.api.nvim_win_is_valid(qf_win) then
+                print("No quickfix window open")
+                return
+        end
+
+        -- Jump to quickfix and close other windows (like you manually closing diff)
+        vim.api.nvim_set_current_win(qf_win)
+        pcall(vim.cmd, "only")
+
+        -- 2. Delete current quickfix entry (the one you just finished)
+        pcall(vim.cmd, "QfDelete")
+
+        -- If list is now empty, stop
+        local qf = vim.fn.getqflist()
+        if #qf == 0 then
+                print("Quickfix list is empty")
+                return
+        end
+
+        -- 3. Open current entry (same as pressing <CR> in quickfix)
+        vim.cmd("cc")
+
+        -- 4. Rebuild diff view for this file vs base commit
+        pcall(vim.cmd, "DiffBase")
+
+        -- 5. Minimize quickfix window (if it's still open)
+        local info2 = vim.fn.getqflist({ winid = 0 })
+        local qf_win2 = info2.winid or 0
+        if qf_win2 ~= 0 and vim.api.nvim_win_is_valid(qf_win2) then
+                -- make it 1 line high; tweak this number if you want a bit more
+                vim.api.nvim_win_set_height(qf_win2, 1)
+        end
+end, { silent = true, noremap = true })
+
