@@ -20,7 +20,7 @@ size = 12
 
 [font.normal]
 family = "JetBrainsMono Nerd Font"
-style = "SemiBold"
+# style = "SemiBold"
 
 [font.bold]
 family = "JetBrainsMono Nerd Font"
