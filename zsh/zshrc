@@ -69,6 +69,10 @@ if [[ $(uname) == "Linux" ]];then
 	export PATH="$RELEASES/nvim/nvim-linux-arm64-10.4/bin:$PATH"
 	export PATH="$RELEASES/opam:$PATH"
 elif [[ $(uname) == "Darwin" ]];then
+	alias sidf="source \"/Users/user/.espressif/tools/activate_idf_v5.5.2.sh\"" # esp32 devkit
+	FPATH="$HOME/.docker/completions:$FPATH" # docker completions
+	autoload -U compinit && compinit # then loading said completions
+	export PATH="$HOME/.antigravity/antigravity/bin:$PATH"
 	export PATH="$RELEASES/nvim-macos-arm64-10.4/bin:$PATH"
 	[[ -f "$HOME/.docker/completions/" ]] && fpath=("$HOME/.docker/completions" "$fpath")
 	autoload -Uz compinit
@@ -94,7 +98,6 @@ alias e="exit ; clear"
 alias fzf='ag -l -g "" | fzf' # fuzzy-finder
 alias szh="source \$ZDOTDIR/.zshrc" # source-zshrc
 alias ezh="lvim \$ZDOTDIR/.zshrc"
-alias open="xdg-open"
 alias elc="lvim \$HOME/.config/lvim/config.lua" # edit-lunarvim-config
 alias elp="lvim \$HOME/.config/lvim/lua/plugins.lua" # edit-lunarvim-plugins
 
