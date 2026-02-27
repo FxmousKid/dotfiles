@@ -1,3 +1,7 @@
+vim.opt.tabstop = 4
+vim.opt.shiftwidth = 4
+vim.opt.softtabstop = 4
+
 lvim.format_on_save = false
 -- lvim.diagnostics.config = { virtual_text = false }
 
