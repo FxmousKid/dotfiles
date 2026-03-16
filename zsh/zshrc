@@ -70,6 +70,7 @@ if [[ $(uname) == "Linux" ]];then
 	export PATH="$RELEASES/opam:$PATH"
 elif [[ $(uname) == "Darwin" ]];then
 	alias sidf="source \"/Users/user/.espressif/tools/activate_idf_v5.5.2.sh\"" # esp32 devkit
+	alias rjenkins="cd ~/Music/Ambient\ Techno\ -\ Rob\ Jenkins &&  yt-dlp -S abr -f ba \"$1\""
 	FPATH="$HOME/.docker/completions:$FPATH" # docker completions
 	autoload -U compinit && compinit # then loading said completions
 	export PATH="$HOME/.antigravity/antigravity/bin:$PATH"
@@ -113,7 +114,7 @@ alias visualiser="\$HOME/Desktop/Ecole42/42Cursus/Tools/push_swap_visualizer/bui
 # alias francinette="$HOME/francinette/tester.sh"
 # alias paco="$HOME/francinette/tester.sh"
 
-alias lzg="lazygit"
+alias lzg="EDITOR=lunarvim lazygit"
 alias lzd='docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v /yourpath/config:/.config/jesseduffield/lazydocker lazyteam/lazydocker'
 
 # Application Aliases
