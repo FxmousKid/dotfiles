@@ -15,6 +15,46 @@ lvim.plugins = {
 	},
 
 	{
+	  "ludovicchabant/vim-gutentags",
+	  init = function()
+		vim.g.gutentags_modules = {"cscope_maps"} -- This is required. Other config is optional
+		vim.g.gutentags_cscope_build_inverted_index_maps = 1
+		vim.g.gutentags_cache_dir = (vim.env.XDG_CACHE_HOME or (vim.fn.expand("~/.cache"))) .. "/gutentags"
+		-- ⚠️ WARNING: This limits tags to .c and .h files only, add more extensions (e.g., `-e py`) or remove to avoid skipping other files.
+		vim.g.gutentags_file_list_command = "fd -e c -e h"
+
+		-- vim.g.gutentags_trace = 1
+	  end,
+	},
+
+
+	{
+		"nosduco/remote-sshfs.nvim",
+		dependencies = {
+			"nvim-telescope/telescope.nvim",
+			"nvim-lua/plenary.nvim"
+		},
+		opts = {
+		-- Refer to the configuration section below
+		-- or leave empty for defaults
+		}
+	},
+
+	{
+		"dhananjaylatkar/cscope_maps.nvim",
+		dependencies = {
+			"nvim-telescope/telescope.nvim", -- optional [for picker="telescope"]
+			-- "ibhagwan/fzf-lua", -- optional [for picker="fzf-lua"]
+			-- "echasnovski/mini.pick", -- optional [for picker="mini-pick"]
+			-- "folke/snacks.nvim", -- optional [for picker="snacks"]
+		},
+		opts = {
+		-- USE EMPTY FOR DEFAULT OPTIONS
+		-- DEFAULTS ARE LISTED BELOW
+		},
+	},
+
+	{
 		"FabijanZulj/blame.nvim",
 		lazy = false,
 		config = function()
@@ -24,6 +64,27 @@ lvim.plugins = {
 			blame_options = { '-w' },
 		},
 	},
+
+	{
+		"let-def/texpresso.vim",
+	},
+
+	{
+		"lervag/vimtex",
+		lazy = false,
+		init = function()
+			vim.g.tex_flavor = "latex"
+			-- vim.g.vimtex_view_method = "zathura"
+			-- vim.g.vimtex_view_method = "general"
+			-- vim.g.vimtex_view_general_viewer = "zathura"
+			vim.g.vimtex_quickfix_mode = 0
+			vim.g.vimtex_view_general_options = "@pdf"
+			vim.g.vimtex_view_general_viewer = "open"
+			vim.g.vimtex_view_general_options = "-a Preview @pdf"
+			vim.g.vimtex_compiler_latexmk_engines = { ["_"] = "-lualatex"}
+			vim.g.vimtex_compiler_method = "latexmk"
+		end,
+    },
 
 	-- Better Navigation
 	-- {

@@ -12,6 +12,9 @@ require('user.telescope')
 require('user.nvim-tree_config')
 require('user.neogen')
 require('user.codesnap')
+require('user.clangd_extensions')
+require('user.cscope_maps')
+require('user.remote-sshfs')
 
 -- snippets
 require('snippets.c')

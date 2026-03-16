@@ -65,9 +65,9 @@ vim.keymap.set({ 'n', 'i' }, '<leader>ls', ':LspStop<CR>',
 
 
 -- Copilot keybinds
-vim.keymap.set({ 'n', 'i' }, '<leader>cd', ':Copilot disable<CR>',
+vim.keymap.set({ 'n', 'i' }, '<leader>ad', ':Copilot disable<CR>',
 	vim.tbl_extend("force", keymap_opts, { desc = "Disable Copilot" }))
-vim.keymap.set({ 'n', 'i' }, '<leader>ce', ':Copilot enable<CR>',
+vim.keymap.set({ 'n', 'i' }, '<leader>ae', ':Copilot enable<CR>',
 	vim.tbl_extend("force", keymap_opts, { desc = "Enable Copilot" }))
 
 
