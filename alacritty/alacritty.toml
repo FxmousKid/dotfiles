@@ -12,6 +12,7 @@ live_config_reload = true
 bindings = [
 	{ key = "J", mods = "Alt", chars = "\u001bj" },
 	{ key = "K", mods = "Alt", chars = "\u001bk" },
+	{ key = "Return", mods = "Shift", chars = "\u001B\r" },
 ]
 
 
@@ -27,3 +28,4 @@ startup_mode = "Maximized"
 dynamic_padding = true
 opacity = 0.8
 blur = true
+
