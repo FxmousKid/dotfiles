@@ -9,7 +9,6 @@ lvim.plugins = {
 	{ "j-hui/fidget.nvim" }, -- Better Notifications
 	{
 		"danymat/neogen",
-		config = true,
 		-- Uncomment next line if you want to follow only stable versions
 		-- version = "*" 
 	},
@@ -21,7 +20,7 @@ lvim.plugins = {
 		vim.g.gutentags_cscope_build_inverted_index_maps = 1
 		vim.g.gutentags_cache_dir = (vim.env.XDG_CACHE_HOME or (vim.fn.expand("~/.cache"))) .. "/gutentags"
 		-- ⚠️ WARNING: This limits tags to .c and .h files only, add more extensions (e.g., `-e py`) or remove to avoid skipping other files.
-		vim.g.gutentags_file_list_command = "fd -e c -e h"
+		vim.g.gutentags_file_list_command = "fd -e c -e h -e py"
 
 		-- vim.g.gutentags_trace = 1
 	  end,
@@ -43,7 +42,7 @@ lvim.plugins = {
 	{
 		"dhananjaylatkar/cscope_maps.nvim",
 		dependencies = {
-			"nvim-telescope/telescope.nvim", -- optional [for picker="telescope"]
+			"nvim-telescope/telescope.nvim",
 			-- "ibhagwan/fzf-lua", -- optional [for picker="fzf-lua"]
 			-- "echasnovski/mini.pick", -- optional [for picker="mini-pick"]
 			-- "folke/snacks.nvim", -- optional [for picker="snacks"]
@@ -213,13 +212,13 @@ lvim.plugins = {
 
 	{
 		"folke/noice.nvim",
-		events = "VeryLazy",
+		event = "VeryLazy",
 		opts = {
 			lsp = {
 				signature = {
 					auto_open = {
 						-- automaticall show signature help when typing a trigger character from the LSP
-						typeitrigger = false,
+						trigger = true,
 					},
 				},
 			},
