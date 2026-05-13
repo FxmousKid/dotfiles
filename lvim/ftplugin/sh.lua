@@ -1,5 +1,4 @@
-lvim.builtin.treesitter.ensure_installed = { "bash" }
-lvim.builtin.treesitter.ensure_installed = { "sh" }
+lvim.builtin.treesitter.ensure_installed = { "bash", "sh" }
 vim.list_extend(lvim.lsp.automatic_configuration.skipped_servers, { "bashls" })
 
 

@@ -1,7 +1,3 @@
-vim.opt.tabstop = 4
-vim.opt.shiftwidth = 4
-vim.opt.softtabstop = 4
-
 lvim.format_on_save = false
 -- lvim.diagnostics.config = { virtual_text = false }
 
@@ -10,7 +6,7 @@ lvim.builtin.treesitter.highlight.enable = true
 -- auto install treesitter parsers
 lvim.builtin.treesitter.ensure_installed = { "lua" }
 
-vim.list_extend(lvim.lsp.automatic_configuration.skipped_servers, { "lua_ls", "sumneko_lua" })
+vim.list_extend(lvim.lsp.automatic_configuration.skipped_servers, { "lua_ls" })
 
 
 local opts = require("lvim.lsp").get_common_opts()
@@ -25,4 +21,4 @@ opts.settings = {
 	},
 }
 
-require("lvim.lsp.manager").setup("sumneko_lua", opts)
+require("lvim.lsp.manager").setup("lua_ls", opts)

@@ -1,6 +1,10 @@
 lvim.format_on_save = false
 -- lvim.diagnostics.config = { virtual_text = false }
 
+vim.opt_local.tabstop = 8
+vim.opt_local.shiftwidth = 8
+vim.opt_local.softtabstop = 8
+
 lvim.builtin.treesitter.highlight.enable = true
 
 -- auto install treesitter parsers
@@ -36,13 +40,6 @@ local provider = "clangd"
 
 local custom_on_attach = function(client, bufnr)
   require("lvim.lsp").common_on_attach(client, bufnr)
-
-  local opts = { noremap = true, silent = true, buffer = bufnr }
-  vim.keymap.set("n", "<leader>lh", "<cmd>ClangdSwitchSourceHeader<cr>", opts)
-  vim.keymap.set("x", "<leader>lA", "<cmd>ClangdAST<cr>", opts)
-  vim.keymap.set("n", "<leader>lH", "<cmd>ClangdTypeHierarchy<cr>", opts)
-  vim.keymap.set("n", "<leader>lt", "<cmd>ClangdSymbolInfo<cr>", opts)
-  vim.keymap.set("n", "<leader>lm", "<cmd>ClangdMemoryUsage<cr>", opts)
 
   -- require("clangd_extensions.inlay_hints").setup_autocmd()
   -- require("clangd_extensions.inlay_hints").set_inlay_hints()
