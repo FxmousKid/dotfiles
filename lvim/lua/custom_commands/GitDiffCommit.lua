@@ -133,5 +133,3 @@ vim.api.nvim_create_user_command("DiffBase", function()
   diff_against_base()
 end, {})
 
-
-vim.keymap.set("n", "<leader>gd", ":DiffBase<CR>", { silent = true, noremap = true })

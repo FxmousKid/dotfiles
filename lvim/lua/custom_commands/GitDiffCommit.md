@@ -1,12 +1,12 @@
 Sets a Git base commit and opens quickfix entries for files changed since that commit.
-Then `:DiffBase` or `<leader>gd` opens a side-by-side diff against that commit.
+Then `:DiffBase` or `\gd` opens a side-by-side diff against that commit.
 
 ## Walkthrough
 
 - Run `:GitSetBase <commit>` from inside a Git repository, for example
   `:GitSetBase main` or `:GitSetBase abc1234`.
 - Use the quickfix list to jump through files changed between that commit and `HEAD`.
-- Open one of those files, then run `:DiffBase` or press `<leader>gd`.
+- Open one of those files, then run `:DiffBase` or press `\gd`.
 - The current file stays on the left, and a scratch buffer containing the base
   version opens on the right in diff mode.
 

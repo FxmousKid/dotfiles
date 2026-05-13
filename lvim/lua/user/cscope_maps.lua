@@ -1,9 +1,9 @@
-local cscope_prefix = "<leader>c"
+local cscope_prefix = "\\c"
 
 require("cscope_maps").setup({
 
-  -- maps related defaults
-	disable_maps = false, -- "true" disables default keymaps
+	-- maps related defaults
+	disable_maps = true, -- keymaps live in lua/keymaps/kb_cscope.lua
 	skip_input_prompt = false, -- "true" doesn't ask for input
 	prefix = cscope_prefix, -- prefix to trigger maps
 
@@ -43,7 +43,7 @@ require("cscope_maps").setup({
 		-- cstag related defaults
 		tag = {
 			-- bind ":Cstag" to "<C-]>"
-			keymap = true, -- "true" or "false"
+			keymap = false, -- keymap lives in lua/keymaps/kb_navigation.lua
 			-- order of operation to run for ":Cstag"
 			order = { "cs", "tag_picker", "tag" }, -- any combination of these 3 (ops can be excluded)
 			-- cmd to use for "tag" op in above table
@@ -56,23 +56,3 @@ require("cscope_maps").setup({
 		tree_hl = true, -- toggle tree highlighting
 	}
 })
-
-local ok, wk = pcall(require, "which-key")
-if ok then
-	local cscope_mappings = {
-		name = "Cscope",
-		s = { "<cmd>CsPrompt s<cr>", "Find symbol references" },
-		g = { "<cmd>CsPrompt g<cr>", "Find global definition" },
-		c = { "<cmd>CsPrompt c<cr>", "Find callers" },
-		t = { "<cmd>CsPrompt t<cr>", "Find text string" },
-		e = { "<cmd>CsPrompt e<cr>", "Egrep pattern" },
-		f = { "<cmd>CsPrompt f<cr>", "Find file" },
-		i = { "<cmd>CsPrompt i<cr>", "Find includers" },
-		d = { "<cmd>CsPrompt d<cr>", "Find callees" },
-		a = { "<cmd>CsPrompt a<cr>", "Find assignments" },
-		b = { "<cmd>Cs db build<cr>", "Build database" },
-	}
-
-	wk.register(cscope_mappings, { mode = "n", prefix = cscope_prefix })
-	wk.register(cscope_mappings, { mode = "v", prefix = cscope_prefix })
-end

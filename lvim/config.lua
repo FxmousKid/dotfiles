@@ -4,6 +4,7 @@ vim.g.loaded_netrwPlugin = 1
 
 -- important config
 require('options')
+lvim.leader = "space"
 require('keybinds')
 require('plugins')
 
@@ -33,11 +34,10 @@ vim.opt.shell = "/bin/zsh"
 lvim.log.level = "warn"
 lvim.format_on_save = false
 lvim.colorscheme = "lunar"
-lvim.leader = "space"
 
-vim.opt.softtabstop = 8
-vim.opt.shiftwidth = 8
-vim.opt.tabstop = 8
+vim.opt.softtabstop = 4
+vim.opt.shiftwidth = 4
+vim.opt.tabstop = 4
 
 lvim.builtin.alpha.active = true
 lvim.builtin.alpha.mode = "dashboard"
