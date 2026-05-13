@@ -1,6 +1,7 @@
 # Font configuration : jetbrain mono
 [font]
-size = 12
+size = 11
+
 
 # [font.normal]
 # family = "JetBrains Mono"
@@ -20,7 +21,7 @@ size = 12
 
 [font.normal]
 family = "JetBrainsMono Nerd Font"
-# style = "SemiBold"
+# style = "Normal"
 
 [font.bold]
 family = "JetBrainsMono Nerd Font"

@@ -13,6 +13,7 @@ bindings = [
 	{ key = "J", mods = "Alt", chars = "\u001bj" },
 	{ key = "K", mods = "Alt", chars = "\u001bk" },
 	{ key = "Return", mods = "Shift", chars = "\u001B\r" },
+	{ key = "W", mods = "Command", action = "ReceiveChar" },
 ]
 
 
@@ -21,11 +22,3 @@ TERM = "xterm-256color"
 
 [colors]
 transparent_background_colors = true
-
-[window]
-decorations = "None"
-startup_mode = "Maximized"
-dynamic_padding = true
-opacity = 0.8
-blur = true
-

@@ -1,9 +1,11 @@
 [window]
 title = "Alacritty"
-# startup_mode = "Fullscreen"
+decorations = "None"
+startup_mode = "Maximized"
+dynamic_padding = true
+opacity = 0.7
+blur = true
 
 [window.padding]
 x = 3
 y = 10
-
-
