@@ -1,9 +1,11 @@
+local cscope_prefix = "<leader>c"
+
 require("cscope_maps").setup({
 
   -- maps related defaults
 	disable_maps = false, -- "true" disables default keymaps
 	skip_input_prompt = false, -- "true" doesn't ask for input
-	prefix = "<leader>c", -- prefix to trigger maps
+	prefix = cscope_prefix, -- prefix to trigger maps
 
 	-- cscope related defaults
 	cscope = {
@@ -16,7 +18,7 @@ require("cscope_maps").setup({
 		-- cscope executable
 		exec = "cscope", -- "cscope" or "gtags-cscope"
 		-- choose your fav picker
-		picker = "quickfix", -- "quickfix", "location", "telescope", "fzf-lua", "mini-pick" or "snacks"
+		picker = "telescope", -- "quickfix", "location", "telescope", "fzf-lua", "mini-pick" or "snacks"
 		-- qf_window_size = 5, -- deprecated, replaced by picket_opts below, but still supported for backward compatibility
 		-- qf_window_pos = "bottom", -- deprecated, replaced by picket_opts below, but still supported for backward compatibility
 		picker_opts = {
@@ -54,3 +56,23 @@ require("cscope_maps").setup({
 		tree_hl = true, -- toggle tree highlighting
 	}
 })
+
+local ok, wk = pcall(require, "which-key")
+if ok then
+	local cscope_mappings = {
+		name = "Cscope",
+		s = { "<cmd>CsPrompt s<cr>", "Find symbol references" },
+		g = { "<cmd>CsPrompt g<cr>", "Find global definition" },
+		c = { "<cmd>CsPrompt c<cr>", "Find callers" },
+		t = { "<cmd>CsPrompt t<cr>", "Find text string" },
+		e = { "<cmd>CsPrompt e<cr>", "Egrep pattern" },
+		f = { "<cmd>CsPrompt f<cr>", "Find file" },
+		i = { "<cmd>CsPrompt i<cr>", "Find includers" },
+		d = { "<cmd>CsPrompt d<cr>", "Find callees" },
+		a = { "<cmd>CsPrompt a<cr>", "Find assignments" },
+		b = { "<cmd>Cs db build<cr>", "Build database" },
+	}
+
+	wk.register(cscope_mappings, { mode = "n", prefix = cscope_prefix })
+	wk.register(cscope_mappings, { mode = "v", prefix = cscope_prefix })
+end
