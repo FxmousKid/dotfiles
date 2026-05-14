@@ -31,8 +31,11 @@ unset rc
 
 
 [[ -f ~/.bash-preexec.sh ]] && source ~/.bash-preexec.sh
-eval "$(atuin init bash)"
-. "$HOME/.cargo/env"
-
+if command -v atuin > /dev/null 2>&1; then
+    eval "$(atuin init bash)"
+fi
+if [ -f "$HOME/.cargo/env" ]; then
+    . "$HOME/.cargo/env"
+fi
 
 
