@@ -1,0 +1,16 @@
+[keyboard]
+bindings = [
+	# Alt + J/K : drag lines in lunarvim (default keybinds)
+	{ key = "J", mods = "Alt", chars = "\u001bj" },
+	{ key = "K", mods = "Alt", chars = "\u001bk" },
+
+	# sends a newline to the CLI instead of executing the command
+	{ key = "Return", mods = "Shift", chars = "\u001B\r" },
+
+	# Windowed maximize, routed through a shell so $HOME expands on any Mac.
+	{ key = "Return", mods = "Command", command = { program = "/bin/sh", args = ["-c", "exec \"$HOME/.dotfiles/alacritty/scripts/maximize-windowed\""] } },
+
+	# rebinds cmd + capslock + w to recevice a 'w' instead of
+	# closing the window, which is the default behavior on macOS
+	{ key = "W", mods = "Command", action = "ReceiveChar" },
+]

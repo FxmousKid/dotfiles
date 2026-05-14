@@ -1,10 +1,11 @@
 [window]
 title = "Alacritty"
 decorations = "None"
-startup_mode = "Maximized"
+startup_mode = "Windowed"
 dynamic_padding = true
 opacity = 0.7
 blur = true
+dimensions = { columns = 0, lines = 0 }
 
 [window.padding]
 x = 3

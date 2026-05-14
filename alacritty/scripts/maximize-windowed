@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -eu
+
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+src="$script_dir/maximize-windowed.swift"
+bin="$script_dir/maximize-windowed.bin"
+
+if [ ! -x "$bin" ] || [ "$src" -nt "$bin" ]; then
+	swiftc "$src" -o "$bin"
+	chmod +x "$bin"
+fi
+
+exec "$bin"
