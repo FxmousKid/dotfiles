@@ -52,7 +52,7 @@
             "type": "command",
             "key": "   OS ",
             "keyColor": "yellow",
-			"text": "head /etc/os-release -n 1 | cut -d '=' -f 2 | xargs",
+			"text": "if [ -r /etc/os-release ]; then . /etc/os-release && printf '%s\\n' \"${PRETTY_NAME:-$NAME}\"; else uname -s; fi"
         },
         {
             "type": "kernel",
@@ -82,7 +82,7 @@
             "type": "command",
             "key": "  OS Age ",
             "keyColor": "magenta",
-            "text": "birth_install=$(stat -c %W /); current=$(date +%s); time_progression=$((current - birth_install)); days_difference=$((time_progression / 86400)); echo $days_difference days"
+            "text": "birth_install=$(stat -c %W / 2>/dev/null || stat -f %B / 2>/dev/null); current=$(date +%s); if [ -n \"$birth_install\" ] && [ \"$birth_install\" -gt 0 ]; then echo $(((current - birth_install) / 86400)) days; else echo unknown; fi"
         },
         {
             "type": "uptime",
@@ -92,7 +92,7 @@
 		{
 			"type": "battery",
 			"key": "  Battery ",
-			"KeyColor": "magenta"
+			"keyColor": "magenta"
 		},
         {
             "type": "custom",
