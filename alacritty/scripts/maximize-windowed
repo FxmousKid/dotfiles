@@ -2,13 +2,28 @@
 
 set -eu
 
+log="/tmp/alacritty-windowed-maximize.log"
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 src="$script_dir/maximize-windowed.swift"
 bin="$script_dir/maximize-windowed.bin"
 
+{
+	printf '\n[%s] invoked\n' "$(date '+%Y-%m-%d %H:%M:%S')"
+	printf 'HOME=%s\n' "${HOME:-}"
+	printf 'script_dir=%s\n' "$script_dir"
+	printf 'src=%s\n' "$src"
+	printf 'bin=%s\n' "$bin"
+} >> "$log"
+
 if [ ! -x "$bin" ] || [ "$src" -nt "$bin" ]; then
-	swiftc "$src" -o "$bin"
-	chmod +x "$bin"
+	{
+		printf '[%s] compiling\n' "$(date '+%Y-%m-%d %H:%M:%S')"
+		swiftc "$src" -o "$bin"
+		chmod +x "$bin"
+	} >> "$log" 2>&1
 fi
 
-exec "$bin"
+"$bin" >> "$log" 2>&1
+status=$?
+printf '[%s] exit=%s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$status" >> "$log"
+exit "$status"

@@ -1,6 +1,29 @@
 {
-    "description": "Swap Left Command ⌘ and Left Control ^ only in Alacritty",
+    "description": "Alacritty: swap Left Command/Control and add windowed maximize",
     "manipulators": [
+        {
+            "conditions": [
+                {
+                    "bundle_identifiers": [
+                        "^org\\.alacritty$"
+                    ],
+                    "type": "frontmost_application_if"
+                }
+            ],
+            "from": {
+                "key_code": "return_or_enter",
+                "modifiers": {
+                    "mandatory": ["left_control"],
+                    "optional": ["any"]
+                }
+            },
+            "to": [
+                {
+                    "shell_command": "/bin/sh -lc 'exec \"$HOME/.dotfiles/alacritty/scripts/maximize-windowed\"'"
+                }
+            ],
+            "type": "basic"
+        },
         {
             "conditions": [
                 {
