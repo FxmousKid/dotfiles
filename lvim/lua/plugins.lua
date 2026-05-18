@@ -14,6 +14,10 @@ lvim.plugins = {
 	},
 
 	{
+		"windwp/nvim-ts-autotag",
+	},
+
+	{
 	  "ludovicchabant/vim-gutentags",
 	  init = function()
 		vim.g.gutentags_modules = {"cscope_maps"} -- This is required. Other config is optional

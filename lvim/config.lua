@@ -16,6 +16,7 @@ require('user.codesnap')
 require('user.clangd_extensions')
 require('user.cscope_maps')
 require('user.remote-sshfs')
+require('user.nvim-ts-autotag')
 
 -- snippets
 require('snippets.c')
