@@ -1,15 +1,82 @@
 themes {
+    // Default: close to LunarVim's `lunar` palette, but with the statusline
+    // blocks pulled down to Alacritty's transparent primary bg so the
+    // statusline surround does not tint the wallpaper blue.
     tokyo-night {
-        fg 169 177 214
-        bg 26 27 38
-        black 56 62 90
-        red 249 51 87
-        green 158 206 106
-        yellow 224 175 104
-        blue 122 162 247
-        magenta 187 154 247
-        cyan 42 195 222
-        white 192 202 245
-        orange 255 158 100
+        fg "#c0caf5"
+        bg "#1a1b26"
+        black "#090300"
+        red "#f7768e"
+        green "#aa8ee6"
+        yellow "#e0af68"
+        blue "#7aa2f7"
+        magenta "#bb9af7"
+        cyan "#7dcfff"
+        white "#a9b1d6"
+        orange "#ff9e64"
+    }
+
+    // Same family, slightly lighter and smoother on large terminal surfaces.
+    tokyo-night-storm {
+        fg "#c0caf5"
+        bg "#24283b"
+        black "#1f2335"
+        red "#f7768e"
+        green "#9ece6a"
+        yellow "#e0af68"
+        blue "#7aa2f7"
+        magenta "#bb9af7"
+        cyan "#7dcfff"
+        white "#a9b1d6"
+        orange "#ff9e64"
+    }
+
+    // More saturated and polished; good if you like Tokyo Night but want the
+    // active tab to feel brighter without making inactive tabs purple-heavy.
+    tokyo-night-moon {
+        fg "#c8d3f5"
+        bg "#222436"
+        black "#1e2030"
+        red "#ff757f"
+        green "#c3e88d"
+        yellow "#ffc777"
+        blue "#82aaff"
+        magenta "#c099ff"
+        cyan "#86e1fc"
+        white "#828bb8"
+        orange "#ff966c"
+    }
+
+    // Lowest-drama option: still Tokyo Night, but green/blue/cyan carry more
+    // of the UI and the purple accent is deliberately muted.
+    tokyo-night-muted {
+        fg "#c0caf5"
+        bg "#1a1b26"
+        black "#15161e"
+        red "#db4b4b"
+        green "#73daca"
+        yellow "#e0af68"
+        blue "#7aa2f7"
+        magenta "#9d7cd8"
+        cyan "#2ac3de"
+        white "#a9b1d6"
+        orange "#ff9e64"
+    }
+
+    // Inspired by your Yazi flavor: blue carries the selected/primary UI,
+    // #292e42 carries inactive blocks, and the green slot is your darker
+    // purple accent so Zellij's active-tab highlight avoids green entirely.
+    tokyo-night-yazi {
+        fg "#c0caf5"
+        bg "#1a1b26"
+        black "#292e42"
+        red "#f7768e"
+        green "#aa8ee6"
+        yellow "#e0af68"
+        blue "#7aa2f7"
+        magenta "#bb9af7"
+        cyan "#7dcfff"
+        white "#a9b1d6"
+        orange "#ff9e64"
     }
 }
