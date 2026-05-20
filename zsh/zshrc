@@ -1,5 +1,5 @@
 if command -v fastfetch &> /dev/null; then
-	fastfetch --logo fedora_small
+	fastfetch
 fi
 
 # Setup for yazi to cd into current location on exit
@@ -15,6 +15,8 @@ if command -v yazi &> /dev/null; then
 		rm -f -- "$tmp"
 	}
 fi
+# yazi related
+# ya pkg add BennyOe/tokyo-night
 
 
 # XDG Directoriess
