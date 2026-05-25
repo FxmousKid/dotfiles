@@ -5,7 +5,8 @@ gui:
   nerdFontsVersion: "3"
   theme:
     activeBorderColor:
-      - "#86e1fc"
+      - "#a184df" # purple
+      # - "#86e1fc" # cyan
       - "bold"
     inactiveBorderColor:
       - "#636da6"
