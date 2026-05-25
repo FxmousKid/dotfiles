@@ -1,4 +1,5 @@
 lvim/lazy-lock.json
-lvim/.nvimlog
+.nvimlog
 Untitled
 *.bak
+maximize-windowed.direct-bin
