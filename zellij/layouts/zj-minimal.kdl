@@ -1,0 +1,43 @@
+layout {
+    default_tab_template {
+        children
+        pane size=1 borderless=true {
+            plugin location="file:~/.config/zellij/plugins/zjstatus.wasm" {
+                format_left   "#[fg=#aa8ee6,bold] {mode} #[fg=#565f89]│#[fg=#c0caf5,bold] {session} "
+                format_center "{tabs}"
+                format_right  "{command_git_branch}{command_weather}#[fg=#aa8ee6,bold] {datetime} "
+                format_space  ""
+
+                hide_frame_for_single_pane "false"
+
+                mode_normal        "normal"
+                mode_tmux          "tmux"
+                mode_pane          "pane"
+                mode_tab           "tab"
+                mode_resize        "resize"
+                mode_scroll        "scroll"
+                mode_search        "search"
+                mode_session       "session"
+                mode_locked        "locked"
+                mode_default_to_mode "normal"
+
+                tab_normal   "#[fg=#565f89] {index}:{name} "
+                tab_active   "#[fg=#aa8ee6,bold] {index}:{name} "
+
+                command_git_branch_command    "sh -c \"git rev-parse --abbrev-ref HEAD 2>/dev/null\""
+                command_git_branch_format     "#[fg=#e0af68]  {stdout} #[fg=#565f89]│"
+                command_git_branch_interval   "10"
+                command_git_branch_rendermode "static"
+
+                command_weather_command    "sh -c \"temp=$(curl -fsS 'https://api.open-meteo.com/v1/forecast?latitude=48.8566&longitude=2.3522&current=temperature_2m&timezone=Europe%2FParis' 2>/dev/null | sed -n 's/.*\\\"temperature_2m\\\":\\([-0-9.]*\\).*/\\1/p'); [ -n \\\"$temp\\\" ] && printf 'Paris %.0f°C' \\\"$temp\\\" || printf Paris\""
+                command_weather_format     "#[fg=#7dcfff] {stdout} #[fg=#565f89]│"
+                command_weather_interval   "900"
+                command_weather_rendermode "static"
+
+                datetime        "{format}"
+                datetime_format "%a %d %H:%M"
+                datetime_timezone "Europe/Paris"
+            }
+        }
+    }
+}
