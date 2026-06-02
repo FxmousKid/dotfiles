@@ -7,15 +7,13 @@ lvim.plugins = {
 	{ "mg979/vim-visual-multi" },
 	{ "mfussenegger/nvim-jdtls" },
 	{ "j-hui/fidget.nvim" }, -- Better Notifications
+	{ "windwp/nvim-ts-autotag" },
 	{
 		"danymat/neogen",
 		-- Uncomment next line if you want to follow only stable versions
 		-- version = "*" 
 	},
 
-	{
-		"windwp/nvim-ts-autotag",
-	},
 
 	{
 	  "ludovicchabant/vim-gutentags",
