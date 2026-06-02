@@ -5,7 +5,7 @@ layout {
             plugin location="file:~/.config/zellij/plugins/zjstatus.wasm" {
                 format_left   "#[fg=#aa8ee6,bold] {mode} #[fg=#565f89]│#[fg=#c0caf5,bold] {session} "
                 format_center "{tabs}"
-                format_right  "{command_git_branch}{command_weather}#[fg=#aa8ee6,bold] {datetime} "
+                format_right  "{command_git_branch}{command_weather}{command_time}"
                 format_space  ""
 
                 hide_frame_for_single_pane "false"
@@ -29,14 +29,15 @@ layout {
                 command_git_branch_interval   "10"
                 command_git_branch_rendermode "static"
 
-                command_weather_command    "sh -c \"temp=$(curl -fsS 'https://api.open-meteo.com/v1/forecast?latitude=48.8566&longitude=2.3522&current=temperature_2m&timezone=Europe%2FParis' 2>/dev/null | sed -n 's/.*\\\"temperature_2m\\\":\\([-0-9.]*\\).*/\\1/p'); [ -n \\\"$temp\\\" ] && printf 'Paris %.0f°C' \\\"$temp\\\" || printf Paris\""
+                command_weather_command    "sh -c 'curl -fsS --max-time 2 \"https://api.open-meteo.com/v1/forecast?latitude=48.8566&longitude=2.3522&current=temperature_2m&temperature_unit=celsius&timezone=Europe%2FParis\" 2>/dev/null | python3 -c \"import sys,json,math; t=json.load(sys.stdin).get(\\\"current\\\",{}).get(\\\"temperature_2m\\\"); sys.stdout.write((\\\"Paris %.0f°C\\\" % t) if isinstance(t,(int,float)) and math.isfinite(t) and -30 <= t <= 45 else \\\"Paris\\\")\" 2>/dev/null || printf Paris'"
                 command_weather_format     "#[fg=#7dcfff] {stdout} #[fg=#565f89]│"
                 command_weather_interval   "900"
                 command_weather_rendermode "static"
 
-                datetime        "{format}"
-                datetime_format "%a %d %H:%M"
-                datetime_timezone "Europe/Paris"
+                command_time_command    "sh -c \"TZ=Europe/Paris date '+%a %d %H:%M'\""
+                command_time_format     "#[fg=#aa8ee6,bold] {stdout} "
+                command_time_interval   "1"
+                command_time_rendermode "static"
             }
         }
     }
