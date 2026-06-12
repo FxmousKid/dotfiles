@@ -1,48 +1,87 @@
 #!/usr/bin/env zsh
+# =============================================================================
+#  ~/.zshenv  —  sourced for EVERY zsh (login, interactive, and scripts).
+#
+#  Keep this fast and side-effect free: environment variables and PATH only.
+#  Interactive-only setup  -> ~/.zshrc
+#  Login-only setup (brew) -> ~/.zprofile
+# =============================================================================
 
-###############################
-# EXPORT ENVIRONMENT VARIABLE #
-###############################
-
-# custom env vars
-export RELEASES="$HOME/Releases"
-
-# XDG Directoriess
+# --- XDG base directories ----------------------------------------------------
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_CACHE_HOME="$HOME/.cache"
 export XDG_MUSIC_DIR="$HOME/Music"
 
-
-# zsh stuff
+# --- zsh ---------------------------------------------------------------------
 export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
 export HISTFILE="$ZDOTDIR/zsh_history"
 
+# --- Custom roots ------------------------------------------------------------
+export RELEASES="$HOME/Releases"          # prebuilt binaries / version managers
 
-# Globals vars
-if command -v lvim &> /dev/null; then
-	export EDITOR="$HOME/.local/bin/lvim"
-fi
-
-
-# golang
+# --- Toolchains --------------------------------------------------------------
+# Go
 export GOPATH="$RELEASES/go"
 export GOBIN="$RELEASES/go/bin"
 export GOCACHE="$XDG_CACHE_HOME/go-build"
-
-
-# NPM
+# Node / pnpm / npm
+export PNPM_HOME="$XDG_DATA_HOME/pnpm"
 export NPM_PATH="$XDG_CONFIG_HOME/node_modules"
 export NPM_BIN="$NPM_PATH/bin"
-
-# mpd stuff
+# mpd
 export MPD_HOST="$XDG_CONFIG_HOME/mpd/socket"
-
 # zellij
 export ZELLIJ_CONFIG_DIR="$XDG_CONFIG_HOME/zellij"
-if [ -f "$HOME/.cargo/env" ];then 
-	. "$HOME/.cargo/env"
-fi
 
-# GPG
-export GPG_TTY=$(tty)
+# --- PATH --------------------------------------------------------------------
+# `typeset -U` keeps the path array de-duplicated no matter how many times this
+# runs — so PATH can never grow on repeated shells/sources. Only existing
+# directories are added (no dead entries).
+#
+# Defined as a function because macOS /etc/zprofile runs `path_helper`, which
+# rebuilds PATH and DROPS custom entries. We call it here (so scripts and Linux
+# get PATH straight away) AND again from ~/.zprofile (after path_helper) so our
+# directories survive and win on macOS login shells.
+typeset -U path PATH
+zsh_prepend_paths() {
+  local dir
+  for dir in \
+    "$HOME/.atuin/bin" \
+    "$HOME/.config/bin" \
+    "$HOME/.local/share/zap" \
+    "$HOME/.yazi/target/release" \
+    "$GOBIN" \
+    "$PNPM_HOME"; do
+    [[ -n "$dir" && -d "$dir" ]] && path=("$dir" $path)
+  done
+  [[ -n "$JAVA_HOME" && -d "$JAVA_HOME/bin" ]] && path=("$JAVA_HOME/bin" $path)
+
+  case "$OSTYPE" in
+    darwin*)
+      [[ -d "$RELEASES/nvim-macos-arm64-10.4/bin" ]]      && path=("$RELEASES/nvim-macos-arm64-10.4/bin" $path)
+      [[ -d "$HOME/.antigravity/antigravity/bin" ]]       && path=("$HOME/.antigravity/antigravity/bin" $path)
+      ;;
+    linux*)
+      [[ -d "$RELEASES/nvim/nvim-linux-arm64-10.4/bin" ]] && path=("$RELEASES/nvim/nvim-linux-arm64-10.4/bin" $path)
+      [[ -d "$RELEASES/opam" ]]                           && path=("$RELEASES/opam" $path)
+      ;;
+  esac
+
+  # Highest priority: user-local binaries.
+  [[ -d "$HOME/.local/bin" ]] && path=("$HOME/.local/bin" $path)
+}
+zsh_prepend_paths
+
+# --- Default editor (after PATH so lvim/nvim are resolvable) ------------------
+if   command -v lvim &>/dev/null; then export EDITOR="$(command -v lvim)"
+elif command -v nvim &>/dev/null; then export EDITOR="$(command -v nvim)"
+elif command -v vim  &>/dev/null; then export EDITOR=vim
+fi
+export VISUAL="$EDITOR"
+
+# --- Rust / Cargo ------------------------------------------------------------
+[[ -f "$HOME/.cargo/env" ]] && . "$HOME/.cargo/env"
+
+# --- GPG (interactive only; avoids a tty lookup in scripts) ------------------
+[[ -o interactive ]] && export GPG_TTY="$TTY"

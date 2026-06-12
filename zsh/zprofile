@@ -1,0 +1,28 @@
+#!/usr/bin/env zsh
+# =============================================================================
+#  ~/.zprofile  —  sourced once for LOGIN shells, AFTER ~/.zshenv and AFTER the
+#  macOS /etc/zprofile path_helper. Good place for one-shot login setup.
+# =============================================================================
+
+# --- Homebrew (Apple Silicon / Intel / Linuxbrew) ----------------------------
+for _brew in \
+  /opt/homebrew/bin/brew \
+  /usr/local/bin/brew \
+  /home/linuxbrew/.linuxbrew/bin/brew; do
+  if [[ -x "$_brew" ]]; then
+    eval "$("$_brew" shellenv)"
+    break
+  fi
+done
+unset _brew
+
+# --- Re-apply our PATH on top of path_helper / brew -------------------------
+# macOS /etc/zprofile just ran path_helper, which dropped our custom PATH
+# entries. Re-run the builder from ~/.zshenv so they come back and take
+# priority (typeset -U keeps everything de-duplicated).
+(( $+functions[zsh_prepend_paths] )) && zsh_prepend_paths
+
+# --- Greeting: once per login shell, not on every multiplexer pane -----------
+if [[ -o interactive ]] && command -v fastfetch &>/dev/null; then
+  fastfetch
+fi

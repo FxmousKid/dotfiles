@@ -1,130 +1,72 @@
-if command -v fastfetch &> /dev/null; then
-	fastfetch
-fi
+# =============================================================================
+#  ~/.zshrc  —  interactive shells only.
+#    Environment & PATH ............ ~/.zshenv
+#    Login-only (brew, greeting) ... ~/.zprofile
+#  This file: prompt, plugins, completion, options, aliases, functions.
+# =============================================================================
 
-# Setup for yazi to cd into current location on exit
-if command -v yazi &> /dev/null; then
-	function y() {
-		local tmp
-		tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
-		export EDITOR="$HOME/.local/bin/lvim"
-		yazi "$@" --cwd-file="$tmp"
-		if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
-			builtin cd -- "$cwd" || return
-		fi
-		rm -f -- "$tmp"
-	}
-fi
-# yazi related
-# ya pkg add BennyOe/tokyo-night
-
-
-# XDG Directoriess
-export XDG_CONFIG_HOME="$HOME/.config"
-export XDG_DATA_HOME="$HOME/.local/share"
-export XDG_CACHE_HOME="$HOME/.cache"
-export GPG_TTY=$(tty)
-
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
+# --- Powerlevel10k instant prompt --------------------------------------------
+# Must stay near the top. Anything that needs console input (passwords, [y/n]
+# confirmations) has to go ABOVE this block.
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-
-#------------- Created by Zap installer
-if [ -f "${XDG_DATA_HOME:-$HOME/.local/share}/zap/zap.zsh" ]; then
-	source "${XDG_DATA_HOME:-$HOME/.local/share}/zap/zap.zsh"
-	plug "zsh-users/zsh-autosuggestions"
-	plug "zap-zsh/supercharge"
-	plug "zap-zsh/zap-prompt"
-	plug "zsh-users/zsh-syntax-highlighting"
-	plug "romkatv/powerlevel10k"
+# --- Plugins (Zap) -----------------------------------------------------------
+if [[ -f "${XDG_DATA_HOME:-$HOME/.local/share}/zap/zap.zsh" ]]; then
+  source "${XDG_DATA_HOME:-$HOME/.local/share}/zap/zap.zsh"
+  plug "zsh-users/zsh-autosuggestions"      # grey history hint, accept with →
+  plug "zap-zsh/supercharge"                # sane history / keybind defaults
+  plug "zsh-users/zsh-syntax-highlighting"
+  plug "romkatv/powerlevel10k"              # the prompt (single source of truth)
 fi
 
-
-# Load and initialise completion system
+# --- Completion --------------------------------------------------------------
+# macOS Docker CLI completions must be on fpath *before* compinit runs.
+if [[ "$OSTYPE" == darwin* && -d "$HOME/.docker/completions" ]]; then
+  fpath=("$HOME/.docker/completions" $fpath)
+fi
+# Initialise the completion system exactly once, cached; rebuild at most daily.
 autoload -Uz compinit
-compinit
-#-------------- End of Zap installer
-
-
-
-# To customize prompt, run `p10k configure` or edit $HOME/.p10k.zsh.
-[[ -f ~/.dotfiles/zsh/p10k.zsh ]]  && ln -sf ~/.dotfiles/zsh/p10k.zsh ~/.p10k.zsh
-[[ ! -f $HOME/.p10k.zsh ]] || source ~/.p10k.zsh # i dont even know what this shit does..
-#--------- End of Powerlevel10k x Pure prompt 
-
-
-# if [[ -d "$HOME/.nvm" ]]; then
-	# [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-# 	export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}/Tools" ] && printf %s "${HOME}/Tools/nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
-# 	[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
-# fi
-# #--------- Node Version Manager
-
-
-# Binaries
-RELEASES="$HOME/Releases"
-if [[ $(uname) == "Linux" ]];then
-	export PATH="$RELEASES/nvim/nvim-linux-arm64-10.4/bin:$PATH"
-	export PATH="$RELEASES/opam:$PATH"
-elif [[ $(uname) == "Darwin" ]];then
-	alias sidf="source \"/Users/user/.espressif/tools/activate_idf_v5.5.2.sh\"" # esp32 devkit
-	alias rjenkins="cd ~/Music/Ambient\ Techno\ -\ Rob\ Jenkins &&  yt-dlp -S abr -f ba \"$1\""
-	FPATH="$HOME/.docker/completions:$FPATH" # docker completions
-	autoload -U compinit && compinit # then loading said completions
-	export PATH="$HOME/.antigravity/antigravity/bin:$PATH"
-	export PATH="$RELEASES/nvim-macos-arm64-10.4/bin:$PATH"
-	[[ -f "$HOME/.docker/completions/" ]] && fpath=("$HOME/.docker/completions" "$fpath")
-	autoload -Uz compinit
-	compinit
+_zcompdump="${ZDOTDIR:-$HOME}/.zcompdump"
+if [[ -f "$_zcompdump" && -z "$(find "$_zcompdump" -mtime +1 2>/dev/null)" ]]; then
+  compinit -C -d "$_zcompdump"     # fresh cache -> skip security scan (fast)
+else
+  compinit -d "$_zcompdump"        # missing / stale -> full rebuild
 fi
+unset _zcompdump
 
-# ||| Path additions |||
-export PATH="$JAVA_HOME/bin:$PATH"
-export PATH="$HOME/.atuin/bin:$PATH"
-export PATH="$HOME/.config/bin:$PATH"
-export PATH="$HOME/.yazi/target/release:$PATH"
-export PATH="/usr/lib/java/bin:$PATH"
-export PATH="$HOME/.local/share/zap:$PATH"
+# --- Prompt theme ------------------------------------------------------------
+# Reconfigure with `p10k configure`. Config lives at $ZDOTDIR/.p10k.zsh.
+[[ -f "${ZDOTDIR:-$HOME}/.p10k.zsh" ]] && source "${ZDOTDIR:-$HOME}/.p10k.zsh"
 
+# --- Options -----------------------------------------------------------------
+unsetopt BEEP
 
-# ||| ALIASES |||
-alias fixchr="rm -rf ~/.config/chromium/Singleton*" # Ecole42 chrome issue fix
-alias ccw="cc -Wall -Wextra -Werror"
-alias norm="norminette -R CheckForbiddenSourceHeader"
+# --- Listing (eza if present, else exa, else ls) -----------------------------
+if   command -v eza &>/dev/null; then _ls=eza
+elif command -v exa &>/dev/null; then _ls=exa
+else                                  _ls=ls
+fi
+alias l="$_ls"
+[[ "$_ls" != ls ]] && alias ltr="$_ls --tree"
+unset _ls
+
+# --- Aliases: navigation / shell ---------------------------------------------
 alias cl="clear -x"
 alias lc="clear -x"
-alias e="exit ; clear" 
-alias fzf='ag -l -g "" | fzf' # fuzzy-finder
-alias szh="source \$ZDOTDIR/.zshrc" # source-zshrc
-alias ezh="lvim \$ZDOTDIR/.zshrc"
-alias elc="lvim \$HOME/.config/lvim/config.lua" # edit-lunarvim-config
-alias elp="lvim \$HOME/.config/lvim/lua/plugins.lua" # edit-lunarvim-plugins
-
-alias trsh="alias prev=\"cd \$PWD\" &&
-			cd \"\$HOME/.local/share/Trash/files\""
-
-alias l="exa"
+alias e="exit"
 alias z="zellij"
-alias ltr="exa --tree && echo "" && tree | tail -n 1"
+alias tgt="tree -I ./.git"
+alias agf='ag -l -g "" | fzf'        # fuzzy file finder (no longer shadows fzf)
 
-alias cmk="make fclean && compiledb make" #Used for clangd config file, this [compiledb] is a saver
-alias visualiser="\$HOME/Desktop/Ecole42/42Cursus/Tools/push_swap_visualizer/build/bin/visualizer && rm imgui.ini"
-# alias francinette="$HOME/francinette/tester.sh"
-# alias paco="$HOME/francinette/tester.sh"
+# --- Aliases: edit configs ---------------------------------------------------
+alias szh="source \$ZDOTDIR/.zshrc"                       # reload this file
+alias ezh="\$EDITOR \$ZDOTDIR/.zshrc"
+alias elc="\$EDITOR \$HOME/.config/lvim/config.lua"
+alias elp="\$EDITOR \$HOME/.config/lvim/lua/plugins.lua"
 
-alias lzg="EDITOR=lunarvim lazygit"
-alias lzd='docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v /yourpath/config:/.config/jesseduffield/lazydocker lazyteam/lazydocker'
-
-# Application Aliases
-alias chr="/usr/bin/chromium-browser --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration\
-	-enable-features=TouchpadOverscrollHistoryNavigation &"
-#alias ryujinx="gamemoderun DOTNET_EnableAlternateStackCheck=1 GDK_BACKEND=x11 $HOME/.local/share/Ryujinx/Ryujinx"
-
-# Git Aliases
+# --- Aliases: git ------------------------------------------------------------
 alias gst="git status -b"
 alias gls="git ls-files"
 alias grm="git rm --cached"
@@ -140,42 +82,47 @@ alias grs="git restore --staged"
 alias gps="git push"
 alias gdf="git diff"
 alias gcl="git clone --recurse-submodules"
-alias tgt="tree -I ./.git"
 
-alias docfr="mkdir -p $\HOME/Documents/France/ ; 
-			 cd \$HOME/Documents/France/ ;
-			 rclone sync GoogleDrive:France . --progress ;
-			 yazi"
-
+# --- Aliases: dev / tools ----------------------------------------------------
+alias ccw="cc -Wall -Wextra -Werror"
+alias norm="norminette -R CheckForbiddenSourceHeader"
+alias cmk="make fclean && compiledb make"   # regenerate compile_commands.json
+alias lzg="EDITOR=lvim lazygit"
+alias lzd='docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v "$HOME/.config/jesseduffield/lazydocker:/.config/jesseduffield/lazydocker" lazyteam/lazydocker'
 alias wpscan="docker run -it --rm wpscanteam/wpscan"
+alias fixchr="rm -rf ~/.config/chromium/Singleton*"   # 42 chromium lock fix
 
-# ||| evals |||
-if command -v atuin &> /dev/null; then
-    eval "$(atuin init zsh)"
+# --- Platform-specific aliases -----------------------------------------------
+if [[ "$OSTYPE" == darwin* ]]; then
+  # ESP-IDF (ESP32 devkit) — bump the version to match what's installed
+  alias sidf="source \"\$HOME/.espressif/tools/activate_idf_v5.5.2.sh\""
+elif [[ "$OSTYPE" == linux* ]]; then
+  alias chr="/usr/bin/chromium-browser --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration -enable-features=TouchpadOverscrollHistoryNavigation &"
 fi
 
+# --- Personal (TODO: relocate to ~/.zshrc.local, gitignored) -----------------
+alias visualiser="\$HOME/Desktop/Ecole42/42Cursus/Tools/push_swap_visualizer/build/bin/visualizer && rm imgui.ini"
+alias trsh="alias prev=\"cd \$PWD\" && cd \"\$HOME/.local/share/Trash/files\""
+alias rjenkins="cd ~/Music/Ambient\ Techno\ -\ Rob\ Jenkins && yt-dlp -S abr -f ba"
+alias docfr="mkdir -p \$HOME/Documents/France/ && cd \$HOME/Documents/France/ && rclone sync GoogleDrive:France . --progress && yazi"
 
-# ||| Changes to bash options |||
-unsetopt BEEP 
+# --- Functions ---------------------------------------------------------------
+# yazi: cd into the directory you were in when you quit it (q), like ranger.
+if command -v yazi &>/dev/null; then
+  y() {
+    local tmp cwd
+    tmp="$(mktemp -t yazi-cwd.XXXXXX)"
+    yazi "$@" --cwd-file="$tmp"
+    if cwd="$(cat -- "$tmp")" && [[ -n "$cwd" && "$cwd" != "$PWD" ]]; then
+      builtin cd -- "$cwd"
+    fi
+    rm -f -- "$tmp"
+  }
+fi
 
+# --- Tool integrations -------------------------------------------------------
+# atuin (searchable shell history UI)
+command -v atuin &>/dev/null && eval "$(atuin init zsh)"
 
-# Application Aliases
-alias chr="/usr/bin/chromium-browser --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration\
-	-enable-features=TouchpadOverscrollHistoryNavigation &"
-
-
-# opam configuration
-[[ ! -r "\$HOME/.opam/opam-init/init.zsh" ]] || source "\$HOME/.opam/opam-init/init.zsh"  > /dev/null 2> /dev/null
-
-# Command to run after the shell is loaded
-# fastfetch
-# . "$HOME/.atuin/bin/env"
-
-
-# pnpm
-export PNPM_HOME="$HOME/.local/share/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
-esac
-# pnpm end
+# opam (OCaml)
+[[ -r "$HOME/.opam/opam-init/init.zsh" ]] && source "$HOME/.opam/opam-init/init.zsh" >/dev/null 2>&1
