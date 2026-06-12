@@ -5,6 +5,7 @@ vim.g.loaded_netrwPlugin = 1
 -- important config
 require('options')
 lvim.leader = "space"
+require('user.python_lsp')
 require('keybinds')
 require('plugins')
 
