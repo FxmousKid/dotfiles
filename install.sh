@@ -1,103 +1,238 @@
-#!/usr/bin/env bash
-
-# THIS SCRIPT PREPARES MY SHELL ENVIRONMENT FOR USE
+#!/bin/sh
+# =============================================================================
+#  install.sh — symlink these dotfiles into place, interactively.
 #
-# This is to run on a fresh machine, with the following dependencies
-#	- zsh
-#	- git
-#	- curl
+#  POSIX sh. Idempotent and non-destructive: anything real already sitting at a
+#  target is moved aside to <target>.bak.<timestamp> before linking, and links
+#  that are already correct are left alone. Safe to re-run.
+#
+#  Interactive by default: toggle which components you want, review, confirm,
+#  then it links only what you validated. No TUI dependency — plain numbered menu.
+#
+#  Usage:
+#    ./install.sh        choose interactively
+#    ./install.sh -y     non-interactive: link this OS's defaults (for curl|sh)
+#    ./install.sh -n     dry run — print what would happen, change nothing
+#    ./install.sh -h     help
+#
+#  SYMLINKS ONLY. Installing the binaries (zellij, yazi, lvim, ...) is a
+#  separate step — see bin/ (TODO, layer 2).
+# =============================================================================
 
+set -eu
 
-txtblk='\e[0;30m' # Black - Regular
-txtred='\e[0;31m' # Red
-txtgrn='\e[0;32m' # Green
-txtylw='\e[0;33m' # Yellow
-txtblu='\e[0;34m' # Blue
-txtpur='\e[0;35m' # Purple
-txtcyn='\e[0;36m' # Cyan
-txtwht='\e[0;37m' # White
-bldblk='\e[1;30m' # Black - Bold
-bldred='\e[1;31m' # Red
-bldgrn='\e[1;32m' # Green
-bldylw='\e[1;33m' # Yellow
-bldblu='\e[1;34m' # Blue
-bldpur='\e[1;35m' # Purple
-bldcyn='\e[1;36m' # Cyan
-bldwht='\e[1;37m' # White
-unkblk='\e[4;30m' # Black - Underline
-undred='\e[4;31m' # Red
-undgrn='\e[4;32m' # Green
-undylw='\e[4;33m' # Yellow
-undblu='\e[4;34m' # Blue
-undpur='\e[4;35m' # Purple
-undcyn='\e[4;36m' # Cyan
-undwht='\e[4;37m' # White
-bakblk='\e[40m'   # Black - Background
-bakred='\e[41m'   # Red
-bakgrn='\e[42m'   # Green
-bakylw='\e[43m'   # Yellow
-bakblu='\e[44m'   # Blue
-bakpur='\e[45m'   # Purple
-bakcyn='\e[46m'   # Cyan
-bakwht='\e[47m'   # White
-txtrst='\e[0m'    # Text Reset
+DOTFILES="$(cd "$(dirname "$0")" && pwd)"
+CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}"
+OS="$(uname)"
+TS="$(date +%Y%m%d-%H%M%S)"
+DRY=0
+ASSUME_YES=0
 
-DOTFILES="$(pwd)"
+case "$OS" in
+  Darwin) OSKEY=darwin ;;
+  Linux)  OSKEY=linux ;;
+  *)      OSKEY=other ;;
+esac
 
+# Component registry — one per line:  key|default(on/off)|platform(all/darwin/linux)|label
+# Edit this table to add/remove components; the menu and linker both read it.
+REGISTRY="
+zsh|on|all|shell config (.zshenv .zshrc .zprofile p10k)
+alacritty|on|all|terminal emulator
+zellij|on|all|terminal multiplexer
+lvim|on|all|LunarVim
+nvim|on|all|Neovim (standalone)
+bob|on|all|nvim version manager
+atuin|on|all|shell history
+fastfetch|on|all|system fetch
+yazi|on|all|file manager
+lazygit|on|all|git TUI
+tmux|on|all|tmux
+bash|off|all|bash fallback configs
+karabiner|on|darwin|keyboard rules (Karabiner-Elements)
+xmodmap|on|linux|X11 key remap
+hyprland|on|linux|Wayland compositor
+"
 
-# Making sure we're in the right branch
-if [ ! $(git rev-parse --abbrev-ref HEAD) == "main" ]; then
-	echo -e "${txtred}Please switch to the main branch of the dotfiles repo${txtwht}" > /dev/stderr
-	exit 1
+# --- output helpers ----------------------------------------------------------
+if [ -t 1 ]; then
+  GRN='\033[0;32m'; YLW='\033[0;33m'; DIM='\033[0;90m'; BOLD='\033[1m'; RST='\033[0m'
+else
+  GRN=''; YLW=''; DIM=''; BOLD=''; RST=''
+fi
+say() { printf '%b\n' "$*"; }
+
+usage() {
+  say "Usage: ./install.sh [-y] [-n] [-h]"
+  say "  -y   non-interactive: link this OS's default components"
+  say "  -n   dry run (print actions, make no changes)"
+  say "  -h   this help"
+}
+
+platform_match() { [ "$1" = all ] || [ "$1" = "$OSKEY" ]; }
+
+# Applicable keys for this OS (in registry order), and the initial selection.
+KEYS=""
+ENABLED=" "
+while IFS='|' read -r key def plat label; do
+  [ -z "$key" ] && continue
+  platform_match "$plat" || continue
+  KEYS="$KEYS $key"
+  [ "$def" = on ] && ENABLED="$ENABLED$key "
+done <<EOF
+$REGISTRY
+EOF
+
+label_of() {
+  while IFS='|' read -r key _def _plat label; do
+    [ "$key" = "$1" ] && { printf '%s' "$label"; return 0; }
+  done <<EOF
+$REGISTRY
+EOF
+}
+
+is_enabled() { case "$ENABLED" in *" $1 "*) return 0 ;; *) return 1 ;; esac; }
+toggle() {
+  if is_enabled "$1"; then ENABLED=$(printf '%s' "$ENABLED" | sed "s/ $1 / /")
+  else ENABLED="$ENABLED$1 "; fi
+}
+
+# --- link SRC DEST -----------------------------------------------------------
+# Symlink DEST -> SRC, backing up anything real that's already there.
+link() {
+  src="$1"; dest="$2"
+  if [ ! -e "$src" ]; then
+    say "  ${YLW}[miss]${RST}   $src ${DIM}(no source; skipped)${RST}"; return 0
+  fi
+  if [ -L "$dest" ] && [ "$(readlink "$dest")" = "$src" ]; then
+    say "  ${DIM}[ok]     $dest${RST}"; return 0
+  fi
+  if [ "$DRY" -eq 1 ]; then
+    if   [ -L "$dest" ]; then say "  ${GRN}[relink]${RST} $dest ${DIM}(dry)${RST}"
+    elif [ -e "$dest" ]; then say "  ${YLW}[backup+link]${RST} $dest ${DIM}(dry)${RST}"
+    else                      say "  ${GRN}[link]${RST}   $dest ${DIM}(dry)${RST}"; fi
+    return 0
+  fi
+  mkdir -p "$(dirname "$dest")"
+  if [ -L "$dest" ]; then
+    ln -sfn "$src" "$dest"; say "  ${GRN}[relink]${RST} $dest -> $src"
+  elif [ -e "$dest" ]; then
+    mv "$dest" "$dest.bak.$TS"; ln -sfn "$src" "$dest"
+    say "  ${YLW}[backup]${RST} $dest -> $dest.bak.$TS"
+    say "  ${GRN}[link]${RST}   $dest -> $src"
+  else
+    ln -sfn "$src" "$dest"; say "  ${GRN}[link]${RST}   $dest -> $src"
+  fi
+}
+
+# --- per-component link sets -------------------------------------------------
+do_links() {
+  case "$1" in
+    zsh)
+      link "$DOTFILES/zsh/zshenv"   "$HOME/.zshenv"
+      link "$DOTFILES/zsh/zshrc"    "$CONFIG/zsh/.zshrc"
+      link "$DOTFILES/zsh/zprofile" "$CONFIG/zsh/.zprofile"
+      link "$DOTFILES/zsh/p10k.zsh" "$CONFIG/zsh/.p10k.zsh" ;;
+    alacritty) link "$DOTFILES/alacritty" "$CONFIG/alacritty" ;;
+    zellij)    link "$DOTFILES/zellij"    "$CONFIG/zellij" ;;
+    lvim)      link "$DOTFILES/lvim"      "$CONFIG/lvim" ;;
+    nvim)      link "$DOTFILES/nvim"      "$CONFIG/nvim" ;;
+    bob)       link "$DOTFILES/bob"       "$CONFIG/bob" ;;
+    atuin)     link "$DOTFILES/atuin"     "$CONFIG/atuin" ;;
+    fastfetch) link "$DOTFILES/fastfetch" "$CONFIG/fastfetch" ;;
+    yazi)      link "$DOTFILES/yazi"      "$CONFIG/yazi" ;;
+    lazygit)   link "$DOTFILES/lazygit"   "$CONFIG/lazygit" ;;
+    tmux)      link "$DOTFILES/tmux/tmux.conf" "$HOME/.tmux.conf" ;;
+    bash)
+      link "$DOTFILES/bash/bashrc"       "$HOME/.bashrc"
+      link "$DOTFILES/bash/bash_profile" "$HOME/.bash_profile"
+      link "$DOTFILES/bash/bash_logout"  "$HOME/.bash_logout" ;;
+    karabiner)
+      # only the complex-modification rule, not the whole live config dir
+      link "$DOTFILES/karabiner/alacritty.json" \
+           "$CONFIG/karabiner/assets/complex_modifications/alacritty.json" ;;
+    xmodmap)   link "$DOTFILES/Xmodmap/Xmodmap" "$HOME/.Xmodmap" ;;
+    hyprland)  link "$DOTFILES/hyprland"        "$CONFIG/hypr" ;;
+  esac
+}
+
+# --- interactive menu --------------------------------------------------------
+render() {
+  [ -t 1 ] && printf '\033[2J\033[3J\033[H'
+  say "${BOLD}== choose what to symlink ==${RST}   ${DIM}os: $OSKEY${RST}"
+  say "${DIM}number = toggle    a = all    n = none    c = continue    q = quit${RST}"
+  say ""
+  i=0
+  for k in $KEYS; do
+    i=$((i + 1))
+    if is_enabled "$k"; then mark="${GRN}[x]${RST}"; else mark="${DIM}[ ]${RST}"; fi
+    printf "  %2d) %b %-10s ${DIM}%s${RST}\n" "$i" "$mark" "$k" "$(label_of "$k")"
+  done
+  say ""
+}
+
+menu() {
+  while :; do
+    render
+    printf 'choice> '
+    if ! read -r choice; then echo; break; fi
+    case "$choice" in
+      ''|c|C) break ;;
+      q|Q)    say "aborted — nothing changed."; exit 0 ;;
+      a|A)    ENABLED=" "; for k in $KEYS; do ENABLED="$ENABLED$k "; done ;;
+      n|N)    ENABLED=" " ;;
+      *[!0-9]*) ;;                       # ignore non-numeric junk
+      *)
+        j=0; sel=""
+        for k in $KEYS; do j=$((j + 1)); [ "$j" = "$choice" ] && { sel="$k"; break; }; done
+        [ -n "$sel" ] && toggle "$sel" ;;
+    esac
+  done
+}
+
+confirm() {
+  [ -t 1 ] && printf '\033[2J\033[3J\033[H'
+  say "${BOLD}== will symlink ==${RST}"
+  any=0
+  for k in $KEYS; do is_enabled "$k" && { say "  ${GRN}+${RST} $k"; any=1; }; done
+  [ "$any" -eq 0 ] && { say "${YLW}nothing selected — aborting.${RST}"; exit 0; }
+  say ""
+  printf 'proceed? [y/N] '
+  read -r ans || ans=""
+  case "$ans" in y|Y|yes|YES) return 0 ;; *) say "aborted — nothing changed."; exit 0 ;; esac
+}
+
+# --- options -----------------------------------------------------------------
+while getopts "ynh" opt; do
+  case "$opt" in
+    y) ASSUME_YES=1 ;;
+    n) DRY=1 ;;
+    h) usage; exit 0 ;;
+    *) usage; exit 1 ;;
+  esac
+done
+
+say "${DIM}dotfiles: $DOTFILES${RST}"
+[ "$DRY" -eq 1 ] && say "${YLW}(dry run — no changes will be made)${RST}"
+
+# Choose selection: -y / no-TTY use defaults; otherwise drive the menu.
+if [ "$ASSUME_YES" -eq 1 ]; then
+  :
+elif [ -t 0 ] || [ "${INSTALL_INTERACTIVE:-0}" = 1 ]; then
+  menu
+  confirm
+else
+  say "${YLW}no TTY: linking default selection (pass -y to silence, or run in a terminal to choose).${RST}"
 fi
 
-# First need to source the zshenv for XDG variables
-ZSHENV="$DOTFILES/zsh/zshenv"
-source "$ZSHENV"
-
-setup_zsh() {
-
-	echo -e "Starting ${txtgrn}zsh${txtwht} dotfiles installation !"
-
-
-	# 0) Install Zap (zsh plugin manager)
-	zsh <(curl -s https://raw.githubusercontent.com/zap-zsh/zap/master/install.zsh) --branch release-v1 --keep
-
-	# 1) Make zsh config
-	mkdir -p "$ZDOTDIR"
-	ln -sf "$ZSHENV" "$HOME/.zshenv"
-	ln -sf "$DOTFILES/zsh/p10k.zsh" "$ZDOTDIR/.p10k.zsh"
-	ln -sf "$DOTFILES/zsh/zshrc" "$ZDOTDIR/.zshrc"
-}
-
-setup_symlinks() {
-	ln -sf "${DOTFILES}/alacritty" "${XDG_CONFIG_HOME}/"
-	ln -sf "${DOTFILES}/zellij" "${XDG_CONFIG_HOME}/"
-	ln -sf "${DOTFILES}/lvim" "${XDG_CONFIG_HOME}/"
-	ln -sf "${DOTFILES}/nvim" "${XDG_CONFIG_HOME}/"
-	ln -sf "${DOTFILES}/bob" "${XDG_CONFIG_HOME}/"
-}
-
-
-test() { 
-	echo ""
-	echo "-------- TESTING --------"
-	echo "HOME = $XDG_CONFIG_HOME"
-	echo "-------------------------"
-}
-
-# option handling
-while getopts ":t" opt; do
-	case $opt in
-		t)
-			test
-			exit 0
-			;;
-		/?)
-			echo "$0: invalid option -- '$OPTARG'"
-			echo "Try '$0 -h' for more information."
-			exit 1
-			;;
-	esac
+# --- apply -------------------------------------------------------------------
+for k in $KEYS; do
+  is_enabled "$k" || continue
+  say ""
+  say "${BOLD}== $k ==${RST}"
+  do_links "$k"
 done
-shift $((OPTIND - 1))
+
+say ""
+say "${DIM}not linked: ssh/config (live one diverges), gitconfig (no git/ in repo), binaries (layer 2).${RST}"
+say "${GRN}done.${RST} open a new terminal (or run: exec zsh -l) to pick up changes."
