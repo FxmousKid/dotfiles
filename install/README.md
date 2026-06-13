@@ -1,125 +1,84 @@
-# Install
+# install
 
-Bootstrap scripts for these dotfiles. Two independent, table-driven layers:
+Scripts to set these dotfiles up on a machine.
 
-| Script | Table | Job |
-| --- | --- | --- |
-| `install.sh` | `REGISTRY` | **Symlink configs** into `~` / `~/.config` |
-| `install-tools.sh` | `TOOLS` | **Install the CLI binaries** (brew → dnf → eget) |
+- `install.sh` — makes the symlinks (configs).
+- `install-tools.sh` — installs the CLI programs.
 
-Both are POSIX `sh`, idempotent, non-destructive, and interactive by default. The
-menus build themselves from the tables — to add a program you edit a table, never
-the menu code.
+Both are POSIX sh, safe to re-run, and ask before changing anything.
 
-## Quick start
+## Run it
 
 ```sh
 git clone <repo> ~/.dotfiles
 cd ~/.dotfiles
-./install/install.sh        # pick configs, then it offers to install tools too
+./install/install.sh
 ```
 
-On a fresh machine you only need `sh`, `git`, and `curl`.
+It shows a menu, you pick what you want, it links it, then offers to install the
+tools too. On a fresh machine you only need `sh`, `git`, and `curl`.
 
-## Flags
+## Flags (both scripts)
 
-Both scripts share the same flags:
-
-| Flag | Effect |
+| Flag | What it does |
 | --- | --- |
-| *(none)* | Interactive menu: pick what you want, review, confirm. |
-| `-y` | Non-interactive. `install.sh` links this OS's defaults; `install-tools.sh` installs all missing tools. Use for `curl \| sh` / no-TTY. |
-| `-n` | Dry run — print exactly what would happen, change nothing. **Run this first if unsure.** |
-| `-h` | Help. |
+| (none) | menu: pick, review, confirm |
+| `-y` | skip the menu, just do the defaults |
+| `-n` | dry run: show what would happen, change nothing |
+| `-h` | help |
 
-Menu controls: `number` = toggle a row, `a` = all, `n` = none, `c` = continue, `q` = quit. Then a final `[y/N]` confirm before anything is touched.
-
-## How symlinking works (`install.sh`)
-
-`REGISTRY` rows are `key|default|platform|label`:
-
-| Field | Meaning |
-| --- | --- |
-| `key` | Short id. Must match the `do_links()` case. Shown in the menu. |
-| `default` | `on` = pre-checked, `off` = listed but unchecked. |
-| `platform` | `all`, `darwin` (macOS), or `linux`. Row only appears/links on that OS. |
-| `label` | Description shown in the menu. |
-
-The matching `do_links()` case decides *where* it links via the `link SRC DEST` helper:
-
-```sh
-bat) link "$DOTFILES/bat" "$CONFIG/bat" ;;
-```
-
-`link` is safe by design:
-
-- Already the correct symlink → **skipped** (`[ok]`).
-- A real file/dir in the way → **moved to `<target>.bak.<timestamp>`**, then linked.
-- A wrong symlink → repointed.
-
-`DEST` is usually `$CONFIG/<name>` (XDG) or `$HOME/.<name>` (a home dotfile, like `tmux`).
-
-## How tool install works (`install-tools.sh`)
-
-`TOOLS` rows are `bin|brew|dnf|copr|gh_repo|custom_fn`:
-
-| Field | Meaning |
-| --- | --- |
-| `bin` | Command used to check presence (`command -v <bin>`). |
-| `brew` | Homebrew formula (macOS). |
-| `dnf` | dnf package (Fedora). |
-| `copr` | Optional copr repo to enable first (blank if none). |
-| `gh_repo` | `owner/repo` for the eget release-binary fallback. |
-| `custom_fn` | Name of a shell function, for bespoke installers only (blank usually). |
-
-For each selected tool the resolver stops at the first method that applies:
-
-```
-already present  →  custom_fn  →  brew  →  dnf (+copr)  →  eget  →  skip
-```
-
-- **eget** is the release-binary fallback. It is bootstrapped once into `~/.local/bin`,
-  then `eget owner/repo --to ~/.local/bin` auto-detects OS + arch and extracts the right
-  asset — so there is no per-arch logic to maintain, and no root needed.
-- `~/.local/bin` is already on `PATH` via `zsh/zshenv`.
-- The menu marks installed tools `[✓]` and missing ones `[x]` with the method that will be used.
-
-**Custom installers** (no package, bespoke steps — e.g. `lvim`, `zap`, `nvim` via `bob`)
-are shell functions named in the `custom_fn` column:
-
-```sh
-install_bat() { curl -fsSL https://example/install.sh | sh; }
-# then in TOOLS:   bat|||||install_bat
-```
+Menu keys: a number toggles a row, `a` = all, `n` = none, `c` = continue, `q` = quit.
 
 ## Adding a program
 
-A program can live in **either or both** layers: config-only, binary-only (e.g. `rg`,
-`tree`), or both. Example — manage `bat`'s config *and* auto-install it everywhere:
+Each script reads a table. You add a row — you never touch the menu code.
 
-```sh
-# 1. install/install.sh  (symlink its config)
-#    REGISTRY  -> add a row:
-bat|on|all|cat clone with syntax highlighting
-#    do_links()-> add a case:
-bat) link "$DOTFILES/bat" "$CONFIG/bat" ;;
+A program can be in either or both scripts:
 
-# 2. install/install-tools.sh  (install the binary)
-#    TOOLS     -> add a row:
+- it has a config to link → `install.sh`
+- it needs its binary installed → `install-tools.sh`
+
+### Link its config (`install.sh`)
+
+1. Put the config in the repo (e.g. `bat/config`).
+2. Add a row to `REGISTRY` — `key|default|platform|label`:
+
+   ```
+   bat|on|all|cat with colors
+   ```
+
+3. Add a line to `do_links()`:
+
+   ```sh
+   bat) link "$DOTFILES/bat" "$CONFIG/bat" ;;
+   ```
+
+`link` backs up anything real already in the way (`*.bak.<time>`) and skips links
+that are already correct. `default` is on/off (pre-checked in the menu),
+`platform` is `all`, `darwin`, or `linux`.
+
+### Install its binary (`install-tools.sh`)
+
+Add a row to `TOOLS` — `bin|brew|dnf|copr|gh_repo|custom_fn`:
+
+```
 bat|bat|bat||sharkdp/bat|
 ```
 
-(Plus drop the actual config in the repo, e.g. `bat/config`.) That's it — `bat` now
-appears in both menus, links to `~/.config/bat`, and installs via brew / dnf / eget.
+For each tool it tries, in order: already installed → custom function → brew →
+dnf → eget (downloads the GitHub release into `~/.local/bin`). It stops at the
+first one that works. `bin` is the command it checks for; leave a field blank if
+it doesn't apply. For odd installers, write a function and name it in
+`custom_fn` (see `install_lvim`, `install_zap`).
 
-## Intentionally not handled
+## Not handled on purpose
 
-- **`ssh/config`** — the live `~/.ssh/config` tends to diverge per machine; reconcile by hand before adding a row.
-- **`~/.gitconfig`** — no `git/` dir in the repo yet. To manage it: add `git/gitconfig`, a `git|on|all|git config` REGISTRY row, and `git) link "$DOTFILES/git/gitconfig" "$HOME/.gitconfig" ;;`.
+- `ssh/config` — your live one differs per machine, so do it by hand.
+- `~/.gitconfig` — not in the repo yet. To add it: put `git/gitconfig` in the
+  repo, add a `git` row, and `git) link "$DOTFILES/git/gitconfig" "$HOME/.gitconfig" ;;`.
 
 ## Notes
 
-- **Always safe to re-run** — both scripts skip what's already done.
-- `INSTALL_INTERACTIVE=1` forces the menu even without a TTY (used for testing).
-- Backups (`*.bak.<timestamp>`) are never deleted automatically — clean them up yourself once you're happy.
-- Tools live in their own folders at the repo root; this folder only holds the installers.
+- Safe to re-run; it skips what's already done.
+- Backups are never deleted for you.
+- `~/.local/bin` is already on your PATH (set in `zsh/zshenv`).

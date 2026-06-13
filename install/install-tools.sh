@@ -10,8 +10,8 @@
 #    5. GitHub release         -> eget <repo> --to ~/.local/bin   (no root)
 #    6. nothing applies        -> warn and skip
 #
-#  eget auto-detects OS+arch and extracts the right asset, so there is no
-#  brittle per-arch logic here. It is bootstrapped once into ~/.local/bin.
+#  eget figures out the OS + arch and grabs the right file, so there's no
+#  per-arch logic here. It gets installed once into ~/.local/bin.
 #
 #  Interactive by default (pick what to install); -y installs all missing,
 #  -n dry-runs (prints the method per tool, changes nothing).

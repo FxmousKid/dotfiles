@@ -1,22 +1,19 @@
 #!/bin/sh
 # =============================================================================
-#  install.sh — symlink these dotfiles into place, interactively.
+#  install.sh — link these dotfiles into place.
 #
-#  POSIX sh. Idempotent and non-destructive: anything real already sitting at a
-#  target is moved aside to <target>.bak.<timestamp> before linking, and links
-#  that are already correct are left alone. Safe to re-run.
-#
-#  Interactive by default: toggle which components you want, review, confirm,
-#  then it links only what you validated. No TUI dependency — plain numbered menu.
+#  POSIX sh, safe to re-run. Anything real already in the way is moved to
+#  <target>.bak.<time> first; links that are already correct are left alone.
+#  Shows a menu (pick, confirm), then links only what you chose.
 #
 #  Usage:
-#    ./install/install.sh        choose interactively
-#    ./install/install.sh -y     non-interactive: link this OS's defaults
-#    ./install/install.sh -n     dry run — print what would happen, change nothing
+#    ./install/install.sh        pick from a menu
+#    ./install/install.sh -y     no menu, link this OS's defaults
+#    ./install/install.sh -n     dry run: show what would happen, change nothing
 #    ./install/install.sh -h     help
 #
-#  SYMLINKS ONLY. Installing the binaries (zellij, yazi, lvim, ...) is a
-#  separate step — see install/install-tools.sh (offered at the end here).
+#  This only makes symlinks. To install the programs themselves, see
+#  install/install-tools.sh (offered at the end here).
 # =============================================================================
 
 set -eu
@@ -133,7 +130,8 @@ do_links() {
       link "$DOTFILES/zsh/zshenv"   "$HOME/.zshenv"
       link "$DOTFILES/zsh/zshrc"    "$CONFIG/zsh/.zshrc"
       link "$DOTFILES/zsh/zprofile" "$CONFIG/zsh/.zprofile"
-      link "$DOTFILES/zsh/p10k.zsh" "$CONFIG/zsh/.p10k.zsh" ;;
+      link "$DOTFILES/zsh/p10k.zsh" "$CONFIG/zsh/.p10k.zsh"
+      link "$DOTFILES/zsh/hosts"    "$CONFIG/zsh/hosts" ;;
     alacritty) link "$DOTFILES/alacritty" "$CONFIG/alacritty" ;;
     zellij)    link "$DOTFILES/zellij"    "$CONFIG/zellij" ;;
     lvim)      link "$DOTFILES/lvim"      "$CONFIG/lvim" ;;
