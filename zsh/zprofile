@@ -16,10 +16,8 @@ for _brew in \
 done
 unset _brew
 
-# --- Re-apply our PATH on top of path_helper / brew -------------------------
-# macOS /etc/zprofile just ran path_helper, which dropped our custom PATH
-# entries. Re-run the builder from ~/.zshenv so they come back and take
-# priority (typeset -U keeps everything de-duplicated).
+# --- Put our PATH back after path_helper -------------------------------------
+# macOS just ran path_helper and dropped our PATH dirs. Add them back.
 (( $+functions[zsh_prepend_paths] )) && zsh_prepend_paths
 
 # --- Greeting: once per login shell, not on every multiplexer pane -----------

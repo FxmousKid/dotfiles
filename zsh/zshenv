@@ -35,14 +35,9 @@ export MPD_HOST="$XDG_CONFIG_HOME/mpd/socket"
 export ZELLIJ_CONFIG_DIR="$XDG_CONFIG_HOME/zellij"
 
 # --- PATH --------------------------------------------------------------------
-# `typeset -U` keeps the path array de-duplicated no matter how many times this
-# runs — so PATH can never grow on repeated shells/sources. Only existing
-# directories are added (no dead entries).
-#
-# Defined as a function because macOS /etc/zprofile runs `path_helper`, which
-# rebuilds PATH and DROPS custom entries. We call it here (so scripts and Linux
-# get PATH straight away) AND again from ~/.zprofile (after path_helper) so our
-# directories survive and win on macOS login shells.
+# typeset -U = no duplicate PATH entries, ever. Only dirs that exist get added.
+# It's a function because macOS runs path_helper (in /etc/zprofile) after this
+# and wipes our PATH dirs, so ~/.zprofile calls it again to put them back.
 typeset -U path PATH
 zsh_prepend_paths() {
   local dir
@@ -57,8 +52,8 @@ zsh_prepend_paths() {
   done
   [[ -n "$JAVA_HOME" && -d "$JAVA_HOME/bin" ]] && path=("$JAVA_HOME/bin" $path)
 
-  # Device-specific PATHs (version-pinned nvim, etc.) live in hosts/<device>.zsh,
-  # which ~/.zshrc sources afterwards — kept out of here so machines don't clash.
+  # Per-machine PATHs (like the pinned nvim) live in hosts/<name>.zsh,
+  # which zshrc loads later.
 
   # Highest priority: user-local binaries.
   [[ -d "$HOME/.local/bin" ]] && path=("$HOME/.local/bin" $path)
@@ -85,8 +80,8 @@ case "$OSTYPE" in
   *)       export ZSH_OS=other  ;;
 esac
 
-# Stable, non-sensitive machine fingerprint: a truncated hash of a hardware id.
-# Only the HASH is ever committed (see device_name), never the raw id.
+# Short hash of a hardware id, used to tell machines apart.
+# Only the hash goes in the repo, never the real id.
 get_device_id() {
   local raw
   case "$OSTYPE" in
@@ -101,8 +96,8 @@ get_device_id() {
   fi
 }
 
-# Map known device ids -> friendly host names. To add a machine: run
-# `get_device_id`, paste the hash below, and create hosts/<name>.zsh.
+# Match a machine's hash to a name. Add one: run get_device_id, paste the
+# hash here, and create hosts/<name>.zsh.
 device_name() {
   case "$(get_device_id)" in
     12fb04826cee) printf macm1 ;;

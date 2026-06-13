@@ -122,8 +122,7 @@ command -v atuin &>/dev/null && eval "$(atuin init zsh)"
 [[ -r "$HOME/.opam/opam-init/init.zsh" ]] && source "$HOME/.opam/opam-init/init.zsh" >/dev/null 2>&1
 
 # --- Per-machine config ------------------------------------------------------
-# Sourced last so it can override anything above. Matched by hashed device id
-# via device_name() in ~/.zshenv. Add a machine: create hosts/<name>.zsh.
+# Loaded last so it can override anything above. See device_name() in zshenv.
 _host="${ZDOTDIR:-$HOME}/hosts/$(device_name).zsh"
 [[ -r "$_host" ]] && source "$_host"
 unset _host
