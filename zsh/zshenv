@@ -57,16 +57,8 @@ zsh_prepend_paths() {
   done
   [[ -n "$JAVA_HOME" && -d "$JAVA_HOME/bin" ]] && path=("$JAVA_HOME/bin" $path)
 
-  case "$OSTYPE" in
-    darwin*)
-      [[ -d "$RELEASES/nvim-macos-arm64-10.4/bin" ]]      && path=("$RELEASES/nvim-macos-arm64-10.4/bin" $path)
-      [[ -d "$HOME/.antigravity/antigravity/bin" ]]       && path=("$HOME/.antigravity/antigravity/bin" $path)
-      ;;
-    linux*)
-      [[ -d "$RELEASES/nvim/nvim-linux-arm64-10.4/bin" ]] && path=("$RELEASES/nvim/nvim-linux-arm64-10.4/bin" $path)
-      [[ -d "$RELEASES/opam" ]]                           && path=("$RELEASES/opam" $path)
-      ;;
-  esac
+  # Device-specific PATHs (version-pinned nvim, etc.) live in hosts/<device>.zsh,
+  # which ~/.zshrc sources afterwards — kept out of here so machines don't clash.
 
   # Highest priority: user-local binaries.
   [[ -d "$HOME/.local/bin" ]] && path=("$HOME/.local/bin" $path)
@@ -85,3 +77,36 @@ export VISUAL="$EDITOR"
 
 # --- GPG (interactive only; avoids a tty lookup in scripts) ------------------
 [[ -o interactive ]] && export GPG_TTY="$TTY"
+
+# --- OS key + per-machine fingerprint ----------------------------------------
+case "$OSTYPE" in
+  darwin*) export ZSH_OS=darwin ;;
+  linux*)  export ZSH_OS=linux  ;;
+  *)       export ZSH_OS=other  ;;
+esac
+
+# Stable, non-sensitive machine fingerprint: a truncated hash of a hardware id.
+# Only the HASH is ever committed (see device_name), never the raw id.
+get_device_id() {
+  local raw
+  case "$OSTYPE" in
+    darwin*) raw="$(ioreg -rd1 -c IOPlatformExpertDevice 2>/dev/null | awk -F'"' '/IOPlatformUUID/{print $4}')" ;;
+    linux*)  raw="$(cat /etc/machine-id 2>/dev/null)" ;;
+  esac
+  [[ -n "$raw" ]] || raw="$(uname -n)"
+  if command -v sha256sum >/dev/null 2>&1; then
+    printf '%s' "$raw" | sha256sum     | cut -c1-12
+  else
+    printf '%s' "$raw" | shasum -a 256 | cut -c1-12
+  fi
+}
+
+# Map known device ids -> friendly host names. To add a machine: run
+# `get_device_id`, paste the hash below, and create hosts/<name>.zsh.
+device_name() {
+  case "$(get_device_id)" in
+    12fb04826cee) printf macm1 ;;
+    # <asahi-hash>) printf asahim1 ;;
+    *)             printf unknown ;;
+  esac
+}

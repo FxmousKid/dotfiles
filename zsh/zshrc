@@ -92,19 +92,13 @@ alias lzd='docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v "
 alias wpscan="docker run -it --rm wpscanteam/wpscan"
 alias fixchr="rm -rf ~/.config/chromium/Singleton*"   # 42 chromium lock fix
 
-# --- Platform-specific aliases -----------------------------------------------
-if [[ "$OSTYPE" == darwin* ]]; then
-  # ESP-IDF (ESP32 devkit) — bump the version to match what's installed
-  alias sidf="source \"\$HOME/.espressif/tools/activate_idf_v5.5.2.sh\""
-elif [[ "$OSTYPE" == linux* ]]; then
+# --- OS-general aliases ------------------------------------------------------
+if [[ "$OSTYPE" == linux* ]]; then
   alias chr="/usr/bin/chromium-browser --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration -enable-features=TouchpadOverscrollHistoryNavigation &"
 fi
 
-# --- Personal (TODO: relocate to ~/.zshrc.local, gitignored) -----------------
-alias visualiser="\$HOME/Desktop/Ecole42/42Cursus/Tools/push_swap_visualizer/build/bin/visualizer && rm imgui.ini"
-alias trsh="alias prev=\"cd \$PWD\" && cd \"\$HOME/.local/share/Trash/files\""
-alias rjenkins="cd ~/Music/Ambient\ Techno\ -\ Rob\ Jenkins && yt-dlp -S abr -f ba"
-alias docfr="mkdir -p \$HOME/Documents/France/ && cd \$HOME/Documents/France/ && rclone sync GoogleDrive:France . --progress && yazi"
+# Device-specific aliases/paths (sidf, visualiser, rjenkins, ...) now live in
+# hosts/<device>.zsh, sourced at the bottom of this file.
 
 # --- Functions ---------------------------------------------------------------
 # yazi: cd into the directory you were in when you quit it (q), like ranger.
@@ -126,3 +120,10 @@ command -v atuin &>/dev/null && eval "$(atuin init zsh)"
 
 # opam (OCaml)
 [[ -r "$HOME/.opam/opam-init/init.zsh" ]] && source "$HOME/.opam/opam-init/init.zsh" >/dev/null 2>&1
+
+# --- Per-machine config ------------------------------------------------------
+# Sourced last so it can override anything above. Matched by hashed device id
+# via device_name() in ~/.zshenv. Add a machine: create hosts/<name>.zsh.
+_host="${ZDOTDIR:-$HOME}/hosts/$(device_name).zsh"
+[[ -r "$_host" ]] && source "$_host"
+unset _host
