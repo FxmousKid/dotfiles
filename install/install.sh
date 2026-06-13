@@ -10,18 +10,19 @@
 #  then it links only what you validated. No TUI dependency — plain numbered menu.
 #
 #  Usage:
-#    ./install.sh        choose interactively
-#    ./install.sh -y     non-interactive: link this OS's defaults (for curl|sh)
-#    ./install.sh -n     dry run — print what would happen, change nothing
-#    ./install.sh -h     help
+#    ./install/install.sh        choose interactively
+#    ./install/install.sh -y     non-interactive: link this OS's defaults
+#    ./install/install.sh -n     dry run — print what would happen, change nothing
+#    ./install/install.sh -h     help
 #
 #  SYMLINKS ONLY. Installing the binaries (zellij, yazi, lvim, ...) is a
-#  separate step — see bin/ (TODO, layer 2).
+#  separate step — see install/install-tools.sh (offered at the end here).
 # =============================================================================
 
 set -eu
 
-DOTFILES="$(cd "$(dirname "$0")" && pwd)"
+# repo root is one level up from this script (install/)
+DOTFILES="$(cd "$(dirname "$0")/.." && pwd)"
 CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}"
 OS="$(uname)"
 TS="$(date +%Y%m%d-%H%M%S)"
@@ -63,7 +64,7 @@ fi
 say() { printf '%b\n' "$*"; }
 
 usage() {
-  say "Usage: ./install.sh [-y] [-n] [-h]"
+  say "Usage: ./install/install.sh [-y] [-n] [-h]"
   say "  -y   non-interactive: link this OS's default components"
   say "  -n   dry run (print actions, make no changes)"
   say "  -h   this help"
@@ -234,5 +235,16 @@ for k in $KEYS; do
 done
 
 say ""
-say "${DIM}not linked: ssh/config (live one diverges), gitconfig (no git/ in repo), binaries (layer 2).${RST}"
-say "${GRN}done.${RST} open a new terminal (or run: exec zsh -l) to pick up changes."
+say "${DIM}not linked: ssh/config (live one diverges), gitconfig (no git/ in repo).${RST}"
+say "${GRN}symlinks done.${RST} open a new terminal (or run: exec zsh -l) to pick them up."
+
+# --- offer layer 2 (binaries) ------------------------------------------------
+TOOLS_SCRIPT="$DOTFILES/install/install-tools.sh"
+if [ -x "$TOOLS_SCRIPT" ] && [ "$ASSUME_YES" -ne 1 ] && { [ -t 0 ] || [ "${INSTALL_INTERACTIVE:-0}" = 1 ]; }; then
+  printf '\ninstall/upgrade missing tools now? [y/N] '
+  read -r ans || ans=""
+  case "$ans" in
+    y|Y|yes|YES) if [ "$DRY" -eq 1 ]; then "$TOOLS_SCRIPT" -n; else "$TOOLS_SCRIPT"; fi ;;
+    *)           say "${DIM}skipped — run ./install/install-tools.sh whenever you want.${RST}" ;;
+  esac
+fi
