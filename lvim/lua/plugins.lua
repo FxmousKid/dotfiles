@@ -1,6 +1,5 @@
 lvim.plugins = {
 	{ "github/copilot.vim" },
-	-- {	"pocco81/auto-save.nvim" },
 	{ "fxmouskid/codesnap.nvim", build = "make build_generator" },
 	{ "p00f/clangd_extensions.nvim" },
 	{ "Djancyp/better-comments.nvim" },
@@ -11,21 +10,21 @@ lvim.plugins = {
 	{
 		"danymat/neogen",
 		-- Uncomment next line if you want to follow only stable versions
-		-- version = "*" 
+		-- version = "*"
 	},
 
 
 	{
-	  "ludovicchabant/vim-gutentags",
-	  init = function()
-		vim.g.gutentags_modules = {"cscope_maps"} -- This is required. Other config is optional
-		vim.g.gutentags_cscope_build_inverted_index_maps = 1
-		vim.g.gutentags_cache_dir = (vim.env.XDG_CACHE_HOME or (vim.fn.expand("~/.cache"))) .. "/gutentags"
-		-- ⚠️ WARNING: This limits tags to .c and .h files only, add more extensions (e.g., `-e py`) or remove to avoid skipping other files.
-		vim.g.gutentags_file_list_command = "fd -e c -e h -e py"
+		"ludovicchabant/vim-gutentags",
+		init = function()
+			vim.g.gutentags_modules = {"cscope_maps"} -- This is required. Other config is optional
+			vim.g.gutentags_cscope_build_inverted_index_maps = 1
+			vim.g.gutentags_cache_dir = (vim.env.XDG_CACHE_HOME or (vim.fn.expand("~/.cache"))) .. "/gutentags"
+			-- ⚠️ WARNING: This limits tags to .c and .h files only, add more extensions (e.g., `-e py`) or remove to avoid skipping other files.
+			vim.g.gutentags_file_list_command = "fd -e c -e h -e py"
 
-		-- vim.g.gutentags_trace = 1
-	  end,
+			-- vim.g.gutentags_trace = 1
+		end,
 	},
 
 
@@ -85,39 +84,6 @@ lvim.plugins = {
 			vim.g.vimtex_compiler_latexmk_engines = { ["_"] = "-lualatex"}
 			vim.g.vimtex_compiler_method = "latexmk"
 		end,
-    },
-
-	-- Better Navigation
-	-- {
-	-- 	"folke/flash.nvim",
-	-- 	event = "VeryLazy",
-	-- 	opts = {},
-	-- 	-- stylua: ignore
-	-- 	keys = {
-	-- 		{ "s", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
-	-- 		{ "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
-	-- 		{ "r", mode = "o", function() require("flash").remote() end, desc = "Remote Flash" },
-	-- 		{ "R", mode = { "o", "x" }, function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
-	-- 		{ "<c-s>", mode = { "c" }, function() require("flash").toggle() end, desc = "Toggle Flash Search" },
-	-- 	},
-	-- },
-
-	-- Color Themes
-	{
-		"ellisonleao/gruvbox.nvim",
-		priority = 1000,
-		config = true
-	},
-	{
-		'sainnhe/gruvbox-material',
-		lazy = false,
-		priority = 1000,
-		config = function()
-			-- Optionally configure and load the colorscheme
-			-- directly inside the plugin declaration.
-			vim.g.gruvbox_material_enable_italic = true
-			vim.cmd.colorscheme('gruvbox-material')
-		end
 	},
 
 	{
@@ -148,36 +114,6 @@ lvim.plugins = {
 		lazy = false
 	},
 
-	-- {
-	-- 	"mfussenegger/nvim-dap",
-	-- 	lazy = true,
-	-- 	dependencies = {
-	-- 		"rcarriga/nvim-dap-ui",
-	-- 	},
-	-- 	enabled = lvim.builtin.dap.active,
-
-	-- 	config = function()
-	-- 		require("lvim.core.dap").setup()
-	-- 		local dap = require("lvim.core.dap")
-	-- 		local dapui = require("dapui")
-	-- 		dap.listeners.before.attach.dapui_config = function()
-	-- 			dapui.open()
-	-- 		end
-	-- 		dap.listeners.before.launch.dapui_config = function()
-	-- 			dapui.open()
-	-- 		end
-	-- 		dap.listeners.before.event_terminated.dapui_config = function()
-	-- 			dapui.close()
-	-- 		end
-	-- 		dap.listeners.before.event_exited.dapui_config = function()
-	-- 			dapui.close()
-	-- 		end
-
-	-- 		vim.keymap.set('n', '<Leader>dt', dap.toggle_breakpoint, {})
-	-- 		vim.keymap.set('n', "<leader>dc", dap.continue, {})
-	-- 	end,
-	-- },
-
 	{
 		"rcarriga/nvim-dap-ui",
 		lazy = true,
@@ -193,19 +129,6 @@ lvim.plugins = {
 		config = function()
 			local header = require("42header")
 			header.setup({
-				default_map = false, -- default mapping <F1> in normal mode
-				auto_update = true,
-			})
-		end,
-	},
-	{
-		"fxmouskid/uparis-header.nvim",
-		lazy = false,
-		config = function()
-			local header = require("uparis-header")
-			header.setup({
-				user = "Iyan Nazarian",
-				mail = "iyan.nazarian@etu.u-paris.fr",
 				default_map = false, -- default mapping <F1> in normal mode
 				auto_update = true,
 			})
@@ -254,7 +177,7 @@ lvim.plugins = {
 	},
 
 	{
-		 "OXY2DEV/markview.nvim",
+		"OXY2DEV/markview.nvim",
 		lazy = false,
 		-- For `nvim-treesitter` users.
 		-- priority = 49,
@@ -265,71 +188,6 @@ lvim.plugins = {
 		}
 	},
 
-
-
-
-	-- NEEDS NVIM > 11.0 BUT NVIM > 11.0 Breaks Treesitter (at least in lvim stable)
-	-- {
-	-- 	"olimorris/codecompanion.nvim",
-	-- 	opts = {},
-	-- 	dependencie = {
-	-- 		"nvim-lua/plenary.nvim",
-	-- 		"nvim-treesitter/nvim-treesitter",
-	-- 	},
-	-- },
-
-
-	--{
-	-- 	"neovim/nvim-lspconfig",
-	-- 	opts = {
-	-- 	servers = {
-	-- 	  -- Ensure mason installs the server
-	-- 	  clangd = {
-	-- 		keys = {
-	-- 		  { "<leader>ch", "<cmd>ClangdSwitchSourceHeader<cr>", desc = "Switch Source/Header (C/C++)" },
-	-- 		},
-	-- 		root_dir = function(fname)
-	-- 		  return require("lspconfig.util").root_pattern(
-	-- 			"Makefile",
-	-- 			"configure.ac",
-	-- 			"configure.in",
-	-- 			"config.h.in",
-	-- 			"meson.build",
-	-- 			"meson_options.txt",
-	-- 			"build.ninja"
-	-- 		  )(fname) or require("lspconfig.util").root_pattern("compile_commands.json", "compile_flags.txt")(
-	-- 			fname
-	-- 		  ) or require("lspconfig.util").find_git_ancestor(fname)
-	-- 		end,
-	-- 		capabilities = {
-	-- 		  offsetEncoding = { "utf-16" },
-	-- 		},
-	-- 		cmd = {
-	-- 		  "clangd",
-	-- 		  "--background-index",
-	-- 		  "--clang-tidy",
-	-- 		  "--header-insertion=iwyu",
-	-- 		  "--completion-style=detailed",
-	-- 		  "--function-arg-placeholders",
-	-- 		  "--fallback-style=llvm",
-	-- 		},
-	-- 		init_options = {
-	-- 		  usePlaceholders = true,
-	-- 		  completeUnimported = true,
-	-- 		  clangdFileStatus = true,
-	-- 		},
-	-- 	  },
-	-- 	},
-	-- 	setup = {
-	-- 	  clangd = function(_, opts)
-	-- 		local clangd_ext_opts = lvim.opts("clangd_extensions.nvim")
-	-- 		require("clangd_extensions").setup(vim.tbl_deep_extend("force", clangd_ext_opts or {}, { server = opts }))
-	-- 		return false
-	-- 	  end,
-	-- 	},
-	--   },
-	-- }
-	--  }
 	{
 		"leath-dub/snipe.nvim",
 

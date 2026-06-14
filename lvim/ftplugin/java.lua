@@ -10,6 +10,19 @@ local workspace_path = home .. "/.local/share/lunarvim/jdtls-workspace/"
 local project_name = vim.fn.fnamemodify(vim.fn.getcwd(), ":p:h:t")
 local workspace_dir = workspace_path .. project_name
 
+-- Detect installed JDKs (SDKMAN) instead of hardcoding versions.
+-- When empty, jdtls just uses the JDK that launches it.
+local function detect_runtimes()
+  local runtimes = {}
+  local java_dir = (os.getenv("SDKMAN_DIR") or (home .. "/.sdkman")) .. "/candidates/java"
+  for _, dir in ipairs(vim.fn.glob(java_dir .. "/*", true, true)) do
+    if vim.fn.isdirectory(dir) == 1 then
+      table.insert(runtimes, { name = "JavaSE-" .. vim.fn.fnamemodify(dir, ":t"), path = dir })
+    end
+  end
+  return runtimes
+end
+
 local capabilities = require("lvim.lsp").common_capabilities()
 local extendedClientCapabilities = jdtls.extendedClientCapabilities
 extendedClientCapabilities.resolveAdditionalTextEditsSupport = true
@@ -64,16 +77,7 @@ local config = {
       },
       configuration = {
         updateBuildConfiguration = "interactive",
-        runtimes = {
-          {
-            name = "JavaSE-11",
-            path = "~/.sdkman/candidates/java/11.0.17-tem",
-          },
-          {
-            name = "JavaSE-18",
-            path = "~/.sdkman/candidates/java/18.0.2-sem",
-          },
-        },
+        runtimes = detect_runtimes(),
       },
       maven = {
         downloadSources = true,

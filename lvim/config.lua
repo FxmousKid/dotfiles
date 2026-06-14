@@ -67,3 +67,6 @@ vim.api.nvim_create_autocmd("ColorScheme", {
 
 -- Apply once on startup too
 vim.api.nvim_exec_autocmds("ColorScheme", {})
+
+-- Machine-local / private overrides (lua/local.lua, gitignored). Optional.
+pcall(require, "local")
