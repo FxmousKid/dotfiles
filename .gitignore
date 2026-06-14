@@ -1,4 +1,5 @@
 lvim/lazy-lock.json
+lvim/lua/local.lua
 .nvimlog
 Untitled
 *.bak
