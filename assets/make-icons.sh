@@ -17,7 +17,7 @@ mkdir -p "$OUT"
 TILES="
 zsh|5E60CE|si:zsh
 bash|4EAA25|si:gnubash
-lvim|57A143|si:neovim
+lvim|A277FF|moon:
 nvim|57A143|si:neovim
 bob|6A4C93|mono:B
 alacritty|F46D01|si:alacritty
@@ -56,11 +56,21 @@ tile_mono() {  # name color letter
   } > "$OUT/$1.svg"
 }
 
+tile_moon() {  # name color  — crescent (white disk + a bg-colored bite) and a star
+  { open_svg "$2"
+    printf '  <circle cx="60" cy="44" r="24" fill="#ffffff"/>\n'
+    printf '  <circle cx="72" cy="38" r="20" fill="#%s"/>\n' "$2"
+    printf '  <circle cx="82" cy="26" r="2.4" fill="#ffffff"/>\n'
+    label "$1"
+  } > "$OUT/$1.svg"
+}
+
 printf '%s\n' "$TILES" | while IFS='|' read -r name color src; do
   [ -z "$name" ] && continue
   case "$src" in
     si:*)   tile_si   "$name" "$color" "${src#si:}" ;;
     mono:*) tile_mono "$name" "$color" "${src#mono:}" ;;
+    moon:*) tile_moon "$name" "$color" ;;
   esac
   echo "  $name.svg"
 done
