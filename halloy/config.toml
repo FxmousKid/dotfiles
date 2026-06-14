@@ -1,0 +1,16 @@
+# Halloy config.
+#
+# Full options: https://halloy.chat/configuration.html
+#
+# Anonymized template — fill in your own values. Keep real passwords OUT of the
+# repo: set them on the machine only, or use your OS keychain.
+
+[servers.libera]
+nickname = "your_nick"
+server = "irc.libera.chat"
+port = 6697
+use_tls = true
+channels = ["#your-channel"]
+
+# password = "..."                      # set locally; never commit
+# dangerously_accept_invalid_certs = true   # only for a self-signed-cert server
