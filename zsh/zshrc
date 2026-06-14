@@ -61,8 +61,8 @@ alias tgt="tree -I ./.git"
 alias agf='ag -l -g "" | fzf'        # fuzzy file finder (no longer shadows fzf)
 
 # --- Aliases: edit configs ---------------------------------------------------
-alias szh="source \$ZDOTDIR/.zshrc"                       # reload this file
-alias ezh="\$EDITOR \$ZDOTDIR/.zshrc"
+alias szh="cd \$ZDOTDIR && source \$ZDOTDIR/.zshrc"       # reload (lands in \$ZDOTDIR; cd - to go back)
+alias ezh="cd \$ZDOTDIR && \$EDITOR \$ZDOTDIR/.zshrc"     # edit   (lands in \$ZDOTDIR; cd - to go back)
 alias elc="\$EDITOR \$HOME/.config/lvim/config.lua"
 alias elp="\$EDITOR \$HOME/.config/lvim/lua/plugins.lua"
 
@@ -96,6 +96,20 @@ alias fixchr="rm -rf ~/.config/chromium/Singleton*"   # 42 chromium lock fix
 if [[ "$OSTYPE" == linux* ]]; then
   alias chr="/usr/bin/chromium-browser --ozone-platform-hint=auto --enable-features=WaylandWindowDecoration -enable-features=TouchpadOverscrollHistoryNavigation &"
 fi
+
+# --- Custom functions --------------------------------------------------------
+# Function to share static files to my vps
+share() {
+    local f="$1"
+    [ -f "$f" ] || { echo "usage: share <file>"; return 1; }
+    local tok name
+    tok=$(openssl rand -hex 5)
+    name=$(basename "$f")
+    ssh fxmousVPS "mkdir -p ~/share/$tok" || return 1
+    scp -q "$f" "fxmousVPS:~/share/$tok/" || return 1
+    echo "https://share.iyan.nz/$tok/$name"
+}
+
 
 # Device-specific aliases/paths (sidf, visualiser, rjenkins, ...) now live in
 # hosts/<device>.zsh, sourced at the bottom of this file.
