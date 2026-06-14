@@ -122,7 +122,10 @@ command -v atuin &>/dev/null && eval "$(atuin init zsh)"
 [[ -r "$HOME/.opam/opam-init/init.zsh" ]] && source "$HOME/.opam/opam-init/init.zsh" >/dev/null 2>&1
 
 # --- Per-machine config ------------------------------------------------------
-# Loaded last so it can override anything above. See device_name() in zshenv.
-_host="${ZDOTDIR:-$HOME}/hosts/$(device_name).zsh"
-[[ -r "$_host" ]] && source "$_host"
-unset _host
+# Loaded last so it can override anything above. device_name() comes from
+# ~/.zshenv; guard in case zshenv didn't load, so we never error here.
+if (( $+functions[device_name] )); then
+  _host="${ZDOTDIR:-$HOME}/hosts/$(device_name).zsh"
+  [[ -r "$_host" ]] && source "$_host"
+  unset _host
+fi
