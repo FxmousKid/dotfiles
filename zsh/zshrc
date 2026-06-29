@@ -143,3 +143,8 @@ if (( $+functions[device_name] )); then
   [[ -r "$_host" ]] && source "$_host"
   unset _host
 fi
+
+# --- Final editor pick -------------------------------------------------------
+# Re-run now that hosts/<name>.zsh has added any machine-pinned nvim to PATH,
+# so $EDITOR resolves to nvim/lvim instead of the zshenv vim fallback.
+(( $+functions[set_editor] )) && set_editor

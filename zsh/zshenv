@@ -60,12 +60,18 @@ zsh_prepend_paths() {
 }
 zsh_prepend_paths
 
-# --- Default editor (after PATH so lvim/nvim are resolvable) ------------------
-if   command -v lvim &>/dev/null; then export EDITOR="$(command -v lvim)"
-elif command -v nvim &>/dev/null; then export EDITOR="$(command -v nvim)"
-elif command -v vim  &>/dev/null; then export EDITOR=vim
-fi
-export VISUAL="$EDITOR"
+# --- Default editor ----------------------------------------------------------
+# Called once here for a sane fallback (covers non-interactive shells), and
+# again at the end of ~/.zshrc — after hosts/<name>.zsh has added any
+# machine-pinned nvim, which isn't on PATH yet at this point.
+set_editor() {
+  if   command -v lvim &>/dev/null; then export EDITOR="$(command -v lvim)"
+  elif command -v nvim &>/dev/null; then export EDITOR="$(command -v nvim)"
+  elif command -v vim  &>/dev/null; then export EDITOR=vim
+  fi
+  export VISUAL="$EDITOR"
+}
+set_editor
 
 # --- Rust / Cargo ------------------------------------------------------------
 [[ -f "$HOME/.cargo/env" ]] && . "$HOME/.cargo/env"

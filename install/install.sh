@@ -128,6 +128,9 @@ do_links() {
   case "$1" in
     zsh)
       link "$DOTFILES/zsh/zshenv"   "$HOME/.zshenv"
+      # also under $ZDOTDIR: nested zsh (a shell you type, a zellij pane) reads
+      # $ZDOTDIR/.zshenv, not ~/.zshenv — without this it skips all of zshenv.
+      link "$DOTFILES/zsh/zshenv"   "$CONFIG/zsh/.zshenv"
       link "$DOTFILES/zsh/zshrc"    "$CONFIG/zsh/.zshrc"
       link "$DOTFILES/zsh/zprofile" "$CONFIG/zsh/.zprofile"
       link "$DOTFILES/zsh/p10k.zsh" "$CONFIG/zsh/.p10k.zsh"
@@ -153,6 +156,29 @@ do_links() {
     xmodmap)   link "$DOTFILES/Xmodmap/Xmodmap" "$HOME/.Xmodmap" ;;
     hyprland)  link "$DOTFILES/hyprland"        "$CONFIG/hypr" ;;
   esac
+}
+
+# --- post-link: zjstatus permissions -----------------------------------------
+# The zellij status bar (zjstatus.wasm) needs its plugin permissions granted or
+# it renders an empty bar. The grant prompt can't be answered in a 1-row bar
+# pane, so we pre-seed it. Path + format match exactly what zellij writes.
+seed_zellij_perms() {
+  wasm="$CONFIG/zellij/plugins/zjstatus.wasm"
+  [ -e "$wasm" ] || return 0
+  case "$OSKEY" in
+    darwin) perm="$HOME/Library/Caches/org.Zellij-Contributors.Zellij/permissions.kdl" ;;
+    *)      perm="${XDG_CACHE_HOME:-$HOME/.cache}/zellij/permissions.kdl" ;;
+  esac
+  if [ -f "$perm" ] && grep -qF "$wasm" "$perm" 2>/dev/null; then
+    say "  ${DIM}[ok]     zjstatus permissions already granted${RST}"; return 0
+  fi
+  if [ "$DRY" -eq 1 ]; then
+    say "  ${GRN}[grant]${RST}  zjstatus permissions ${DIM}(dry)${RST}"; return 0
+  fi
+  mkdir -p "$(dirname "$perm")"
+  printf '"%s" {\n    RunCommands\n    ReadApplicationState\n    ChangeApplicationState\n}\n' \
+    "$wasm" >> "$perm"
+  say "  ${GRN}[grant]${RST}  zjstatus permissions -> $perm"
 }
 
 # --- interactive menu --------------------------------------------------------
@@ -230,6 +256,7 @@ for k in $KEYS; do
   say ""
   say "${BOLD}== $k ==${RST}"
   do_links "$k"
+  [ "$k" = zellij ] && seed_zellij_perms
 done
 
 say ""
