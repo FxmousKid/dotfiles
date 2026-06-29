@@ -107,6 +107,7 @@ get_device_id() {
 device_name() {
   case "$(get_device_id)" in
     12fb04826cee) printf macm1 ;;
+    3ed86b131638) printf coachm5pro ;;
     # <asahi-hash>) printf asahim1 ;;
     *)             printf unknown ;;
   esac
