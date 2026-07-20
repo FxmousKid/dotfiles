@@ -98,6 +98,7 @@ if [[ "$OSTYPE" == linux* ]]; then
 fi
 
 # --- Custom functions --------------------------------------------------------
+
 # Function to share static files to my vps
 share() {
     local f="$1"
