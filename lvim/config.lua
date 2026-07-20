@@ -2,6 +2,15 @@
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 
+-- JVM-based LSPs (kotlin-language-server, ..) resolve java via JAVA_HOME or
+-- PATH; SDKMAN only exports those in interactive shells, so fill them in here
+-- when the launching environment didn't.
+local sdkman_java = (os.getenv("SDKMAN_DIR") or (os.getenv("HOME") .. "/.sdkman")) .. "/candidates/java/current"
+if not vim.env.JAVA_HOME and vim.fn.isdirectory(sdkman_java) == 1 then
+  vim.env.JAVA_HOME = sdkman_java
+  vim.env.PATH = sdkman_java .. "/bin:" .. vim.env.PATH
+end
+
 -- important config
 require('options')
 lvim.leader = "space"
