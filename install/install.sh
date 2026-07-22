@@ -206,7 +206,9 @@ ensure_default_shell() {
       say "  ${GRN}[shells]${RST} added $zshpath to /etc/shells"
     else
       say "  ${YLW}[warn]${RST}   couldn't add $zshpath to /etc/shells — run manually:"
-      say "  ${YLW}       ${RST}  printf '%s\\n' \"$zshpath\" | sudo tee -a /etc/shells && chsh -s \"$zshpath\""
+      # say() prints via %b, which eats one level of backslashes — hence \\\\n
+      # so the hint displays a literal \n instead of breaking across two lines.
+      say "  ${YLW}       ${RST}  printf '%s\\\\n' \"$zshpath\" | sudo tee -a /etc/shells && chsh -s \"$zshpath\""
       return 0
     fi
   fi

@@ -6,7 +6,10 @@ Scripts to set these dotfiles up on a machine.
 - `install-tools.sh` — installs the CLI programs.
 - `install-lvim.sh` — standalone LunarVim installer (needs Neovim; installs it via bob first). Called by `install-tools.sh`, runnable alone.
 
-Both are POSIX sh, safe to re-run, and ask before changing anything.
+All three are POSIX sh and safe to re-run. `install.sh` and `install-tools.sh`
+are menu-driven and ask before changing anything; `install-lvim.sh` runs
+straight through (preview with `-n`) — its only prompts come from LunarVim's
+own installer and eget's asset picker.
 
 ## Run it
 
@@ -32,7 +35,7 @@ checks `$SHELL`, adds the zsh path to `/etc/shells` if it's missing, runs
 `chsh -s`. Skipped when there's no TTY (it prints the manual command instead);
 `-n` only shows what it would do.
 
-## Flags (both scripts)
+## Flags (`install.sh` / `install-tools.sh`)
 
 | Flag | What it does |
 | --- | --- |
@@ -41,10 +44,13 @@ checks `$SHELL`, adds the zsh path to `/etc/shells` if it's missing, runs
 | `-n` | dry run: show what would happen, change nothing |
 | `-h` | help |
 
+`install-lvim.sh` takes only `-n` (dry run) and `-h`.
+
 Menu keys: a number toggles a row, `a` = all, `n` = none, `c` = continue, `q` = quit.
 
-A few entries are listed but not pre-checked (glow in the tools menu; hyprland
-and xmodmap on the links side) — toggle them on if you want them.
+A few entries are listed but not pre-checked (glow in the tools menu; bash,
+hyprland and xmodmap on the links side) — toggle them on if you want them.
+`-y` and the no-TTY path install the defaults, so those stay skipped.
 
 ## Adding a program
 
@@ -84,7 +90,9 @@ bat|bat|bat||bat|sharkdp/bat|
 
 For each tool it tries, in order: already installed → custom function → brew →
 dnf (+copr) → apt → eget (downloads the GitHub release into `~/.local/bin`).
-It stops at the first one that works. `bin` is the command it checks for; leave
+It uses the first method *available* on the machine — there's no fallback to
+the next method if that install then fails; the verify pass at the end flags
+the miss, and you rerun to retry. `bin` is the command it checks for; leave
 a field blank if it doesn't apply. `apt` is filled only where the Debian/Ubuntu
 package ships exactly the binary in `bin` — `fd` stays blank because apt's
 `fd-find` installs it as `fdfind`, which would break the presence check; those
@@ -96,7 +104,8 @@ already there, so the script installs it first via bob (pinned 0.9.5 to match
 LunarVim 1.4's Neovim-0.9 requirement), then runs the installer. `nvm` and
 `node` are custom too: nvm's official script runs with `PROFILE=/dev/null` —
 the zshrc is a repo symlink, so it sources nvm itself instead of letting the
-installer append lines — then `nvm install --lts` brings node and npm.
+installer append lines (the installer's "Profile not found" notice is that,
+harmless) — then `nvm install --lts` brings node and npm.
 
 ## Not handled on purpose
 
@@ -109,3 +118,11 @@ installer append lines — then `nvm install --lts` brings node and npm.
 - Safe to re-run; it skips what's already done.
 - Backups are never deleted for you.
 - `~/.local/bin` is already on your PATH (set in `zsh/zshenv`).
+- `install-tools.sh` verifies outcomes at the end and lists anything that
+  didn't actually land (exit 1) — installers can lie: bob prints ERROR yet
+  exits 0, eget "succeeds" copying a `.deb` into bin.
+- eget runs with `.deb`/`.rpm`/`.AppImage` assets excluded — pick a
+  `.tar.gz`/`.zip` when it prompts.
+- Installing `nvim` via bob also links the proxy into `~/.local/bin/nvim`
+  (bob's own dir is only on PATH via `hosts/<name>.zsh`). Selecting `lvim`
+  pins bob's single global nvim to 0.9.x — switch back with `bob use stable`.

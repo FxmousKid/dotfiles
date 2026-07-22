@@ -7,8 +7,9 @@ one machine.
 
 Install zsh yourself first — it's the one manual step (macOS ships it ·
 Debian/Ubuntu `sudo apt install zsh` · Fedora `sudo dnf install zsh`). Then
-`./install/install.sh` links everything below and offers to make zsh your
-default shell. A fresh machine hashes to `unknown` and loads no host file —
+`./install/install.sh` links everything below and makes zsh your default shell
+(`chsh` + `/etc/shells`, automatic when you pick the zsh component). A fresh
+machine hashes to `unknown` and loads no host file —
 see [per-machine config](#per-machine-config-hosts).
 
 ## The files

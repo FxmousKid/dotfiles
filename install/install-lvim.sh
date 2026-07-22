@@ -23,7 +23,14 @@ LV_BRANCH='release-1.4/neovim-0.9'
 NVIM_VERSION='0.9.5'
 
 LOCAL_BIN="$HOME/.local/bin"
+# Fresh machines don't have ~/.local/bin on PATH until the next login; without
+# this the script can't see tools installed moments ago (a fresh Ubuntu VM
+# re-downloaded bob that install-tools.sh had just eget-installed).
+PATH="$LOCAL_BIN:$PATH"; export PATH
 EGET="$LOCAL_BIN/eget"
+# eget copies .deb/.rpm/.AppImage into bin as-is instead of installing — silent
+# trap. The anti-match is case-sensitive, so cover both AppImage spellings.
+EGET_FILTER='--asset ^.deb --asset ^.rpm --asset ^.AppImage --asset ^.appimage'
 DRY=0
 
 # --- output helpers ----------------------------------------------------------
@@ -88,10 +95,71 @@ bob_nvim_dir() {
   printf '%s' "$dir"
 }
 
-# --- step 1-3: make sure nvim exists ------------------------------------------
-if have nvim; then
-  say "  ${DIM}[ok]${RST}     nvim already on PATH ($(command -v nvim))"
+# --- bob's custom dirs ---------------------------------------------------------
+# bob hard-errors on missing custom dirs ("Custom directory ... doesn't exist!")
+# yet still exits 0 — proven on a real Ubuntu run, where the script sailed past
+# a failed `bob install` and only the final nvim verification caught it. So we
+# pre-create every *_location from bob's config rather than trust it.
+ensure_bob_dirs() {
+  cfg="${XDG_CONFIG_HOME:-$HOME/.config}/bob/config.json"
+  [ -f "$cfg" ] || return 0
+  # dumb grep/sed on purpose — no jq dependency (same as bob_nvim_dir)
+  locs="$(grep -o '"[a-z_]*_location"[^,}]*' "$cfg" 2>/dev/null \
+          | sed 's/.*:[[:space:]]*"\([^"]*\)".*/\1/')" || locs=""
+  [ -n "$locs" ] || return 0
+  made=0
+  seen="
+"
+  oldIFS=$IFS; IFS='
+'
+  for loc in $locs; do
+    IFS=$oldIFS
+    # expand a literal $HOME (bob stores it unexpanded)
+    case "$loc" in
+      '$HOME'*) loc="$HOME${loc#\$HOME}" ;;
+    esac
+    loc="${loc%/}"
+    # filename-like values (version_sync_file_location -> .../nvim.version):
+    # create the parent dir, not the file itself
+    case "${loc##*/}" in
+      *.*) dir="${loc%/*}" ;;
+      *)   dir="$loc" ;;
+    esac
+    [ -n "$dir" ] || continue
+    # several *_location values can share a dir — handle each once
+    case "$seen" in *"
+$dir
+"*) continue ;; esac
+    seen="$seen$dir
+"
+    if [ -d "$dir" ]; then
+      continue
+    elif [ "$DRY" -eq 1 ]; then
+      say "  ${DIM}(would create bob dir $dir)${RST}"
+      made=1
+    else
+      mkdir -p "$dir"
+      say "  ${DIM}[dirs]   created bob dir $dir${RST}"
+      made=1
+    fi
+  done
+  IFS=$oldIFS
+  [ "$made" -eq 0 ] && say "  ${DIM}[dirs]   bob's custom dirs already exist${RST}"
+  return 0
+}
+
+# --- step 1-3: make sure nvim exists (at the pinned 0.9.x) ---------------------
+# Presence isn't enough: bob keeps ONE global active version and LunarVim 1.4
+# only supports Neovim 0.9 — accept an existing nvim only if it's the right
+# series, otherwise pin via bob (and say so, since that flips the global proxy).
+NVIM_SERIES="v${NVIM_VERSION%.*}."   # -> "v0.9."
+if have nvim && nvim --version 2>/dev/null | head -n 1 | grep -qF "NVIM $NVIM_SERIES"; then
+  say "  ${DIM}[ok]${RST}     nvim ${NVIM_SERIES}x already on PATH ($(command -v nvim))"
 else
+  if have nvim; then
+    say "  ${YLW}nvim on PATH is \"$(nvim --version 2>/dev/null | head -n 1)\" but LunarVim $LV_BRANCH needs ${NVIM_SERIES}x —${RST}"
+    say "  ${YLW}pinning via bob. bob's proxy has ONE global active version; switch back later with: bob use stable${RST}"
+  fi
   # -- bob --
   if have bob; then
     BOB=bob
@@ -104,7 +172,8 @@ else
       say "  ${GRN}[eget]${RST}   bob (MordechaiHadad/bob -> $LOCAL_BIN)"
       if [ "$DRY" -eq 0 ]; then
         ensure_eget || { say "  ${RED}cannot install bob without eget${RST}"; exit 1; }
-        "$EGET" MordechaiHadad/bob --to "$LOCAL_BIN"
+        # shellcheck disable=SC2086  # EGET_FILTER is a deliberate flag-list
+        "$EGET" $EGET_FILTER MordechaiHadad/bob --to "$LOCAL_BIN"
       fi
     fi
     # freshly installed bob may not be on this process's PATH yet
@@ -112,17 +181,31 @@ else
   fi
 
   # -- neovim via bob (0.9.x to match the LV_BRANCH pin) --
+  ensure_bob_dirs
   say "  ${GRN}[bob]${RST}    neovim $NVIM_VERSION (install + use)"
-  [ "$DRY" -eq 1 ] || { "$BOB" install "$NVIM_VERSION" && "$BOB" use "$NVIM_VERSION"; }
+  if [ "$DRY" -eq 0 ]; then
+    # guarded: bob's exit codes lie anyway — the presence check below decides
+    "$BOB" install "$NVIM_VERSION" && "$BOB" use "$NVIM_VERSION" \
+      || say "  ${YLW}(bob reported a problem — checked below)${RST}"
+  fi
 
   # -- put bob's proxy dir on PATH for this process, then verify --
   NVIM_DIR="$(bob_nvim_dir)"
   say "  ${DIM}[path]${RST}   prepending $NVIM_DIR"
   PATH="$NVIM_DIR:$PATH"
+  # persist visibility beyond this process: bob's dir is on no PATH on a fresh
+  # machine (only hosts/<name>.zsh adds it) — link the proxy into ~/.local/bin
+  # so future shells and the lvim launcher find nvim.
+  if [ "$DRY" -eq 0 ] && [ -x "$NVIM_DIR/nvim" ]; then
+    mkdir -p "$LOCAL_BIN"; ln -sf "$NVIM_DIR/nvim" "$LOCAL_BIN/nvim"
+    say "  ${DIM}[link]${RST}   $LOCAL_BIN/nvim -> $NVIM_DIR/nvim"
+  fi
   if [ "$DRY" -eq 0 ] && ! have nvim; then
     say "  ${RED}nvim still not found after bob install.${RST}"
-    say "  ${RED}Check \`bob list\`, and that bob's installation_location${RST}"
-    say "  ${RED}($NVIM_DIR) contains the nvim proxy; then rerun this script.${RST}"
+    say "  ${RED}bob's custom dirs were pre-created this run, so a missing dir is${RST}"
+    say "  ${RED}not the cause — check \`bob list\` and bob's own output above, and${RST}"
+    say "  ${RED}that its installation_location ($NVIM_DIR) contains the nvim${RST}"
+    say "  ${RED}proxy; then rerun this script.${RST}"
     exit 1
   fi
 fi
@@ -133,6 +216,19 @@ if [ "$DRY" -eq 1 ]; then
   say "  ${DIM}(would run the LunarVim install.sh from that branch)${RST}"
   exit 0
 fi
-# `bash -c "$(curl ...)"` keeps stdin on the terminal so its prompts work.
-LV_BRANCH="$LV_BRANCH" \
-  bash -c "$(curl -fsSL "https://raw.githubusercontent.com/LunarVim/LunarVim/$LV_BRANCH/utils/installer/install.sh")"
+# Download first, run after: a failed curl inside $() is invisible to set -e —
+# `bash -c ""` would "succeed" with nothing installed. Capturing into a variable
+# still keeps stdin on the terminal, so the installer's prompts work.
+lv_installer="$(curl -fsSL "https://raw.githubusercontent.com/LunarVim/LunarVim/$LV_BRANCH/utils/installer/install.sh")" \
+  || { say "  ${RED}failed to download the LunarVim installer (branch $LV_BRANCH) — check network, then rerun${RST}"; exit 1; }
+[ -n "$lv_installer" ] \
+  || { say "  ${RED}LunarVim installer download was empty${RST}"; exit 1; }
+LV_BRANCH="$LV_BRANCH" bash -c "$lv_installer" \
+  || say "  ${YLW}(LunarVim installer exited non-zero — checked below)${RST}"
+
+# outcome check, same posture as the nvim step above: exit codes lie
+if ! have lvim && ! [ -x "$LOCAL_BIN/lvim" ]; then
+  say "  ${RED}lvim still not installed — see the installer's output above; rerun to retry${RST}"
+  exit 1
+fi
+say "  ${GRN}[ok]${RST}     lvim installed."

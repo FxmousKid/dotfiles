@@ -14,8 +14,9 @@
 #  eget figures out the OS + arch and grabs the right file, so there's no
 #  per-arch logic here. It gets installed once into ~/.local/bin.
 #
-#  Interactive by default (pick what to install); -y installs all missing,
-#  -n dry-runs (prints the method per tool, changes nothing).
+#  Interactive by default (pick what to install); -y installs the missing
+#  defaults (DEFAULT_OFF entries like glow stay opt-in), -n dry-runs (prints
+#  the method per tool, changes nothing).
 #
 #  Add a tool = add one row to the TOOLS table below.
 # =============================================================================
@@ -25,7 +26,19 @@ set -eu
 OS="$(uname)"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 LOCAL_BIN="$HOME/.local/bin"
+# Make this run's own installs visible to itself: on a fresh Ubuntu,
+# ~/.local/bin isn't on PATH until the next login (its .profile only adds it
+# if the dir already existed), so tools installed early in a run (bob via
+# eget) were invisible to later steps — install_neovim said "bob not
+# installed yet" right after bob was installed.
+PATH="$LOCAL_BIN:$PATH"; export PATH
 EGET="$LOCAL_BIN/eget"
+# Keep eget away from package-format assets: if a .deb/.rpm/.AppImage asset
+# gets picked, eget "extracts" it by copying the package file itself into
+# ~/.local/bin — tool NOT installed, zero errors (a .deb just sits in bin).
+# --asset takes a substring, ^ negates it, and the flag is repeatable; the
+# match is case-sensitive, so cover both AppImage spellings.
+EGET_FILTER='--asset ^.deb --asset ^.rpm --asset ^.AppImage --asset ^.appimage'
 DRY=0
 ASSUME_YES=0
 
@@ -68,9 +81,27 @@ have() { command -v "$1" >/dev/null 2>&1; }
 
 usage() {
   say "Usage: ./install/install-tools.sh [-y] [-n] [-h]"
-  say "  -y   install all missing tools (non-interactive)"
+  say "  -y   install the default selection of missing tools (glow is opt-in)"
   say "  -n   dry run (print the method per tool, install nothing)"
   say "  -h   this help"
+}
+
+# --- bob's nvim proxy dir ------------------------------------------------------
+# bob does NOT put nvim on PATH by itself: it drops a proxy binary in its
+# installation_location (this repo's linked config: "$HOME/Releases/nvim-bin",
+# stored with a LITERAL $HOME), falling back to bob's default.
+bob_nvim_dir() {
+  cfg="${XDG_CONFIG_HOME:-$HOME/.config}/bob/config.json"
+  dir=""
+  if [ -f "$cfg" ]; then
+    # dumb grep/sed on purpose — no jq dependency; -o keeps it correct even on
+    # minified one-line JSON
+    dir="$(grep -o '"installation_location"[^,}]*' "$cfg" 2>/dev/null \
+           | sed 's/.*:[[:space:]]*"\([^"]*\)".*/\1/')" || dir=""
+  fi
+  [ -n "$dir" ] || dir="${XDG_DATA_HOME:-$HOME/.local/share}/bob/nvim-bin"
+  case "$dir" in '$HOME'*) dir="$HOME${dir#\$HOME}" ;; esac
+  printf '%s' "$dir"
 }
 
 # --- per-tool presence (zap is a sourced plugin, nvm a sourced function) -----
@@ -78,6 +109,12 @@ is_installed() {
   case "$1" in
     zap) [ -f "${XDG_DATA_HOME:-$HOME/.local/share}/zap/zap.zsh" ] ;;
     nvm) [ -s "$HOME/.nvm/nvm.sh" ] ;;
+    # nvm installs node inside ~/.nvm, invisible to this script's PATH —
+    # glob-through-ls spots any installed version (POSIX-fine).
+    node) have node || ls "$HOME/.nvm/versions/node"/*/bin/node >/dev/null 2>&1 ;;
+    # bob's proxy dir is on no PATH on a fresh machine (only hosts/<name>.zsh
+    # adds it) — check the proxy itself too.
+    nvim) have nvim || [ -x "$(bob_nvim_dir)/nvim" ] ;;
     *)   have "$1" ;;
   esac
 }
@@ -94,14 +131,49 @@ install_zap() {
   curl -fsSL https://raw.githubusercontent.com/zap-zsh/zap/master/install.zsh \
     | zsh -s -- --branch release-v1 --keep
 }
+ensure_bob_dirs() {
+  # bob hard-errors (yet exits 0!) when a directory from its config is
+  # missing: "ERROR Custom directory /home/ubuntu/Releases/ doesn't exist!".
+  # The linked config stores paths with a LITERAL $HOME in the value
+  # (e.g. "downloads_location": "$HOME/Releases/"), so expand that ourselves
+  # and pre-create every "*_location" path. Dumb grep/sed on purpose (no jq).
+  cfg="${XDG_CONFIG_HOME:-$HOME/.config}/bob/config.json"
+  # no config: bob's defaults live under ~/.local/share, which it creates itself
+  [ -f "$cfg" ] || return 0
+  # -o tokenizes per key, so this stays correct even on minified one-line JSON
+  # (the plain-grep + greedy-sed form collapsed such a file to a single junk
+  # value and silently created none of bob's dirs).
+  grep -o '"[a-z_]*_location"[^,}]*' "$cfg" 2>/dev/null \
+    | sed 's/.*:[[:space:]]*"\([^"]*\)".*/\1/' \
+    | while IFS= read -r loc; do
+        [ -n "$loc" ] || continue
+        case "$loc" in '$HOME'*) loc="$HOME${loc#\$HOME}" ;; esac
+        # a value ending in .version names a file — create its parent dir
+        case "$loc" in
+          *.version) mkdir -p "$(dirname "$loc")" ;;
+          *)         mkdir -p "$loc" ;;
+        esac
+      done
+}
 install_neovim() {
-  if have bob; then bob install stable && bob use stable
-  else say "  ${YLW}bob not installed yet — rerun after bob, or use brew/eget${RST}"; return 1; fi
+  if ! have bob; then
+    say "  ${YLW}bob not installed yet — rerun after bob, or use brew/eget${RST}"; return 1
+  fi
+  ensure_bob_dirs
+  bob install stable && bob use stable || return 1
+  # bob's proxy lands in its installation_location, which is on no PATH on a
+  # fresh machine (only hosts/<name>.zsh adds it) — link it into ~/.local/bin
+  # so this run's verify pass, future shells, and the lvim launcher find it.
+  dir="$(bob_nvim_dir)"
+  [ -x "$dir/nvim" ] || { say "  ${YLW}bob ran but left no nvim proxy in $dir${RST}"; return 1; }
+  mkdir -p "$LOCAL_BIN"
+  ln -sf "$dir/nvim" "$LOCAL_BIN/nvim"
 }
 install_nvm() {
   # PROFILE=/dev/null: the stock installer appends source lines to the shell
   # profile, but our zshrc is a symlink into this repo and already sources nvm
   # itself — so tell it to write nowhere.
+  say "  ${DIM}(the installer will print a \"Profile not found\" notice — expected: PROFILE=/dev/null on purpose, zshrc sources nvm itself)${RST}"
   curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh \
     | PROFILE=/dev/null bash
 }
@@ -168,21 +240,25 @@ ensure_tool() {
     [ "$DRY" -eq 1 ] || "$custom" || say "  ${YLW}($key custom installer reported a problem)${RST}"
   elif have brew && [ -n "$brewf" ]; then
     say "  ${GRN}[brew]${RST}   $key ($brewf)"
-    [ "$DRY" -eq 1 ] || brew install "$brewf"
+    # every installer below is `|| say`-guarded: under set -e an unguarded
+    # failure would abort the whole run mid-loop and the verify pass — the
+    # actual arbiter of success — would never print.
+    [ "$DRY" -eq 1 ] || brew install "$brewf" || say "  ${YLW}($key brew install failed — verify below will flag it)${RST}"
   elif have dnf && [ -n "$dnfp" ]; then
     if [ -n "$copr" ]; then
       say "  ${GRN}[copr]${RST}   enable $copr ${DIM}(sudo)${RST}"
-      [ "$DRY" -eq 1 ] || sudo dnf copr enable -y "$copr"
+      [ "$DRY" -eq 1 ] || sudo dnf copr enable -y "$copr" || say "  ${YLW}($key copr enable failed)${RST}"
     fi
     say "  ${GRN}[dnf]${RST}    $key ($dnfp) ${DIM}(sudo)${RST}"
-    [ "$DRY" -eq 1 ] || sudo dnf install -y "$dnfp"
+    [ "$DRY" -eq 1 ] || sudo dnf install -y "$dnfp" || say "  ${YLW}($key dnf install failed — verify below will flag it)${RST}"
   elif have apt-get && [ -n "$aptp" ]; then
     say "  ${GRN}[apt]${RST}    $key ($aptp) ${DIM}(sudo)${RST}"
-    [ "$DRY" -eq 1 ] || sudo apt-get install -y "$aptp"
+    [ "$DRY" -eq 1 ] || sudo apt-get install -y "$aptp" || say "  ${YLW}($key apt install failed — verify below will flag it)${RST}"
   elif [ -n "$ghrepo" ]; then
     ensure_eget || { say "  ${YLW}[skip]   $key (no eget)${RST}"; return 0; }
     say "  ${GRN}[eget]${RST}   $key ($ghrepo -> $LOCAL_BIN)"
-    [ "$DRY" -eq 1 ] || "$EGET" "$ghrepo" --to "$LOCAL_BIN"
+    # shellcheck disable=SC2086  # EGET_FILTER is a flag list, unquoted on purpose
+    [ "$DRY" -eq 1 ] || "$EGET" $EGET_FILTER "$ghrepo" --to "$LOCAL_BIN" || say "  ${YLW}($key eget failed — verify below will flag it)${RST}"
   else
     say "  ${YLW}[skip]${RST}   $key — no install method for this machine"
   fi
@@ -274,13 +350,40 @@ elif [ -t 0 ] || [ "${INSTALL_INTERACTIVE:-0}" = 1 ]; then
   menu
   confirm
 else
-  say "${YLW}no TTY: installing all missing tools (pass -y to silence).${RST}"
+  say "${YLW}no TTY: installing the default selection of missing tools (pass -y to silence).${RST}"
 fi
 
+# Remember what this run actually attempts (selected AND missing at start),
+# so the verification pass below only judges those.
+ATTEMPTED=""
 for k in $KEYS; do
   is_enabled "$k" || continue
+  is_installed "$k" || ATTEMPTED="$ATTEMPTED $k"
   ensure_tool "$k"
 done
+
+# --- outcome verification ------------------------------------------------------
+# Exit codes lie: bob prints ERROR yet exits 0, and eget's .deb trap fails
+# silently — so trust only a fresh presence check per attempted tool.
+if [ "$DRY" -eq 0 ] && [ -n "$ATTEMPTED" ]; then
+  say ""
+  say "${BOLD}== verify ==${RST}"
+  FAILED=0
+  for k in $ATTEMPTED; do
+    if is_installed "$k"; then
+      say "  ${DIM}[ok]     $k${RST}"
+    else
+      say "  ${RED}[FAILED]${RST} $k — still not installed; rerun this script to retry"
+      FAILED=$((FAILED + 1))
+    fi
+  done
+  if [ "$FAILED" -gt 0 ]; then
+    say ""
+    say "${YLW}$FAILED tool(s) failed to install — see [FAILED] above.${RST}"
+    exit 1
+  fi
+  say "${GRN}all attempted tools verified.${RST}"
+fi
 
 say ""
 say "${GRN}done.${RST} (binaries in $LOCAL_BIN are already on your PATH via ~/.zshenv)"
