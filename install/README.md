@@ -4,6 +4,7 @@ Scripts to set these dotfiles up on a machine.
 
 - `install.sh` — makes the symlinks (configs).
 - `install-tools.sh` — installs the CLI programs.
+- `install-lvim.sh` — standalone LunarVim installer (needs Neovim; installs it via bob first). Called by `install-tools.sh`, runnable alone.
 
 Both are POSIX sh, safe to re-run, and ask before changing anything.
 
@@ -41,6 +42,9 @@ checks `$SHELL`, adds the zsh path to `/etc/shells` if it's missing, runs
 | `-h` | help |
 
 Menu keys: a number toggles a row, `a` = all, `n` = none, `c` = continue, `q` = quit.
+
+A few entries are listed but not pre-checked (glow in the tools menu; hyprland
+and xmodmap on the links side) — toggle them on if you want them.
 
 ## Adding a program
 
@@ -85,8 +89,14 @@ a field blank if it doesn't apply. `apt` is filled only where the Debian/Ubuntu
 package ships exactly the binary in `bin` — `fd` stays blank because apt's
 `fd-find` installs it as `fdfind`, which would break the presence check; those
 fall through to eget. For odd installers, write a function and name it in
-`custom_fn` (see `install_lvim`, `install_zap` — zap refuses to run without
-zsh, since its installer pipes into `zsh -s`).
+`custom_fn` (see `install_neovim`, `install_zap` — zap refuses to run without
+zsh, since its installer pipes into `zsh -s`). `install_lvim` is a thin wrapper
+around `install/install-lvim.sh`: LunarVim's installer assumes Neovim is
+already there, so the script installs it first via bob (pinned 0.9.5 to match
+LunarVim 1.4's Neovim-0.9 requirement), then runs the installer. `nvm` and
+`node` are custom too: nvm's official script runs with `PROFILE=/dev/null` —
+the zshrc is a repo symlink, so it sources nvm itself instead of letting the
+installer append lines — then `nvm install --lts` brings node and npm.
 
 ## Not handled on purpose
 

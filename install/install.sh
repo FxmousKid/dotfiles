@@ -48,8 +48,8 @@ lazygit|on|all|git TUI
 tmux|on|all|tmux
 bash|off|all|bash fallback configs
 karabiner|on|darwin|keyboard rules (Karabiner-Elements)
-xmodmap|on|linux|X11 key remap
-hyprland|on|linux|Wayland compositor
+xmodmap|off|linux|X11 key remap
+hyprland|off|linux|Wayland compositor
 "
 
 # --- output helpers ----------------------------------------------------------
@@ -224,7 +224,8 @@ ensure_default_shell() {
 
 # --- interactive menu --------------------------------------------------------
 render() {
-  [ -t 1 ] && printf '\033[2J\033[3J\033[H'
+  # redraw the visible screen only (what `clear -x` emits) — scrollback preserved
+  [ -t 1 ] && printf '\033[2J\033[H'
   say "${BOLD}== choose what to symlink ==${RST}   ${DIM}os: $OSKEY${RST}"
   say "${DIM}number = toggle    a = all    n = none    c = continue    q = quit${RST}"
   say ""
@@ -257,7 +258,7 @@ menu() {
 }
 
 confirm() {
-  [ -t 1 ] && printf '\033[2J\033[3J\033[H'
+  say ""
   say "${BOLD}== will symlink ==${RST}"
   any=0
   for k in $KEYS; do is_enabled "$k" && { say "  ${GRN}+${RST} $k"; any=1; }; done

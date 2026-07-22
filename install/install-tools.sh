@@ -23,6 +23,7 @@
 set -eu
 
 OS="$(uname)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 LOCAL_BIN="$HOME/.local/bin"
 EGET="$LOCAL_BIN/eget"
 DRY=0
@@ -49,7 +50,9 @@ tree|tree|tree||tree||
 gh|gh|gh||gh|cli/cli|
 ag|the_silver_searcher|the_silver_searcher||silversearcher-ag||
 bob|||||MordechaiHadad/bob|
-nvim|neovim|neovim||||install_nvim
+nvim|neovim|neovim||||install_neovim
+nvm||||||install_nvm
+node||||||install_node
 zap||||||install_zap
 lvim||||||install_lvim
 "
@@ -70,10 +73,11 @@ usage() {
   say "  -h   this help"
 }
 
-# --- per-tool presence (zap is a sourced plugin, not a binary) ---------------
+# --- per-tool presence (zap is a sourced plugin, nvm a sourced function) -----
 is_installed() {
   case "$1" in
     zap) [ -f "${XDG_DATA_HOME:-$HOME/.local/share}/zap/zap.zsh" ] ;;
+    nvm) [ -s "$HOME/.nvm/nvm.sh" ] ;;
     *)   have "$1" ;;
   esac
 }
@@ -90,15 +94,29 @@ install_zap() {
   curl -fsSL https://raw.githubusercontent.com/zap-zsh/zap/master/install.zsh \
     | zsh -s -- --branch release-v1 --keep
 }
-install_nvim() {
+install_neovim() {
   if have bob; then bob install stable && bob use stable
   else say "  ${YLW}bob not installed yet — rerun after bob, or use brew/eget${RST}"; return 1; fi
 }
+install_nvm() {
+  # PROFILE=/dev/null: the stock installer appends source lines to the shell
+  # profile, but our zshrc is a symlink into this repo and already sources nvm
+  # itself — so tell it to write nowhere.
+  curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh \
+    | PROFILE=/dev/null bash
+}
+install_node() {
+  if ! [ -s "$HOME/.nvm/nvm.sh" ]; then
+    say "  ${YLW}nvm not installed yet — rerun after nvm${RST}"; return 1
+  fi
+  # nvm.sh is not POSIX sh, so run it through bash; `nvm install` ships npm
+  # with node.
+  bash -c 'export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm install --lts'
+}
 install_lvim() {
-  # LunarVim is pinned to specific Neovim versions; bump branch/URL as needed.
-  # `bash -c "$(curl ...)"` keeps stdin on the terminal so its prompts work.
-  LV_BRANCH='release-1.4/neovim-0.9' \
-    bash -c "$(curl -fsSL https://raw.githubusercontent.com/LunarVim/LunarVim/release-1.4/neovim-0.9/utils/installer/install.sh)"
+  # Decoupled: the real logic (nvim-via-bob prerequisite + LunarVim installer)
+  # lives in the standalone script next to this one.
+  "$SCRIPT_DIR/install-lvim.sh"
 }
 
 # --- eget bootstrap (the only thing we fetch to fetch others) ----------------
@@ -171,11 +189,14 @@ ensure_tool() {
 }
 
 # --- selection state ---------------------------------------------------------
+DEFAULT_OFF=" glow "   # in the menu but not pre-selected (toggle to opt in)
+is_default_off() { case "$DEFAULT_OFF" in *" $1 "*) return 0 ;; *) return 1 ;; esac; }
 KEYS=""; ENABLED=" "
 while IFS='|' read -r k _b _d _c _a _g _f; do
   [ -z "$k" ] && continue
   KEYS="$KEYS $k"
-  is_installed "$k" || ENABLED="$ENABLED$k "   # default-on only what's missing
+  # default-on only what's missing and not opted out
+  is_installed "$k" || is_default_off "$k" || ENABLED="$ENABLED$k "
 done <<EOF
 $TOOLS
 EOF
@@ -188,7 +209,8 @@ toggle() {
 
 # --- interactive menu --------------------------------------------------------
 render() {
-  [ -t 1 ] && printf '\033[2J\033[3J\033[H'
+  # what `clear -x` emits: clear screen + home cursor, but keep scrollback
+  [ -t 1 ] && printf '\033[2J\033[H'
   say "${BOLD}== install tools ==${RST}   ${DIM}os: $OS   (✓ = already installed)${RST}"
   say "${DIM}number = toggle    a = all    n = none    c = continue    q = quit${RST}"
   say ""
@@ -221,7 +243,7 @@ menu() {
   done
 }
 confirm() {
-  [ -t 1 ] && printf '\033[2J\033[3J\033[H'
+  say ""
   say "${BOLD}== will install ==${RST}"
   any=0
   for k in $KEYS; do

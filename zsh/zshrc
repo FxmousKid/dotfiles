@@ -133,6 +133,13 @@ fi
 # atuin (searchable shell history UI)
 command -v atuin &>/dev/null && eval "$(atuin init zsh)"
 
+# nvm (node version manager) — node + npm. The dotfiles installer runs nvm's
+# script with PROFILE=/dev/null so it never appends to this file (it's a repo
+# symlink); sourcing happens here instead, skipped on machines without nvm.
+# (nvm's bundled completion is bash-only; not sourced.)
+export NVM_DIR="$HOME/.nvm"
+[[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
+
 # opam (OCaml)
 [[ -r "$HOME/.opam/opam-init/init.zsh" ]] && source "$HOME/.opam/opam-init/init.zsh" >/dev/null 2>&1
 
