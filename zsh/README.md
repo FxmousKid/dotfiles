@@ -3,6 +3,14 @@
 Shell config, split by when zsh loads each file, and set up to work on more than
 one machine.
 
+## Prerequisite
+
+Install zsh yourself first — it's the one manual step (macOS ships it ·
+Debian/Ubuntu `sudo apt install zsh` · Fedora `sudo dnf install zsh`). Then
+`./install/install.sh` links everything below and offers to make zsh your
+default shell. A fresh machine hashes to `unknown` and loads no host file —
+see [per-machine config](#per-machine-config-hosts).
+
 ## The files
 
 | File | Loaded | What's in it |
@@ -13,8 +21,11 @@ one machine.
 | `p10k.zsh` | from `zshrc` | the prompt theme (`p10k configure` to change) |
 | `hosts/` | one file, from `zshrc` | per-machine paths and aliases |
 
-`install/install.sh` links them to `~/.zshenv` and, under `~/.config/zsh`,
-`.zshrc`, `.zprofile`, `.p10k.zsh`, and `hosts/`.
+`install/install.sh` links `zshenv` twice — to `~/.zshenv` **and** to
+`~/.config/zsh/.zshenv`. Nested zsh (a shell you type, a zellij pane) reads
+`$ZDOTDIR/.zshenv`, not `~/.zshenv` — without the second link it would skip all
+of zshenv. The rest (`.zshrc`, `.zprofile`, `.p10k.zsh`, `hosts/`) goes under
+`~/.config/zsh`.
 
 ## PATH
 
@@ -47,8 +58,8 @@ get_device_id                 # run on the new machine, copy the hash
 # create zsh/hosts/<name>.zsh
 ```
 
-Mapped now: `macm1` (this Mac). `asahim1` is ready but needs its hash added on
-that box.
+Mapped now: `macm1` and `coachm5pro`. `asahim1` is ready but needs its hash
+added on that box.
 
 ## Plugins
 
