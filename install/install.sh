@@ -181,6 +181,47 @@ seed_zellij_perms() {
   say "  ${GRN}[grant]${RST}  zjstatus permissions -> $perm"
 }
 
+# --- post-link: make zsh the default shell ------------------------------------
+# Installing zsh itself is a manual prerequisite — how you install it differs
+# too much per system (macOS ships it, Debian/Ubuntu is `sudo apt install zsh`,
+# Fedora is `sudo dnf install zsh`). But once zsh exists, switching the default
+# shell is the same everywhere, so that part is automated here: register the
+# zsh path in /etc/shells if needed, then chsh to it. Never hard-fails — on any
+# snag it prints the manual command and moves on.
+ensure_default_shell() {
+  case "${SHELL:-}" in
+    */zsh) say "  ${DIM}[ok]     default shell is already zsh ($SHELL)${RST}"; return 0 ;;
+  esac
+  if ! command -v zsh >/dev/null 2>&1; then
+    say "  ${YLW}[skip]${RST}   zsh not on PATH — install it first (manual prerequisite, see above), then re-run"
+    return 0
+  fi
+  zshpath="$(command -v zsh)"
+  if [ "$DRY" -eq 1 ]; then
+    say "  ${GRN}[chsh]${RST}   would set default shell to $zshpath ${DIM}(dry)${RST}"
+    return 0
+  fi
+  if ! grep -qx "$zshpath" /etc/shells 2>/dev/null; then
+    if printf '%s\n' "$zshpath" | sudo tee -a /etc/shells >/dev/null; then
+      say "  ${GRN}[shells]${RST} added $zshpath to /etc/shells"
+    else
+      say "  ${YLW}[warn]${RST}   couldn't add $zshpath to /etc/shells — run manually:"
+      say "  ${YLW}       ${RST}  printf '%s\\n' \"$zshpath\" | sudo tee -a /etc/shells && chsh -s \"$zshpath\""
+      return 0
+    fi
+  fi
+  if ! [ -t 0 ]; then
+    say "  ${YLW}[skip]${RST}   no TTY for chsh — run manually: chsh -s \"$zshpath\""
+    return 0
+  fi
+  # chsh may prompt for your password — that's normal.
+  if chsh -s "$zshpath"; then
+    say "  ${GRN}[chsh]${RST}   default shell set to $zshpath — log out/in or run: exec zsh -l"
+  else
+    say "  ${YLW}[warn]${RST}   chsh failed — run manually: chsh -s \"$zshpath\""
+  fi
+}
+
 # --- interactive menu --------------------------------------------------------
 render() {
   [ -t 1 ] && printf '\033[2J\033[3J\033[H'
@@ -238,6 +279,16 @@ while getopts "ynh" opt; do
 done
 
 say "${DIM}dotfiles: $DOTFILES${RST}"
+
+# zsh is the one manual prerequisite (see ensure_default_shell below for why).
+if ! command -v zsh >/dev/null 2>&1; then
+  say "${YLW}${BOLD}warning: zsh not found on PATH.${RST}"
+  say "${YLW}zsh is a prerequisite of these dotfiles, installed manually by design${RST}"
+  say "${YLW}(it varies per system: macOS ships it; Debian/Ubuntu: sudo apt install zsh;${RST}"
+  say "${YLW}Fedora: sudo dnf install zsh). linking will proceed — that's harmless and${RST}"
+  say "${YLW}useful to do first — but the configs are inert until zsh exists.${RST}"
+fi
+
 [ "$DRY" -eq 1 ] && say "${YLW}(dry run — no changes will be made)${RST}"
 
 # Choose selection: -y / no-TTY use defaults; otherwise drive the menu.
@@ -257,6 +308,7 @@ for k in $KEYS; do
   say "${BOLD}== $k ==${RST}"
   do_links "$k"
   [ "$k" = zellij ] && seed_zellij_perms
+  [ "$k" = zsh ] && ensure_default_shell
 done
 
 say ""

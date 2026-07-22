@@ -3,12 +3,13 @@
 #  install/install-tools.sh — install the CLI tools these dotfiles expect.
 #
 #  Strategy (package-manager-first hybrid), per tool, in order:
-#    1. already on PATH        -> skip
-#    2. custom installer       -> run it      (lvim, zap, nvim-via-bob, ...)
-#    3. Homebrew  (macOS)      -> brew install
-#    4. dnf       (Fedora)     -> sudo dnf install  (+ copr enable if needed)
-#    5. GitHub release         -> eget <repo> --to ~/.local/bin   (no root)
-#    6. nothing applies        -> warn and skip
+#    1. already on PATH           -> skip
+#    2. custom installer          -> run it      (lvim, zap, nvim-via-bob, ...)
+#    3. Homebrew  (macOS)         -> brew install
+#    4. dnf       (Fedora)        -> sudo dnf install  (+ copr enable if needed)
+#    5. apt-get   (Debian/Ubuntu) -> sudo apt-get install
+#    6. GitHub release            -> eget <repo> --to ~/.local/bin   (no root)
+#    7. nothing applies           -> warn and skip
 #
 #  eget figures out the OS + arch and grabs the right file, so there's no
 #  per-arch logic here. It gets installed once into ~/.local/bin.
@@ -27,27 +28,30 @@ EGET="$LOCAL_BIN/eget"
 DRY=0
 ASSUME_YES=0
 
-# Tool manifest — fields:  bin | brew | dnf | copr | gh_repo | custom_fn
+# Tool manifest — fields:  bin | brew | dnf | copr | apt | gh_repo | custom_fn
 # (empty field = method not available for that tool)
+# (apt is filled only where the Debian/Ubuntu package ships exactly the binary
+#  in `bin`; fd stays blank because apt's fd-find installs it as `fdfind`,
+#  which would break the presence check — others fall through to eget)
 TOOLS="
-zellij|zellij|zellij|varlad/zellij|zellij-org/zellij|
-yazi|yazi|yazi|lihaohong/yazi|sxyazi/yazi|
-atuin|atuin|atuin||atuinsh/atuin|
-lazygit|lazygit|lazygit|atim/lazygit|jesseduffield/lazygit|
-fastfetch|fastfetch|fastfetch||fastfetch-cli/fastfetch|
-eza|eza|eza||eza-community/eza|
-delta|git-delta|git-delta||dandavison/delta|
-rg|ripgrep|ripgrep||BurntSushi/ripgrep|
-fd|fd|fd-find||sharkdp/fd|
-fzf|fzf|fzf||junegunn/fzf|
-glow|glow|glow||charmbracelet/glow|
-tree|tree|tree|||
-gh|gh|gh||cli/cli|
-ag|the_silver_searcher|the_silver_searcher|||
-bob||||MordechaiHadad/bob|
-nvim|neovim|neovim|||install_nvim
-zap|||||install_zap
-lvim|||||install_lvim
+zellij|zellij|zellij|varlad/zellij||zellij-org/zellij|
+yazi|yazi|yazi|lihaohong/yazi||sxyazi/yazi|
+atuin|atuin|atuin|||atuinsh/atuin|
+lazygit|lazygit|lazygit|atim/lazygit||jesseduffield/lazygit|
+fastfetch|fastfetch|fastfetch|||fastfetch-cli/fastfetch|
+eza|eza|eza|||eza-community/eza|
+delta|git-delta|git-delta|||dandavison/delta|
+rg|ripgrep|ripgrep||ripgrep|BurntSushi/ripgrep|
+fd|fd|fd-find|||sharkdp/fd|
+fzf|fzf|fzf||fzf|junegunn/fzf|
+glow|glow|glow|||charmbracelet/glow|
+tree|tree|tree||tree||
+gh|gh|gh||gh|cli/cli|
+ag|the_silver_searcher|the_silver_searcher||silversearcher-ag||
+bob|||||MordechaiHadad/bob|
+nvim|neovim|neovim||||install_nvim
+zap||||||install_zap
+lvim||||||install_lvim
 "
 
 # --- output helpers ----------------------------------------------------------
@@ -76,6 +80,12 @@ is_installed() {
 
 # --- custom installers -------------------------------------------------------
 install_zap() {
+  # zsh is a manual prerequisite (installing it differs too much per system)
+  # and the installer below pipes into `zsh -s`, so bail out if it's missing.
+  if ! have zsh; then
+    say "  ${YLW}zap needs zsh — zsh is a prerequisite, install it with your system package manager first${RST}"
+    return 1
+  fi
   # POSIX-safe: pipe the installer to zsh -s, passing flags after `--`.
   curl -fsSL https://raw.githubusercontent.com/zap-zsh/zap/master/install.zsh \
     | zsh -s -- --branch release-v1 --keep
@@ -107,12 +117,12 @@ ensure_eget() {
   say "  ${RED}failed to bootstrap eget${RST}"; return 1
 }
 
-# --- field lookup: sets brewf/dnfp/copr/ghrepo/custom for a tool key ---------
+# --- field lookup: sets brewf/dnfp/copr/aptp/ghrepo/custom for a tool key ----
 load_fields() {
-  brewf=; dnfp=; copr=; ghrepo=; custom=
-  while IFS='|' read -r k b d c g f; do
+  brewf=; dnfp=; copr=; aptp=; ghrepo=; custom=
+  while IFS='|' read -r k b d c a g f; do
     [ "$k" = "$1" ] || continue
-    brewf=$b; dnfp=$d; copr=$c; ghrepo=$g; custom=$f; return 0
+    brewf=$b; dnfp=$d; copr=$c; aptp=$a; ghrepo=$g; custom=$f; return 0
   done <<EOF
 $TOOLS
 EOF
@@ -125,6 +135,7 @@ method_of() {
   if   [ -n "$custom" ];                   then printf 'custom'
   elif have brew && [ -n "$brewf" ];       then printf 'brew'
   elif have dnf  && [ -n "$dnfp" ];        then printf 'dnf'
+  elif have apt-get && [ -n "$aptp" ];     then printf 'apt'
   elif [ -n "$ghrepo" ];                   then printf 'eget'
   else printf 'none'; fi
 }
@@ -147,6 +158,9 @@ ensure_tool() {
     fi
     say "  ${GRN}[dnf]${RST}    $key ($dnfp) ${DIM}(sudo)${RST}"
     [ "$DRY" -eq 1 ] || sudo dnf install -y "$dnfp"
+  elif have apt-get && [ -n "$aptp" ]; then
+    say "  ${GRN}[apt]${RST}    $key ($aptp) ${DIM}(sudo)${RST}"
+    [ "$DRY" -eq 1 ] || sudo apt-get install -y "$aptp"
   elif [ -n "$ghrepo" ]; then
     ensure_eget || { say "  ${YLW}[skip]   $key (no eget)${RST}"; return 0; }
     say "  ${GRN}[eget]${RST}   $key ($ghrepo -> $LOCAL_BIN)"
@@ -158,7 +172,7 @@ ensure_tool() {
 
 # --- selection state ---------------------------------------------------------
 KEYS=""; ENABLED=" "
-while IFS='|' read -r k _b _d _c _g _f; do
+while IFS='|' read -r k _b _d _c _a _g _f; do
   [ -z "$k" ] && continue
   KEYS="$KEYS $k"
   is_installed "$k" || ENABLED="$ENABLED$k "   # default-on only what's missing

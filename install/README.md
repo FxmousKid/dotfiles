@@ -9,14 +9,27 @@ Both are POSIX sh, safe to re-run, and ask before changing anything.
 
 ## Run it
 
+One manual prerequisite: **zsh** (macOS ships it · Debian/Ubuntu
+`sudo apt install zsh` · Fedora `sudo dnf install zsh`). Installing zsh varies
+too much per system to script, so that step is deliberately yours — everything
+after it is automated, including switching your default shell.
+
 ```sh
 git clone <repo> ~/.dotfiles
 cd ~/.dotfiles
 ./install/install.sh
 ```
 
-It shows a menu, you pick what you want, it links it, then offers to install the
-tools too. On a fresh machine you only need `sh`, `git`, and `curl`.
+It warns early if zsh is missing, shows a menu, you pick what you want, it
+links it, then offers to install the tools too. Beyond zsh, a fresh machine
+only needs `sh`, `git`, and `curl`.
+
+### Default shell
+
+If you picked the zsh component, the last step makes zsh your default shell:
+checks `$SHELL`, adds the zsh path to `/etc/shells` if it's missing, runs
+`chsh -s`. Skipped when there's no TTY (it prints the manual command instead);
+`-n` only shows what it would do.
 
 ## Flags (both scripts)
 
@@ -59,17 +72,21 @@ that are already correct. `default` is on/off (pre-checked in the menu),
 
 ### Install its binary (`install-tools.sh`)
 
-Add a row to `TOOLS` — `bin|brew|dnf|copr|gh_repo|custom_fn`:
+Add a row to `TOOLS` — `bin|brew|dnf|copr|apt|gh_repo|custom_fn`:
 
 ```
-bat|bat|bat||sharkdp/bat|
+bat|bat|bat||bat|sharkdp/bat|
 ```
 
 For each tool it tries, in order: already installed → custom function → brew →
-dnf → eget (downloads the GitHub release into `~/.local/bin`). It stops at the
-first one that works. `bin` is the command it checks for; leave a field blank if
-it doesn't apply. For odd installers, write a function and name it in
-`custom_fn` (see `install_lvim`, `install_zap`).
+dnf (+copr) → apt → eget (downloads the GitHub release into `~/.local/bin`).
+It stops at the first one that works. `bin` is the command it checks for; leave
+a field blank if it doesn't apply. `apt` is filled only where the Debian/Ubuntu
+package ships exactly the binary in `bin` — `fd` stays blank because apt's
+`fd-find` installs it as `fdfind`, which would break the presence check; those
+fall through to eget. For odd installers, write a function and name it in
+`custom_fn` (see `install_lvim`, `install_zap` — zap refuses to run without
+zsh, since its installer pipes into `zsh -s`).
 
 ## Not handled on purpose
 
