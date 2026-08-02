@@ -1,16 +1,20 @@
 <h1 align="center">🗂️ dotfiles</h1>
 
-<p align="center">macOS + Fedora Asahi · zsh-first · one command to set up a machine</p>
+<p align="center">macOS + Fedora Asahi + Debian/Ubuntu · zsh-first · one command to set up a machine</p>
 
 <p align="center">
   <img alt="macOS" src="https://img.shields.io/badge/macOS-000000?style=for-the-badge&logo=apple&logoColor=white">
   <img alt="Fedora Asahi" src="https://img.shields.io/badge/Fedora%20Asahi-51A2DA?style=for-the-badge&logo=fedora&logoColor=white">
+  <img alt="Ubuntu" src="https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white">
   <img alt="zsh" src="https://img.shields.io/badge/shell-zsh-5E60CE?style=for-the-badge&logo=zsh&logoColor=white">
 </p>
 
 ---
 
 ## Quick start
+
+One manual prerequisite: **zsh** (macOS ships it · Debian/Ubuntu
+`sudo apt install zsh` · Fedora `sudo dnf install zsh`).
 
 ```sh
 git clone <repo> ~/.dotfiles
@@ -19,8 +23,8 @@ cd ~/.dotfiles
 ```
 
 Pick what you want from the menu; it links the configs and then offers to
-install the tools too. On a fresh machine you only need `sh`, `git`, and `curl`.
-Details in **[install/](install/README.md)**.
+install the tools too. Beyond zsh, a fresh machine only needs `sh`, `git`, and
+`curl`. Details in **[install/](install/README.md)**.
 
 ---
 
@@ -72,8 +76,9 @@ Tap a tile to open that folder's README.
 
 ## How it fits together
 
-- **[install/](install/README.md)** — two small scripts: one links the configs,
-  one installs the CLI tools. Both menu-driven and safe to re-run.
+- **[install/](install/README.md)** — three small scripts: one links the
+  configs, one installs the CLI tools, one installs LunarVim (Neovim-via-bob
+  first). The first two are menu-driven; all are safe to re-run.
 - **[zsh/](zsh/README.md)** — the shell setup: load order, PATH, and per-machine
   config via `hosts/`.
 - Every other folder has its own README with the details.
@@ -84,5 +89,8 @@ from [Simple Icons](https://simpleicons.org) (CC0), monograms for the rest.
 ## Good to know
 
 - Adding a new machine is one line + one file — see [zsh/ → add a machine](zsh/README.md#add-a-machine).
+- If you pick the zsh component, the installer makes zsh your default shell at
+  the end (`chsh`, `/etc/shells` handled for you; no TTY → it prints the
+  manual command instead).
 - The installer skips `ssh/config` (differs per machine) and `~/.gitconfig`
   (not in the repo yet).

@@ -14,19 +14,31 @@ end
 -- important config
 require('options')
 lvim.leader = "space"
+-- Install configured servers in install/lvim-mason.lua after Mason's registry
+-- has refreshed. LunarVim's default auto-installer races first boot and emits
+-- "Cannot find package" before the registry exists.
+lvim.lsp.installer.setup.automatic_installation = false
 require('user.python_lsp')
 require('keybinds')
 require('plugins')
 
--- plugins config
-require('user.telescope')
-require('user.nvim-tree_config')
-require('user.neogen')
-require('user.codesnap')
-require('user.clangd_extensions')
-require('user.cscope_maps')
-require('user.remote-sshfs')
-require('user.nvim-ts-autotag')
+-- On a pristine install these modules do not exist until Lazy has cloned the
+-- custom plugin graph. Configure them at LazyDone on every startup so the
+-- first run is as clean as subsequent runs.
+vim.api.nvim_create_autocmd("User", {
+  pattern = "LazyDone",
+  once = true,
+  callback = function()
+    require('user.telescope')
+    require('user.nvim-tree_config')
+    require('user.neogen')
+    require('user.codesnap')
+    require('user.clangd_extensions')
+    require('user.cscope_maps')
+    require('user.remote-sshfs')
+    require('user.nvim-ts-autotag')
+  end,
+})
 
 -- snippets
 require('snippets.c')
@@ -58,7 +70,10 @@ lvim.builtin.nvimtree.setup.renderer.icons.show.git = true
 lvim.builtin.terminal.hide_numbers = false
 lvim.builtin.terminal.direction = 'float'
 -- lvim.reload_config_on_save = true
-lvim.builtin.breadcrumbs.active = true
+-- Breadcrumbs resize windows while attaching in a UI. In headless validation
+-- there is no drawable grid, so enabling them produces E36 even though the LSP
+-- itself starts successfully.
+lvim.builtin.breadcrumbs.active = #vim.api.nvim_list_uis() > 0
 lvim.builtin.treesitter.highlight.enabled = true
 lvim.builtin.dap.active = true
 

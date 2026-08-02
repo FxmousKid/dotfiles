@@ -361,7 +361,8 @@ pane_frames false
 //
 // copy_command "xclip -selection clipboard" // x11
 // copy_command "wl-copy"                    // wayland
- copy_command "pbcopy"                     // osx
+// No copy_command: use Zellij's portable OSC52 clipboard path. This also works
+// through SSH; set a machine-local command only for terminals without OSC52.
 // 
 // copy_command "pbcopy"
  

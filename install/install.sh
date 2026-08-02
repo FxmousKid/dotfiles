@@ -48,8 +48,8 @@ lazygit|on|all|git TUI
 tmux|on|all|tmux
 bash|off|all|bash fallback configs
 karabiner|on|darwin|keyboard rules (Karabiner-Elements)
-xmodmap|on|linux|X11 key remap
-hyprland|on|linux|Wayland compositor
+xmodmap|off|linux|X11 key remap
+hyprland|off|linux|Wayland compositor
 "
 
 # --- output helpers ----------------------------------------------------------
@@ -181,9 +181,51 @@ seed_zellij_perms() {
   say "  ${GRN}[grant]${RST}  zjstatus permissions -> $perm"
 }
 
+# --- post-link: make zsh the default shell ------------------------------------
+# install-tools.sh provisions zsh when the OS does not already ship it. Once it
+# exists, switching the default shell is automated here: register the zsh path
+# in /etc/shells if needed, then chsh to it. Never hard-fails — on any snag it
+# prints the manual command and moves on.
+ensure_default_shell() {
+  case "${SHELL:-}" in
+    */zsh) say "  ${DIM}[ok]     default shell is already zsh ($SHELL)${RST}"; return 0 ;;
+  esac
+  if ! command -v zsh >/dev/null 2>&1; then
+    say "  ${YLW}[skip]${RST}   zsh not on PATH — run install-tools.sh, then re-run"
+    return 0
+  fi
+  zshpath="$(command -v zsh)"
+  if [ "$DRY" -eq 1 ]; then
+    say "  ${GRN}[chsh]${RST}   would set default shell to $zshpath ${DIM}(dry)${RST}"
+    return 0
+  fi
+  if ! grep -qx "$zshpath" /etc/shells 2>/dev/null; then
+    if printf '%s\n' "$zshpath" | sudo tee -a /etc/shells >/dev/null; then
+      say "  ${GRN}[shells]${RST} added $zshpath to /etc/shells"
+    else
+      say "  ${YLW}[warn]${RST}   couldn't add $zshpath to /etc/shells — run manually:"
+      # say() prints via %b, which eats one level of backslashes — hence \\\\n
+      # so the hint displays a literal \n instead of breaking across two lines.
+      say "  ${YLW}       ${RST}  printf '%s\\\\n' \"$zshpath\" | sudo tee -a /etc/shells && chsh -s \"$zshpath\""
+      return 0
+    fi
+  fi
+  if ! [ -t 0 ]; then
+    say "  ${YLW}[skip]${RST}   no TTY for chsh — run manually: chsh -s \"$zshpath\""
+    return 0
+  fi
+  # chsh may prompt for your password — that's normal.
+  if chsh -s "$zshpath"; then
+    say "  ${GRN}[chsh]${RST}   default shell set to $zshpath — log out/in or run: exec zsh -l"
+  else
+    say "  ${YLW}[warn]${RST}   chsh failed — run manually: chsh -s \"$zshpath\""
+  fi
+}
+
 # --- interactive menu --------------------------------------------------------
 render() {
-  [ -t 1 ] && printf '\033[2J\033[3J\033[H'
+  # redraw the visible screen only (what `clear -x` emits) — scrollback preserved
+  [ -t 1 ] && printf '\033[2J\033[H'
   say "${BOLD}== choose what to symlink ==${RST}   ${DIM}os: $OSKEY${RST}"
   say "${DIM}number = toggle    a = all    n = none    c = continue    q = quit${RST}"
   say ""
@@ -216,7 +258,7 @@ menu() {
 }
 
 confirm() {
-  [ -t 1 ] && printf '\033[2J\033[3J\033[H'
+  say ""
   say "${BOLD}== will symlink ==${RST}"
   any=0
   for k in $KEYS; do is_enabled "$k" && { say "  ${GRN}+${RST} $k"; any=1; }; done
@@ -238,6 +280,12 @@ while getopts "ynh" opt; do
 done
 
 say "${DIM}dotfiles: $DOTFILES${RST}"
+
+if ! command -v zsh >/dev/null 2>&1; then
+  say "${YLW}${BOLD}warning: zsh not found on PATH.${RST}"
+  say "${YLW}linking will proceed; install-tools.sh can install zsh afterward.${RST}"
+fi
+
 [ "$DRY" -eq 1 ] && say "${YLW}(dry run — no changes will be made)${RST}"
 
 # Choose selection: -y / no-TTY use defaults; otherwise drive the menu.
@@ -257,6 +305,7 @@ for k in $KEYS; do
   say "${BOLD}== $k ==${RST}"
   do_links "$k"
   [ "$k" = zellij ] && seed_zellij_perms
+  [ "$k" = zsh ] && ensure_default_shell
 done
 
 say ""
@@ -269,7 +318,13 @@ if [ -x "$TOOLS_SCRIPT" ] && [ "$ASSUME_YES" -ne 1 ] && { [ -t 0 ] || [ "${INSTA
   printf '\ninstall/upgrade missing tools now? [y/N] '
   read -r ans || ans=""
   case "$ans" in
-    y|Y|yes|YES) if [ "$DRY" -eq 1 ]; then "$TOOLS_SCRIPT" -n; else "$TOOLS_SCRIPT"; fi ;;
+    y|Y|yes|YES)
+      if [ "$DRY" -eq 1 ]; then
+        "$TOOLS_SCRIPT" -n
+      else
+        "$TOOLS_SCRIPT"
+        is_enabled zsh && ensure_default_shell
+      fi ;;
     *)           say "${DIM}skipped — run ./install/install-tools.sh whenever you want.${RST}" ;;
   esac
 fi

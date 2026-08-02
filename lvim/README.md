@@ -49,3 +49,6 @@ if present). The 42-header identity (`vim.g.user` / `vim.g.mail`) is set in the
 
 - `lazy-lock.json` is gitignored, so plugin versions aren't pinned across
   machines — track it if you ever want fully reproducible installs.
+- The installer provisions the language servers this config starts: clangd
+  from the system package manager, plus pyright, Bash, Lua, JDTLS and Kotlin
+  through Mason. JDK 21 is installed for the JVM-based servers.

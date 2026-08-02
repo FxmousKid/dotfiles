@@ -34,7 +34,8 @@ require('remote-sshfs').setup{
 		},
 	},
 	log = {
-		enabled = true, -- enable logging
+		-- Avoid a startup log line during headless install/smoke validation.
+		enabled = #vim.api.nvim_list_uis() > 0,
 		truncate = false, -- truncate logs
 		types = { -- enabled log types
 			all = true,

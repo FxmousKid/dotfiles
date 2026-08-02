@@ -12,7 +12,22 @@ for _, dir in ipairs(vim.fn.glob(java_dir .. "/21*", true, true)) do
   end
 end
 
-local opts = {}
+local util = require("lspconfig.util")
+local opts = {
+  root_dir = util.root_pattern(
+    "settings.gradle",
+    "settings.gradle.kts",
+    "build.xml",
+    "pom.xml",
+    "build.gradle",
+    "build.gradle.kts",
+    ".git"
+  ),
+  single_file_support = true,
+  init_options = {
+    storagePath = vim.fn.stdpath("cache") .. "/kotlin-language-server",
+  },
+}
 if jdk21 then
   opts.cmd_env = { JAVA_HOME = jdk21 }
 end

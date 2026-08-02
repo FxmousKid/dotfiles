@@ -17,8 +17,10 @@ Zellij terminal multiplexer config.
 
 - Theme: tokyo-night · layout: zj-minimal
 - Mouse on, pane frames off, startup tips off.
-- Copy command is `pbcopy` (macOS).
+- Clipboard transport uses portable OSC52.
 
 ## Notes
 
-On Linux, change `copy_command` to `wl-copy` or `xclip`.
+Clipboard copying uses Zellij's default OSC52 path so the same config works on
+macOS, Linux, and over SSH. Set `copy_command` locally only when a terminal does
+not support OSC52.
