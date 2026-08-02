@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dotfiles install validation — Ubuntu ARM64</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #090d14;
+      --panel: #101722;
+      --panel-2: #151e2b;
+      --text: #e8eef7;
+      --muted: #98a8bc;
+      --line: #273448;
+      --green: #65df9b;
+      --amber: #ffc766;
+      --blue: #72b7ff;
+      --violet: #bd9cff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font: 15px/1.55 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 18% 0%, rgba(114,183,255,.16), transparent 35rem),
+        radial-gradient(circle at 90% 12%, rgba(189,156,255,.12), transparent 30rem),
+        var(--bg);
+      color: var(--text);
+    }
+    main { width: min(1120px, calc(100% - 32px)); margin: 0 auto; padding: 56px 0 72px; }
+    header { margin-bottom: 30px; }
+    .eyebrow { color: var(--blue); font: 700 12px/1.2 ui-monospace, monospace; letter-spacing: .13em; text-transform: uppercase; }
+    h1 { max-width: 850px; margin: 10px 0 12px; font-size: clamp(34px, 6vw, 64px); line-height: 1.02; letter-spacing: -.045em; }
+    h2 { margin: 0 0 18px; font-size: 22px; letter-spacing: -.02em; }
+    p { margin: 0; }
+    .lede { max-width: 780px; color: var(--muted); font-size: 18px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 22px; }
+    .chip { padding: 7px 11px; border: 1px solid var(--line); border-radius: 999px; background: rgba(16,23,34,.72); color: var(--muted); font: 600 12px/1 ui-monospace, monospace; }
+    .chip.pass { color: var(--green); border-color: rgba(101,223,155,.42); }
+    section { margin-top: 18px; padding: 24px; border: 1px solid var(--line); border-radius: 18px; background: linear-gradient(145deg, rgba(21,30,43,.94), rgba(13,19,29,.94)); box-shadow: 0 24px 70px rgba(0,0,0,.18); }
+    .hero-grid, .stats { display: grid; gap: 14px; }
+    .hero-grid { grid-template-columns: 1.3fr .7fr; }
+    .stats { grid-template-columns: repeat(4, 1fr); }
+    .stat { min-height: 112px; padding: 17px; border-radius: 13px; background: var(--panel-2); border: 1px solid rgba(255,255,255,.055); }
+    .stat strong { display: block; color: var(--green); font-size: 27px; letter-spacing: -.035em; }
+    .stat span { display: block; margin-top: 4px; color: var(--muted); font-size: 13px; }
+    .verdict { display: flex; flex-direction: column; justify-content: space-between; min-height: 100%; }
+    .verdict .mark { color: var(--green); font-size: 48px; line-height: 1; }
+    .verdict strong { display: block; margin: 10px 0 7px; font-size: 25px; }
+    .muted { color: var(--muted); }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px 10px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+    th { color: var(--muted); font: 700 11px/1.2 ui-monospace, monospace; letter-spacing: .09em; text-transform: uppercase; }
+    tr:last-child td { border-bottom: 0; }
+    .status { color: var(--green); font: 700 12px/1.3 ui-monospace, monospace; white-space: nowrap; }
+    code { color: #cde2ff; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    ul { margin: 0; padding-left: 19px; }
+    li + li { margin-top: 8px; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .note { border-left: 3px solid var(--amber); padding-left: 14px; color: var(--muted); }
+    .next { border-color: rgba(255,199,102,.35); }
+    .diff-intro { display: grid; grid-template-columns: 1.2fr .8fr; gap: 18px; align-items: start; }
+    .diff-legend { display: flex; flex-wrap: wrap; gap: 8px; }
+    .legend { padding: 6px 9px; border-radius: 8px; font: 700 11px/1 ui-monospace, monospace; }
+    .legend.add { color: var(--green); background: rgba(101,223,155,.1); }
+    .legend.del { color: #ff8496; background: rgba(255,132,150,.1); }
+    .legend.ctx { color: var(--muted); background: rgba(152,168,188,.1); }
+    .change-stack { display: grid; gap: 14px; margin-top: 18px; }
+    details.change { overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: rgba(9,13,20,.52); }
+    details.change[open] { border-color: rgba(114,183,255,.36); }
+    details.change summary { display: flex; gap: 12px; align-items: center; padding: 16px 18px; cursor: pointer; list-style: none; font-weight: 750; }
+    details.change summary::-webkit-details-marker { display: none; }
+    details.change summary::before { content: "+"; display: grid; place-items: center; width: 22px; height: 22px; flex: 0 0 auto; border: 1px solid var(--line); border-radius: 50%; color: var(--blue); font: 700 15px/1 ui-monospace, monospace; }
+    details.change[open] summary::before { content: "−"; }
+    .file-list { margin-left: auto; color: var(--muted); font: 500 11px/1.35 ui-monospace, monospace; text-align: right; }
+    .change-body { padding: 0 18px 18px; }
+    .explain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0 0 14px; }
+    .explain { padding: 14px; border: 1px solid rgba(255,255,255,.06); border-radius: 11px; background: var(--panel-2); }
+    .explain h3 { margin: 0 0 7px; color: var(--blue); font: 750 11px/1.2 ui-monospace, monospace; letter-spacing: .09em; text-transform: uppercase; }
+    .explain p { color: var(--muted); font-size: 14px; }
+    .diff { margin: 0; overflow-x: auto; border: 1px solid var(--line); border-radius: 11px; background: #080c12; color: #b9c6d6; font: 12px/1.58 ui-monospace, SFMono-Regular, Menlo, monospace; tab-size: 2; }
+    .diff .head, .diff .ctx, .diff .add, .diff .del { display: block; min-width: max-content; padding: 0 13px; white-space: pre; }
+    .diff .head { padding-top: 9px; padding-bottom: 9px; color: var(--blue); background: rgba(114,183,255,.08); border-bottom: 1px solid var(--line); }
+    .diff .ctx { color: #8493a7; }
+    .diff .add { color: #9aebbc; background: rgba(101,223,155,.075); }
+    .diff .del { color: #ff9dad; background: rgba(255,132,150,.075); }
+    .construction { margin-top: 12px; padding: 12px 14px; border-left: 3px solid var(--violet); background: rgba(189,156,255,.065); color: var(--muted); border-radius: 0 9px 9px 0; }
+    .construction strong { color: #d9c9ff; }
+    .scope-note { margin-top: 14px; padding: 13px 15px; border-radius: 10px; color: var(--muted); background: rgba(255,199,102,.06); border: 1px solid rgba(255,199,102,.22); }
+    footer { margin-top: 26px; color: var(--muted); font-size: 13px; text-align: center; }
+    @media (max-width: 800px) {
+      .hero-grid, .two, .diff-intro, .explain-grid { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: 1fr 1fr; }
+      table { display: block; overflow-x: auto; }
+      details.change summary { align-items: flex-start; }
+      .file-list { display: none; }
+    }
+    @media (max-width: 480px) { .stats { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">Fresh-machine proof · 02 Aug 2026</div>
+    <h1>Ubuntu ARM64 install passes claim by claim.</h1>
+    <p class="lede">The uncommitted <code>feat/apt-support</code> worktree was installed into a pristine QEMU guest, then checked for exact links, executable architecture, editor startup, plugins, Mason packages, and real LSP attachment.</p>
+    <div class="chips">
+      <span class="chip pass">PASS · apt</span>
+      <span class="chip pass">PASS · aarch64</span>
+      <span class="chip pass">PASS · idempotent</span>
+      <span class="chip">branch feat/apt-support</span>
+      <span class="chip">base 885647d</span>
+      <span class="chip">no commit created</span>
+    </div>
+  </header>
+
+  <div class="hero-grid">
+    <section class="verdict">
+      <div>
+        <div class="mark">✓</div>
+        <strong>Ready for the apt side of the branch</strong>
+        <p class="muted">The requested tools and configs work together on Ubuntu 24.04 ARM64. The installer now fails closed when LunarVim, its plugins, native CodeSnap module, or Mason packages do not validate.</p>
+      </div>
+    </section>
+    <section>
+      <h2>Guest envelope</h2>
+      <p><strong>Ubuntu 24.04.4 LTS</strong><br><span class="muted">Linux 6.8 · aarch64 · QEMU virt 11.0<br>4 vCPU · 6 GiB RAM · 20 GiB disk<br>Initial packages: ca-certificates, curl, git</span></p>
+    </section>
+  </div>
+
+  <section>
+    <div class="stats">
+      <div class="stat"><strong>65</strong><span>LunarVim plugins installed and verified</span></div>
+      <div class="stat"><strong>6 / 6</strong><span>Configured LSP clients attached to real buffers</span></div>
+      <div class="stat"><strong>10 / 10</strong><span>Priority config links resolve to this repo</span></div>
+      <div class="stat"><strong>&lt; 0.5 GiB</strong><span>Observed guest RAM in use during provisioning checks</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Requested outcomes</h2>
+    <table>
+      <thead><tr><th>Claim</th><th>Evidence</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>zsh + repo startup files</td><td><code>zsh 5.9</code>; <code>~/.zshenv</code> and <code>~/.config/zsh/*</code> exact links; login-shell PATH smoke passed.</td><td class="status">PASS</td></tr>
+        <tr><td>Bob + Neovim</td><td><code>bob-nvim 4.1.7</code>; exact <code>NVIM v0.10.4</code>; executable is native ARM aarch64.</td><td class="status">PASS</td></tr>
+        <tr><td>LunarVim</td><td>Release 1.4 installer completed non-interactively; headless startup passed; completion marker written only after all validation.</td><td class="status">PASS</td></tr>
+        <tr><td>Plugins</td><td>65 installed plugins verified; Telescope file browser loaded; CodeSnap <code>generator.so</code> loaded and is an ARM aarch64 ELF shared object.</td><td class="status">PASS</td></tr>
+        <tr><td>Language tooling</td><td><code>clang/clangd 18.1.3</code>, OpenJDK <code>21.0.11</code>, Cargo <code>1.75.0</code>, cscope; five Mason packages verified.</td><td class="status">PASS</td></tr>
+        <tr><td>Actual LSP attachment</td><td>clangd, pyright, bashls, lua_ls, jdtls, and kotlin_language_server each attached sequentially to a representative file.</td><td class="status">PASS</td></tr>
+        <tr><td>Atuin / Zellij / Yazi</td><td><code>18.18.1</code> / <code>0.44.3</code> / <code>26.5.6</code>; native aarch64 executables; exact config links; Zellij config parser passed.</td><td class="status">PASS</td></tr>
+        <tr><td>lazygit + tmux</td><td>lazygit <code>0.63.1</code>, tmux <code>3.4</code>; links exact; isolated tmux server started with the repo config.</td><td class="status">PASS</td></tr>
+        <tr><td>Idempotence</td><td>Second link pass returned only <code>[ok]</code>; tool dry run reported nothing missing.</td><td class="status">PASS</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="two">
+    <section>
+      <h2>What the VM caught</h2>
+      <ul>
+        <li>Ambiguous GitHub release assets for ARM64 tools and Bob.</li>
+        <li>A CDN connection that left <code>eget</code> waiting after 100% download.</li>
+        <li>Missing make, unzip, Cargo, Clang/clangd, JDK 21, and cscope prerequisites.</li>
+        <li>First-start plugin ordering and asynchronous Mason races.</li>
+        <li>Wrong Java Mason path, optional DAP errors, and weak Kotlin root detection.</li>
+        <li>A test harness PATH assumption in non-login SSH/CI shells.</li>
+        <li>macOS-only Zellij clipboard behavior and AppleDouble archive pollution.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Guardrails added</h2>
+      <ul>
+        <li>Deterministic per-tool release filters and exact Bob archives.</li>
+        <li>Two-minute Linux download bound plus one retry.</li>
+        <li>Noninteractive apt settings and post-install executable verification.</li>
+        <li>Synchronous plugin, native module, Mason, headless, and LSP checks.</li>
+        <li>A final LunarVim success marker, preventing false launcher-only success.</li>
+        <li>Reusable <code>test-install.sh</code> and <code>test-lvim-lsps.sh</code> smoke suites.</li>
+      </ul>
+    </section>
+  </div>
+
+  <section>
+    <h2>Log quality</h2>
+    <p class="note">The authoritative functionality run contained no real failure, warning, traceback, or panic. Its text scan found only NVM's misleading upstream “Profile not found” help block caused by intentionally preventing profile mutation. The final worktree suppresses that stdout, preserves stderr, validates <code>nvm.sh</code>, and passed a separate clean-output smoke test.</p>
+  </section>
+
+  <section id="implementation-diff">
+    <div class="diff-intro">
+      <div>
+        <div class="eyebrow">Implementation anatomy</div>
+        <h2 style="margin-top:8px">What changed, in diff form—and why</h2>
+        <p class="muted">These are semantic diff excerpts: related lines are grouped around the behavior they implement instead of reproducing hundreds of mechanical context lines. Every file changed or added by this validation pass is covered below, including the macro responsibility of the code and the reason for the specific construction.</p>
+      </div>
+      <div class="diff-legend">
+        <span class="legend add">+ added</span>
+        <span class="legend del">− removed</span>
+        <span class="legend ctx">context / unchanged intent</span>
+      </div>
+    </div>
+    <p class="scope-note"><strong>Attribution boundary.</strong> This view intentionally excludes unrelated edits that were already in the working tree—such as Notes, the Alacritty binary, host-specific zsh changes, and the pre-existing standalone Neovim files. It documents only the install/LunarVim/Zellij work performed during this validation.</p>
+
+    <div class="change-stack">
+      <details class="change" open>
+        <summary><span>1. Turn the tool list into a complete cross-distro install manifest</span><span class="file-list">install/install-tools.sh<br>install/README.md</span></summary>
+        <div class="change-body">
+          <div class="explain-grid">
+            <div class="explain"><h3>Macro change</h3><p>The installer is now a package-manager-first manifest for the whole development environment, not just a collection of terminal utilities. zsh, build tools, Clang, clangd, JDK 21, Cargo, tmux and cscope are first-class dependencies, so a new machine reaches a usable editor state in one run.</p></div>
+            <div class="explain"><h3>Why this construction</h3><p>Keeping package names in a pipe-delimited table preserves one menu and one execution path across Homebrew, DNF and apt. Two extra fields—asset filters and an archive member—handle GitHub releases without scattering per-tool branches throughout <code>ensure_tool</code>.</p></div>
+          </div>
+          <pre class="diff"><span class="head">install/install-tools.sh · manifest schema and prerequisites</span><span class="del">- # bin | brew | dnf | copr | apt | gh_repo | custom_fn</span><span class="add">+ # bin | brew | dnf | copr | apt | gh_repo | custom_fn | eget_filters | eget_file</span><span class="add">+ zsh|zsh|zsh||zsh||||</span><span class="add">+ make|make|make||make||||</span><span class="add">+ unzip|unzip|unzip||unzip||||</span><span class="add">+ cargo|rust|cargo||cargo||||</span><span class="add">+ clang|llvm|clang||clang||||</span><span class="add">+ clangd|llvm|clang-tools-extra||clangd||||</span><span class="add">+ java|openjdk@21|java-21-openjdk-devel||openjdk-21-jdk-headless||||</span><span class="add">+ tmux|tmux|tmux||tmux||||</span><span class="add">+ cscope|cscope|cscope||cscope||||</span><span class="ctx">  ...</span><span class="add">+ zellij|zellij|zellij|varlad/zellij||zellij-org/zellij||--asset ^no-web|</span><span class="add">+ yazi|yazi|yazi|lihaohong/yazi||sxyazi/yazi||--asset ^musl|</span><span class="add">+ fastfetch|fastfetch|fastfetch|||fastfetch-cli/fastfetch||--asset ^polyfilled --asset ^.zip|*/usr/bin/fastfetch</span></pre>
+          <p class="construction"><strong>Design detail:</strong> the apt column is deliberately blank when the distro package exposes a different command name. For example, Debian’s <code>fd-find</code> installs <code>fdfind</code>, so the manifest falls through to the upstream <code>fd</code> release rather than creating a hidden naming mismatch. The same presence function powers the menu, dry run and final verification, preventing those paths from disagreeing.</p>
+        </div>
+      </details>
+
+      <details class="change" open>
+        <summary><span>2. Make ARM64 GitHub release selection deterministic and bounded</span><span class="file-list">install/install-tools.sh<br>install/install-lvim.sh</span></summary>
+        <div class="change-body">
+          <div class="explain-grid">
+            <div class="explain"><h3>Macro change</h3><p>Main-manifest release downloads can no longer prompt for ambiguous assets, install a package file as if it were a binary, select the wrong CPU, or wait forever after reaching 100%. Bob gets an exact OS/architecture archive in both installers; the other tools get explicit negative filters and, where needed, an exact file inside the archive.</p></div>
+            <div class="explain"><h3>Why this construction</h3><p>A single <code>run_eget "$@"</code> wrapper centralizes timeout and retry policy for <code>install-tools.sh</code> while preserving each argument exactly. <code>timeout</code> is feature-detected because it exists on Linux but not stock macOS. Two 120-second attempts bound the main fresh-machine path without making transient CDN failures permanent.</p></div>
+          </div>
+          <pre class="diff"><span class="head">install/install-tools.sh · release policy</span><span class="add">+ EGET_FILTER='--asset ^.deb --asset ^.rpm --asset ^.AppImage --asset ^.appimage'</span><span class="add">+ run_eget() {</span><span class="add">+   attempt=1</span><span class="add">+   while [ "$attempt" -le 2 ]; do</span><span class="add">+     if have timeout; then</span><span class="add">+       timeout 120 "$EGET" "$@" &amp;&amp; return 0</span><span class="add">+     else</span><span class="add">+       "$EGET" "$@" &amp;&amp; return 0</span><span class="add">+     fi</span><span class="add">+     [ "$attempt" -eq 2 ] &amp;&amp; return 1</span><span class="add">+     attempt=$((attempt + 1))</span><span class="add">+   done</span><span class="add">+ }</span><span class="ctx">  ...</span><span class="del">- "$EGET" $EGET_FILTER "$ghrepo" --to "$LOCAL_BIN"</span><span class="add">+ run_eget $EGET_FILTER $egetfilters "$ghrepo" --to "$LOCAL_BIN"</span></pre>
+          <pre class="diff" style="margin-top:12px"><span class="head">install/install-tools.sh + install/install-lvim.sh · exact Bob archive</span><span class="add">+ case "$(uname -s)/$(uname -m)" in</span><span class="add">+   Linux/aarch64|Linux/arm64)    asset='bob-linux-arm.zip' ;;</span><span class="add">+   Linux/x86_64|Linux/amd64)    asset='bob-linux-x86_64.zip' ;;</span><span class="add">+   Darwin/arm64|Darwin/aarch64) asset='bob-macos-arm.zip' ;;</span><span class="add">+   Darwin/x86_64|Darwin/amd64)  asset='bob-macos-x86_64.zip' ;;</span><span class="add">+ esac</span></pre>
+          <p class="construction"><strong>Design detail:</strong> Bob calls its aarch64 archive “arm,” which cannot be inferred safely from a loose substring. Resolving the exact archive in a small <code>case</code> is intentionally boring and auditable. Fastfetch also needs an exact archive member because its Bash completion is executable and otherwise looks like a valid candidate.</p>
+        </div>
+      </details>
+
+      <details class="change" open>
+        <summary><span>3. Make same-process apt, PATH, NVM and outcome behavior reliable</span><span class="file-list">install/install-tools.sh<br>install/install-lvim.sh</span></summary>
+        <div class="change-body">
+          <div class="explain-grid">
+            <div class="explain"><h3>Macro change</h3><p>A tool installed early in the run is immediately visible to later steps. Apt is fully noninteractive, NVM no longer mutates or complains about the linked zsh profile, and “installed” means the executable actually runs—not merely that a file exists.</p></div>
+            <div class="explain"><h3>Why this construction</h3><p>Exporting <code>~/.local/bin</code> and the newest NVM Node directory inside the installer fixes the temporal gap before the next login shell. Apt’s environment variables remove debconf/needrestart prompts. Executing Neovim and Fastfetch catches wrong-architecture files and archive-member mistakes that <code>-x</code> cannot detect.</p></div>
+          </div>
+          <pre class="diff"><span class="head">install/install-tools.sh · current-process environment</span><span class="add">+ PATH="$HOME/.local/bin:$PATH"; export PATH</span><span class="add">+ NVM_NODE_BIN="$(find "$HOME/.nvm/versions/node" ... -name bin | sort | tail -n 1)"</span><span class="add">+ [ -n "$NVM_NODE_BIN" ] &amp;&amp; PATH="$NVM_NODE_BIN:$PATH" &amp;&amp; export PATH</span><span class="ctx">  ...</span><span class="del">- sudo apt-get install -y "$aptp"</span><span class="add">+ sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a \</span><span class="add">+   apt-get -o Dpkg::Use-Pty=0 install -y "$aptp"</span></pre>
+          <pre class="diff" style="margin-top:12px"><span class="head">install/install-tools.sh · clean NVM and stronger presence checks</span><span class="del">- curl -fsSL .../nvm/v0.40.3/install.sh | PROFILE=/dev/null bash</span><span class="add">+ curl --connect-timeout 15 --max-time 120 -fsSL .../install.sh \</span><span class="add">+   | PROFILE=/dev/null bash &gt;/dev/null</span><span class="add">+ [ -s "$HOME/.nvm/nvm.sh" ] || return 1</span><span class="ctx">  ...</span><span class="del">- nvim) have nvim || [ -x "$(bob_nvim_dir)/nvim" ] ;;</span><span class="add">+ nvim) nvim --version &gt;/dev/null 2&gt;&amp;1 || \</span><span class="add">+   "$(bob_nvim_dir)/nvim" --version &gt;/dev/null 2&gt;&amp;1 ;;</span><span class="add">+ fastfetch) fastfetch --version 2&gt;/dev/null | grep -q '^fastfetch ' ;;</span></pre>
+          <p class="construction"><strong>Design detail:</strong> the NVM installer’s stdout is suppressed because its “Profile not found” block is expected when <code>PROFILE=/dev/null</code>; stderr remains visible and <code>nvm.sh</code> is checked afterward. That removes false alarm text without hiding real failure. The same newest-Node PATH activation is mirrored in the standalone LunarVim installer, so Mason’s npm-backed servers work even when that script is called directly. The final verify loop still checks only tools attempted during this run, so an unrelated optional tool cannot fail an otherwise valid installation.</p>
+        </div>
+      </details>
+
+      <details class="change" open>
+        <summary><span>4. Pin Neovim 0.10.4 and make LunarVim success transactional</span><span class="file-list">install/install-lvim.sh<br>install/install-tools.sh</span></summary>
+        <div class="change-body">
+          <div class="explain-grid">
+            <div class="explain"><h3>Macro change</h3><p>The LunarVim row no longer succeeds just because an <code>lvim</code> launcher exists. Bob installs exactly Neovim 0.10.4, prerequisites are checked, the upstream installer runs without prompts, plugins and Mason packages finish synchronously, and a completion marker is written only after headless startup passes.</p></div>
+            <div class="explain"><h3>Why this construction</h3><p>Neovim 0.10.4 is the first release in this compatibility range with an upstream Linux ARM64 build. A state marker acts like a small transaction commit: partial work can be retried, while only a fully validated install is skipped. Lua helpers run through <code>pcall</code> and <code>cquit 1</code>, explicitly translating Neovim failures into shell exit codes.</p></div>
+          </div>
+          <pre class="diff"><span class="head">install/install-lvim.sh · version, prerequisites and upstream invocation</span><span class="del">- NVIM_VERSION='0.9.5'</span><span class="add">+ SCRIPT_DIR="$(CDPATH='' cd -- "$(dirname -- "$0")" &amp;&amp; pwd)"</span><span class="add">+ NVIM_VERSION='0.10.4'</span><span class="add">+ if ! have make || ! have cargo; then</span><span class="add">+   say "make and cargo are required"; exit 1</span><span class="add">+ fi</span><span class="ctx">  ...</span><span class="del">- LV_BRANCH="$LV_BRANCH" bash</span><span class="add">+ LV_BRANCH="$LV_BRANCH" bash -c "$lv_installer" -- --yes --no-install-dependencies</span></pre>
+          <pre class="diff" style="margin-top:12px"><span class="head">install/install-lvim.sh · fail-closed validation pipeline</span><span class="add">+ "$LVIM_BIN" --headless \</span><span class="add">+   -c "lua local ok, err = pcall(dofile, '$SCRIPT_DIR/lvim-plugin-smoke.lua');</span><span class="add">+       if not ok then vim.api.nvim_err_writeln(err); vim.cmd('cquit 1') end" \</span><span class="add">+   -c 'quitall'</span><span class="add">+ "$LVIM_BIN" --headless \</span><span class="add">+   -c "lua local ok, err = pcall(dofile, '$SCRIPT_DIR/lvim-mason.lua'); ..." \</span><span class="add">+   -c 'quitall'</span><span class="add">+ "$LVIM_BIN" --headless -c 'quitall'</span><span class="add">+ LVIM_MARKER="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/lvim-install.ok"</span><span class="add">+ mkdir -p "$(dirname "$LVIM_MARKER")"; : &gt; "$LVIM_MARKER"</span><span class="ctx">  ...</span><span class="del">- lvim) have lvim ;;</span><span class="add">+ lvim) have lvim &amp;&amp; [ -f "${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/lvim-install.ok" ] ;;</span></pre>
+          <p class="construction"><strong>Design detail:</strong> <code>SCRIPT_DIR</code> is resolved from the script rather than the caller’s current directory, so helper paths work from cron, SSH and nested shells. <code>CDPATH=''</code> prevents user shell settings from changing <code>cd</code> output. The upstream installer is told not to install dependencies because the manifest owns that responsibility and can verify it consistently across distros.</p>
+        </div>
+      </details>
+
+      <details class="change" open>
+        <summary><span>5. Add synchronous plugin, Mason, runtime and real-LSP tests</span><span class="file-list">install/lvim-mason.lua<br>install/lvim-plugin-smoke.lua<br>install/lvim-lsp-smoke.lua<br>install/test-install.sh<br>install/test-lvim-lsps.sh</span></summary>
+        <div class="change-body">
+          <div class="explain-grid">
+            <div class="explain"><h3>Macro change</h3><p>Five new validation helpers turn installer claims into executable assertions. They verify the plugin graph and CodeSnap native module, synchronously provision five Mason packages, assert exact links and runtime commands, and prove that six LSP clients attach to representative buffers.</p></div>
+            <div class="explain"><h3>Why this construction</h3><p>Installation state and runtime behavior are different layers, so they are tested separately. Lua helpers run inside LunarVim where its APIs exist; shell harnesses own filesystem setup and sequential execution. This makes failures small and attributable while keeping peak RAM bounded.</p></div>
+          </div>
+          <pre class="diff"><span class="head">install/lvim-mason.lua · registry → install → wait → verify</span><span class="add">+ local package_names = {</span><span class="add">+   "pyright", "bash-language-server", "lua-language-server",</span><span class="add">+   "jdtls", "kotlin-language-server",</span><span class="add">+ }</span><span class="add">+ registry.refresh(function()</span><span class="add">+   for _, name in ipairs(package_names) do</span><span class="add">+     local found, package = pcall(registry.get_package, name)</span><span class="add">+     if found and not package:is_installed() then</span><span class="add">+       package:install():once("closed", function() pending = pending - 1 end)</span><span class="add">+     end</span><span class="add">+   end</span><span class="add">+ end)</span><span class="add">+ assert(vim.wait(600000, function() return finished end, 100))</span><span class="add">+ assert(registry.is_installed(name), name .. " did not verify as installed")</span></pre>
+          <pre class="diff" style="margin-top:12px"><span class="head">install/lvim-plugin-smoke.lua · plugin and native module proof</span><span class="add">+ for name, plugin in pairs(require("lazy.core.config").plugins) do</span><span class="add">+   if not plugin._.installed then table.insert(missing, name) end</span><span class="add">+ end</span><span class="add">+ assert(#missing == 0, "plugins not installed: " .. table.concat(missing, ", "))</span><span class="add">+ assert(require("telescope").extensions.file_browser)</span><span class="add">+ local generator_ok, generator = pcall(require, "generator")</span><span class="add">+ assert(generator_ok, "CodeSnap native generator failed to load: " .. tostring(generator))</span></pre>
+          <pre class="diff" style="margin-top:12px"><span class="head">install/test-install.sh · machine contract</span><span class="add">+ assert_link "$HOME/.config/lvim" "$ROOT/lvim"</span><span class="add">+ assert_link "$HOME/.config/zellij" "$ROOT/zellij"</span><span class="add">+ commands=(zsh nvim lvim bob atuin zellij yazi lazygit tmux clang clangd java cargo cscope)</span><span class="add">+ [[ "$(nvim --version | head -1)" == 'NVIM v0.10.4' ]]</span><span class="add">+ nvim --headless -c 'quitall'</span><span class="add">+ lvim --headless -c 'quitall'</span><span class="add">+ zellij setup --check</span><span class="add">+ tmux -L "$tmux_socket" -f "$HOME/.tmux.conf" start-server</span></pre>
+          <pre class="diff" style="margin-top:12px"><span class="head">install/test-lvim-lsps.sh + lvim-lsp-smoke.lua · sequential attachment</span><span class="add">+ export PATH="$HOME/.local/bin:$HOME/Releases/nvim-bin:$PATH"</span><span class="add">+ cases=('clangd|main.c' 'pyright|main.py' 'bashls|test.sh'</span><span class="add">+        'lua_ls|init.lua' 'jdtls|Main.java' 'kotlin_language_server|Main.kt')</span><span class="add">+ for test_case in "${cases[@]}"; do</span><span class="add">+   DOTFILES_EXPECT_LSP="$server" "$LVIM_BIN" --headless "$file" \</span><span class="add">+     -c "lua dofile('$SMOKE_LUA')"</span><span class="add">+ done</span><span class="add">+ -- Lua waits until vim.lsp.get_active_clients({ bufnr = 0 }) contains the expected name</span></pre>
+          <p class="construction"><strong>Design detail:</strong> Mason package names are not always the same as LSP client names—<code>bash-language-server</code> becomes <code>bashls</code>, for example—so provisioning and attachment use separate explicit lists. The LSP harness creates a temporary <code>.git</code> root plus C, Python, shell, Lua, Java and Kotlin files; this exercises real root detection rather than manufacturing clients through API calls. It also exports Node from NVM because npm-backed servers use <code>/usr/bin/env node</code> in non-login CI shells.</p>
+        </div>
+      </details>
+
+      <details class="change" open>
+        <summary><span>6. Remove first-install races from LunarVim’s plugin lifecycle</span><span class="file-list">lvim/config.lua<br>lvim/lua/plugins.lua<br>lvim/lua/user/telescope.lua<br>lvim/lua/user/remote-sshfs.lua</span></summary>
+        <div class="change-body">
+          <div class="explain-grid">
+            <div class="explain"><h3>Macro change</h3><p>Custom plugin configuration now runs after Lazy has actually cloned and registered those plugins. LunarVim’s automatic Mason installer is disabled in favor of the synchronous helper. UI-only features and authenticated Copilot startup no longer pollute headless installation logs.</p></div>
+            <div class="explain"><h3>Why this construction</h3><p>A one-shot <code>User LazyDone</code> autocmd preserves normal startup behavior but eliminates the unique first-boot window where <code>require()</code> runs before files exist. Plugin-owned setup stays with the plugin specification, which makes its dependency order explicit and avoids duplicate extension loading.</p></div>
+          </div>
+          <pre class="diff"><span class="head">lvim/config.lua · deterministic lifecycle</span><span class="add">+ lvim.lsp.installer.setup.automatic_installation = false</span><span class="ctx">  require('plugins')</span><span class="del">- require('user.telescope')</span><span class="del">- require('user.neogen')</span><span class="del">- require('user.codesnap')</span><span class="add">+ vim.api.nvim_create_autocmd("User", {</span><span class="add">+   pattern = "LazyDone",</span><span class="add">+   once = true,</span><span class="add">+   callback = function()</span><span class="add">+     require('user.telescope')</span><span class="add">+     require('user.neogen')</span><span class="add">+     require('user.codesnap')</span><span class="add">+     -- remaining custom plugin modules</span><span class="add">+   end,</span><span class="add">+ })</span><span class="del">- lvim.builtin.breadcrumbs.active = true</span><span class="add">+ lvim.builtin.breadcrumbs.active = #vim.api.nvim_list_uis() &gt; 0</span></pre>
+          <pre class="diff" style="margin-top:12px"><span class="head">lvim/lua/plugins.lua + user modules · plugin-owned timing</span><span class="del">- { "github/copilot.vim" },</span><span class="add">+ { "github/copilot.vim", event = "InsertEnter" },</span><span class="ctx">  { "nvim-telescope/telescope-file-browser.nvim",</span><span class="add">+   lazy = false,</span><span class="add">+   config = function() require("telescope").load_extension("file_browser") end,</span><span class="ctx">  }</span><span class="del">- require("telescope").load_extension("file_browser") -- user/telescope.lua</span><span class="del">- log = { enabled = true }</span><span class="add">+ log = { enabled = #vim.api.nvim_list_uis() &gt; 0 }</span></pre>
+          <p class="construction"><strong>Design detail:</strong> <code>once = true</code> means one configuration pass per Neovim process, not one pass forever; every new LunarVim session still configures the plugins. Checking <code>nvim_list_uis()</code> is stronger than guessing from environment variables—it directly asks Neovim whether a drawable UI exists, preventing breadcrumb E36 errors and remote-sshfs log chatter during headless tests.</p>
+        </div>
+      </details>
+
+      <details class="change" open>
+        <summary><span>7. Fix Java and Kotlin for LunarVim’s real data paths and optional tooling</span><span class="file-list">lvim/ftplugin/java.lua<br>lvim/ftplugin/kotlin.lua<br>lvim/README.md</span></summary>
+        <div class="change-body">
+          <div class="explain-grid">
+            <div class="explain"><h3>Macro change</h3><p>JDTLS now resolves Mason from LunarVim’s own data directory, starts without optional debug adapters, uses the supported common attach hook, and logs only errors. Kotlin recognizes normal project markers, Git roots and standalone files, while using JDK 21 and a stable cache directory.</p></div>
+            <div class="explain"><h3>Why this construction</h3><p><code>stdpath("data")</code> follows the active application’s XDG layout; hardcoding <code>~/.local/share/nvim</code> points LunarVim at the wrong tree. List-returning globs avoid the empty-string “bundle” produced by splitting a missing wildcard. DAP is capability-gated because an editor LSP must remain healthy without a Java debug adapter.</p></div>
+          </div>
+          <pre class="diff"><span class="head">lvim/ftplugin/java.lua · correct Mason paths and optional DAP</span><span class="del">- home .. "/.local/share/nvim/mason/packages/jdtls/..."</span><span class="add">+ local mason_path = vim.fn.stdpath("data") .. "/mason/"</span><span class="add">+ local bundles = vim.fn.glob(mason_path .. "packages/java-test/.../*.jar", true, true)</span><span class="add">+ local debug_bundles = vim.fn.glob(mason_path .. "packages/java-debug-adapter/.../*.jar", true, true)</span><span class="del">- "-Dlog.protocol=true", "-Dlog.level=ALL", "--add-modules=ALL-SYSTEM",</span><span class="add">+ "-Dlog.protocol=false", "-Dlog.level=ERROR",</span><span class="del">- require("lvim.lsp").on_attach(client, bufnr)</span><span class="add">+ require("lvim.lsp").common_on_attach(client, bufnr)</span><span class="add">+ if #debug_bundles &gt; 0 then</span><span class="add">+   require("jdtls").setup_dap({ hotcodereplace = "auto" })</span><span class="add">+ end</span></pre>
+          <pre class="diff" style="margin-top:12px"><span class="head">lvim/ftplugin/kotlin.lua · roots, single files and cache</span><span class="del">- local opts = {}</span><span class="add">+ local opts = {</span><span class="add">+   root_dir = util.root_pattern("settings.gradle", "settings.gradle.kts",</span><span class="add">+     "build.xml", "pom.xml", "build.gradle", "build.gradle.kts", ".git"),</span><span class="add">+   single_file_support = true,</span><span class="add">+   init_options = {</span><span class="add">+     storagePath = vim.fn.stdpath("cache") .. "/kotlin-language-server",</span><span class="add">+   },</span><span class="add">+ }</span><span class="add">+ if jdk21 then opts.cmd_env = { JAVA_HOME = jdk21 } end</span></pre>
+          <p class="construction"><strong>Design detail:</strong> Java workspaces remain project-specific to avoid JDTLS state collisions. Kotlin’s <code>.git</code> fallback is intentionally last: Gradle/Maven markers win when present, but a small repository or the smoke fixture still has a deterministic root. <code>single_file_support</code> covers scratch files with no project at all.</p>
+        </div>
+      </details>
+
+      <details class="change" open>
+        <summary><span>8. Let the link installer provision zsh and retry default-shell setup</span><span class="file-list">install/install.sh<br>install/README.md</span></summary>
+        <div class="change-body">
+          <div class="explain-grid">
+            <div class="explain"><h3>Macro change</h3><p>zsh is no longer a manual prerequisite. Configs can be linked first, the tool installer can provision zsh through the current package manager, and an interactive combined run immediately retries the default-shell step.</p></div>
+            <div class="explain"><h3>Why this construction</h3><p>Linking before installing is intentional: Bob and LunarVim consume the repo’s configuration during installation. Default-shell mutation stays in <code>install.sh</code>, where TTY and <code>chsh</code> safety already live; package installation stays in the manifest. The retry connects those responsibilities without duplicating either.</p></div>
+          </div>
+          <pre class="diff"><span class="head">install/install.sh · zsh is installable, links remain safe first</span><span class="del">- zsh is a manual prerequisite; install it first</span><span class="add">+ warning: zsh not found on PATH.</span><span class="add">+ linking will proceed; install-tools.sh can install zsh afterward.</span><span class="ctx">  ...</span><span class="del">- "$TOOLS_SCRIPT"</span><span class="add">+ "$TOOLS_SCRIPT"</span><span class="add">+ is_enabled zsh &amp;&amp; ensure_default_shell</span></pre>
+          <p class="construction"><strong>Design detail:</strong> noninteractive runs never force <code>chsh</code>; they print the manual follow-up and continue. That keeps cloud-init and CI safe. The symlink helper remains idempotent and backup-preserving, so installing before a tool exists is harmless and a second pass returns <code>[ok]</code>.</p>
+        </div>
+      </details>
+
+      <details class="change" open>
+        <summary><span>9. Remove the macOS-only clipboard command from shared Zellij config</span><span class="file-list">zellij/config.kdl<br>zellij/README.md</span></summary>
+        <div class="change-body">
+          <div class="explain-grid">
+            <div class="explain"><h3>Macro change</h3><p>The same Zellij config now parses and copies on macOS, Linux and remote SSH sessions. The hardcoded <code>pbcopy</code> process was removed and the documentation now describes the portable default.</p></div>
+            <div class="explain"><h3>Why this construction</h3><p>Leaving <code>copy_command</code> unset lets Zellij use OSC52, which transfers clipboard content through the terminal protocol rather than requiring a host-specific executable. A local command remains an escape hatch for terminals that do not support OSC52.</p></div>
+          </div>
+          <pre class="diff"><span class="head">zellij/config.kdl + zellij/README.md</span><span class="del">- copy_command "pbcopy" // osx</span><span class="add">+ // No copy_command: use Zellij's portable OSC52 clipboard path.</span><span class="add">+ // Set a machine-local command only for terminals without OSC52.</span><span class="ctx">  ...</span><span class="del">- On Linux, change copy_command to wl-copy or xclip.</span><span class="add">+ Clipboard copying uses Zellij's default OSC52 path on macOS, Linux and SSH.</span></pre>
+          <p class="construction"><strong>Design detail:</strong> this is a deletion as a portability feature. Adding an operating-system conditional to KDL would preserve process dependencies and still fail over SSH; relying on Zellij’s transport-level default is smaller and more general.</p>
+        </div>
+      </details>
+
+      <details class="change" open>
+        <summary><span>10. Document the new contract and its reproducibility boundaries</span><span class="file-list">install/README.md<br>lvim/README.md<br>zellij/README.md</span></summary>
+        <div class="change-body">
+          <div class="explain-grid">
+            <div class="explain"><h3>Macro change</h3><p>The documentation now matches the executable contract: link first, install tools second, zsh is managed, Neovim is pinned, Mason servers are explicit, release filters are deterministic, downloads are bounded, and Fedora remains a separate validation target.</p></div>
+            <div class="explain"><h3>Why this construction</h3><p>Operational details live beside the scripts they constrain. The README explains not only commands but invariants—why fd does not use apt, why 0.10.4 is pinned, why Cargo is required, and why a marker represents LunarVim completion—so future edits can preserve the reasoning rather than just the current syntax.</p></div>
+          </div>
+          <pre class="diff"><span class="head">documentation · fresh-machine contract</span><span class="del">- One manual prerequisite: zsh</span><span class="add">+ On a fresh machine, install only git and curl first.</span><span class="add">+ ./install/install.sh -y</span><span class="add">+ ./install/install-tools.sh -y</span><span class="add">+ The default set includes build tools, Clang/clangd, JDK 21 and Cargo.</span><span class="add">+ Mason provisions pyright, Bash, Lua, JDTLS and Kotlin synchronously.</span><span class="add">+ The Neovim and LunarVim rows agree on v0.10.4.</span></pre>
+          <p class="construction"><strong>Design detail:</strong> the docs explicitly avoid claiming Fedora runtime support from Ubuntu evidence. DNF and COPR mappings exist and pass static checks, but the report leaves that matrix cell open until a fresh Fedora ARM64 VM proves it.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section class="next">
+    <h2>Next matrix cell: Fedora / DNF</h2>
+    <p class="muted">Not claimed in this report. This pass intentionally used one Ubuntu ARM64 VM to validate apt support and keep host resource use bounded. The manifest's DNF/COPR paths received static checks, but a fresh Fedora ARM64 QEMU run should be the next independent validation before calling DNF supported.</p>
+  </section>
+
+  <section>
+    <h2>Repeatable checks</h2>
+    <table>
+      <tbody>
+        <tr><td><code>./install/install.sh -y</code></td><td class="muted">Create and re-check repo-owned links.</td></tr>
+        <tr><td><code>./install/install-tools.sh -y</code></td><td class="muted">Install defaults and verify outcomes.</td></tr>
+        <tr><td><code>./install/test-install.sh</code></td><td class="muted">Assert links, commands, exact Neovim, startup, Zellij, and tmux.</td></tr>
+        <tr><td><code>./install/test-lvim-lsps.sh</code></td><td class="muted">Attach all configured LSPs sequentially.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <footer>Generated from the uncommitted working tree. The validation VM was shut down after evidence collection.</footer>
+</main>
+</body>
+</html>

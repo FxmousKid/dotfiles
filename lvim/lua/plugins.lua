@@ -1,5 +1,7 @@
 lvim.plugins = {
-	{ "github/copilot.vim" },
+	-- Loading Copilot only when editing begins keeps non-interactive install and
+	-- smoke runs from spawning its authenticated language server.
+	{ "github/copilot.vim", event = "InsertEnter" },
 	{ "fxmouskid/codesnap.nvim", build = "make build_generator" },
 	{ "p00f/clangd_extensions.nvim" },
 	{ "Djancyp/better-comments.nvim" },
@@ -103,10 +105,14 @@ lvim.plugins = {
 
 	{
 		"nvim-telescope/telescope-file-browser.nvim",
+		lazy = false,
 		dependencies = {
 			"nvim-telescope/telescope.nvim",
 			"nvim-lua/plenary.nvim"
-		}
+		},
+		config = function()
+			require("telescope").load_extension("file_browser")
+		end,
 	},
 
 	{

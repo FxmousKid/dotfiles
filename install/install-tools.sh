@@ -32,6 +32,12 @@ LOCAL_BIN="$HOME/.local/bin"
 # eget) were invisible to later steps — install_neovim said "bob not
 # installed yet" right after bob was installed.
 PATH="$LOCAL_BIN:$PATH"; export PATH
+# If nvm was installed on an earlier run, expose its newest Node toolchain now.
+# nvm normally mutates only an interactive shell, but LunarVim/Mason need npm
+# while this POSIX installer is still running.
+NVM_NODE_BIN="$(find "$HOME/.nvm/versions/node" -mindepth 2 -maxdepth 2 -type d -name bin 2>/dev/null \
+  | sort | tail -n 1)"
+[ -n "$NVM_NODE_BIN" ] && PATH="$NVM_NODE_BIN:$PATH" && export PATH
 EGET="$LOCAL_BIN/eget"
 # Keep eget away from package-format assets: if a .deb/.rpm/.AppImage asset
 # gets picked, eget "extracts" it by copying the package file itself into
@@ -39,35 +45,49 @@ EGET="$LOCAL_BIN/eget"
 # --asset takes a substring, ^ negates it, and the flag is repeatable; the
 # match is case-sensitive, so cover both AppImage spellings.
 EGET_FILTER='--asset ^.deb --asset ^.rpm --asset ^.AppImage --asset ^.appimage'
+# Default Neovim: first release with upstream linux-arm64 binaries (older ones
+# make bob fetch a non-runnable x86_64 tarball on arm boxes), and it passes
+# LunarVim's ">= 0.9" check. Keep in lockstep with install-lvim.sh.
+NVIM_DEFAULT='v0.10.4'
 DRY=0
 ASSUME_YES=0
 
-# Tool manifest — fields:  bin | brew | dnf | copr | apt | gh_repo | custom_fn
+# Tool manifest — fields:
+#   bin | brew | dnf | copr | apt | gh_repo | custom_fn | eget_filters | eget_file
 # (empty field = method not available for that tool)
 # (apt is filled only where the Debian/Ubuntu package ships exactly the binary
 #  in `bin`; fd stays blank because apt's fd-find installs it as `fdfind`,
 #  which would break the presence check — others fall through to eget)
 TOOLS="
-zellij|zellij|zellij|varlad/zellij||zellij-org/zellij|
-yazi|yazi|yazi|lihaohong/yazi||sxyazi/yazi|
-atuin|atuin|atuin|||atuinsh/atuin|
-lazygit|lazygit|lazygit|atim/lazygit||jesseduffield/lazygit|
-fastfetch|fastfetch|fastfetch|||fastfetch-cli/fastfetch|
-eza|eza|eza|||eza-community/eza|
-delta|git-delta|git-delta|||dandavison/delta|
-rg|ripgrep|ripgrep||ripgrep|BurntSushi/ripgrep|
-fd|fd|fd-find|||sharkdp/fd|
-fzf|fzf|fzf||fzf|junegunn/fzf|
-glow|glow|glow|||charmbracelet/glow|
-tree|tree|tree||tree||
-gh|gh|gh||gh|cli/cli|
-ag|the_silver_searcher|the_silver_searcher||silversearcher-ag||
-bob|||||MordechaiHadad/bob|
-nvim|neovim|neovim||||install_neovim
-nvm||||||install_nvm
-node||||||install_node
-zap||||||install_zap
-lvim||||||install_lvim
+zsh|zsh|zsh||zsh||||
+make|make|make||make||||
+unzip|unzip|unzip||unzip||||
+cargo|rust|cargo||cargo||||
+clang|llvm|clang||clang||||
+clangd|llvm|clang-tools-extra||clangd||||
+java|openjdk@21|java-21-openjdk-devel||openjdk-21-jdk-headless||||
+tmux|tmux|tmux||tmux||||
+cscope|cscope|cscope||cscope||||
+zellij|zellij|zellij|varlad/zellij||zellij-org/zellij||--asset ^no-web|
+yazi|yazi|yazi|lihaohong/yazi||sxyazi/yazi||--asset ^musl|
+atuin|atuin|atuin|||atuinsh/atuin||--asset ^musl --asset ^update --asset ^server|
+lazygit|lazygit|lazygit|atim/lazygit||jesseduffield/lazygit|||
+fastfetch|fastfetch|fastfetch|||fastfetch-cli/fastfetch||--asset ^polyfilled --asset ^.zip|*/usr/bin/fastfetch
+eza|eza|eza|||eza-community/eza||--asset ^no_libgit --asset ^.zip|
+delta|git-delta|git-delta|||dandavison/delta|||
+rg|ripgrep|ripgrep||ripgrep|BurntSushi/ripgrep|||
+fd|fd|fd-find|||sharkdp/fd||--asset ^musl|
+fzf|fzf|fzf||fzf|junegunn/fzf|||
+glow|glow|glow|||charmbracelet/glow|||
+tree|tree|tree||tree||||
+gh|gh|gh||gh|cli/cli|||
+ag|the_silver_searcher|the_silver_searcher||silversearcher-ag||||
+bob|||||MordechaiHadad/bob||@bob|
+nvim|neovim|neovim||||install_neovim||
+nvm||||||install_nvm||
+node||||||install_node||
+zap||||||install_zap||
+lvim||||||install_lvim||
 "
 
 # --- output helpers ----------------------------------------------------------
@@ -112,9 +132,18 @@ is_installed() {
     # nvm installs node inside ~/.nvm, invisible to this script's PATH —
     # glob-through-ls spots any installed version (POSIX-fine).
     node) have node || ls "$HOME/.nvm/versions/node"/*/bin/node >/dev/null 2>&1 ;;
+    # Eget archives can contain executable support files. In particular,
+    # Fastfetch's archive also contains a Bash completion named `fastfetch`,
+    # which `command -v` alone would falsely accept as the program.
+    fastfetch) have fastfetch && fastfetch --version 2>/dev/null | grep -q '^fastfetch ' ;;
+    # A launcher alone is not enough: the standalone installer writes this
+    # marker only after plugins, native modules, Mason packages, and headless
+    # startup all verify.
+    lvim) have lvim && [ -f "${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/lvim-install.ok" ] ;;
     # bob's proxy dir is on no PATH on a fresh machine (only hosts/<name>.zsh
-    # adds it) — check the proxy itself too.
-    nvim) have nvim || [ -x "$(bob_nvim_dir)/nvim" ] ;;
+    # adds it) — check the proxy too. EXECUTE rather than test -x: a wrong-arch
+    # binary (x86_64 nvim on an arm64 box) exists, is executable, and doesn't run.
+    nvim) nvim --version >/dev/null 2>&1 || "$(bob_nvim_dir)/nvim" --version >/dev/null 2>&1 ;;
     *)   have "$1" ;;
   esac
 }
@@ -160,22 +189,29 @@ install_neovim() {
     say "  ${YLW}bob not installed yet — rerun after bob, or use brew/eget${RST}"; return 1
   fi
   ensure_bob_dirs
-  bob install stable && bob use stable || return 1
+  bob install "$NVIM_DEFAULT" && bob use "$NVIM_DEFAULT" || return 1
   # bob's proxy lands in its installation_location, which is on no PATH on a
   # fresh machine (only hosts/<name>.zsh adds it) — link it into ~/.local/bin
   # so this run's verify pass, future shells, and the lvim launcher find it.
   dir="$(bob_nvim_dir)"
-  [ -x "$dir/nvim" ] || { say "  ${YLW}bob ran but left no nvim proxy in $dir${RST}"; return 1; }
+  # execute, don't just stat: bob happily installs a wrong-arch tarball
+  # (e.g. x86_64 nvim on arm64 — upstream has no arm64 build before 0.10.4)
+  "$dir/nvim" --version >/dev/null 2>&1 \
+    || { say "  ${YLW}bob ran but $dir/nvim doesn't execute (wrong arch? check \`bob list\`)${RST}"; return 1; }
   mkdir -p "$LOCAL_BIN"
   ln -sf "$dir/nvim" "$LOCAL_BIN/nvim"
 }
 install_nvm() {
   # PROFILE=/dev/null: the stock installer appends source lines to the shell
   # profile, but our zshrc is a symlink into this repo and already sources nvm
-  # itself — so tell it to write nowhere.
-  say "  ${DIM}(the installer will print a \"Profile not found\" notice — expected: PROFILE=/dev/null on purpose, zshrc sources nvm itself)${RST}"
-  curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh \
-    | PROFILE=/dev/null bash
+  # itself — so tell it to write nowhere.  The upstream installer's stdout
+  # includes a misleading "Profile not found" help block for this intentional
+  # setup, so keep only stderr and verify the installed file ourselves.
+  curl --connect-timeout 15 --max-time 120 -fsSL \
+    https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh \
+    | PROFILE=/dev/null bash >/dev/null
+  [ -s "$HOME/.nvm/nvm.sh" ] || return 1
+  say "  ${DIM}nvm installed; shell startup remains managed by zsh/zshrc${RST}"
 }
 install_node() {
   if ! [ -s "$HOME/.nvm/nvm.sh" ]; then
@@ -184,6 +220,11 @@ install_node() {
   # nvm.sh is not POSIX sh, so run it through bash; `nvm install` ships npm
   # with node.
   bash -c 'export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm install --lts'
+  # The child Bash cannot update this POSIX shell's PATH. Locate the version it
+  # just installed so LunarVim and Mason can see node/npm later in this run.
+  node_bin="$(find "$HOME/.nvm/versions/node" -mindepth 2 -maxdepth 2 -type d -name bin 2>/dev/null \
+    | sort | tail -n 1)"
+  [ -n "$node_bin" ] && PATH="$node_bin:$PATH" && export PATH
 }
 install_lvim() {
   # Decoupled: the real logic (nvim-via-bob prerequisite + LunarVim installer)
@@ -199,7 +240,7 @@ ensure_eget() {
   say "  ${DIM}bootstrapping eget...${RST}"
   mkdir -p "$LOCAL_BIN"
   tmp="$(mktemp -d)"
-  if ( cd "$tmp" && curl -fsSL https://zyedidia.github.io/eget.sh | sh ) >/dev/null 2>&1 \
+  if ( cd "$tmp" && curl --connect-timeout 15 --max-time 120 -fsSL https://zyedidia.github.io/eget.sh | sh ) >/dev/null 2>&1 \
      && [ -f "$tmp/eget" ]; then
     mv "$tmp/eget" "$EGET"; chmod +x "$EGET"; rm -rf "$tmp"; return 0
   fi
@@ -207,12 +248,43 @@ ensure_eget() {
   say "  ${RED}failed to bootstrap eget${RST}"; return 1
 }
 
-# --- field lookup: sets brewf/dnfp/copr/aptp/ghrepo/custom for a tool key ----
+# A GitHub/CDN connection can occasionally remain open after eget prints 100%,
+# leaving a fresh-machine install blocked forever.  Bound each attempt where
+# coreutils `timeout` exists (Linux) and retry once; macOS keeps eget's normal
+# behavior unless GNU coreutils has supplied timeout.
+run_eget() {
+  attempt=1
+  while [ "$attempt" -le 2 ]; do
+    if have timeout; then
+      timeout 120 "$EGET" "$@" && return 0
+    else
+      "$EGET" "$@" && return 0
+    fi
+    [ "$attempt" -eq 2 ] && return 1
+    say "  ${YLW}(eget attempt timed out or failed; retrying once)${RST}"
+    attempt=$((attempt + 1))
+  done
+}
+
+# --- field lookup ------------------------------------------------------------
 load_fields() {
-  brewf=; dnfp=; copr=; aptp=; ghrepo=; custom=
-  while IFS='|' read -r k b d c a g f; do
+  brewf=; dnfp=; copr=; aptp=; ghrepo=; custom=; egetfilters=; egetfile=
+  while IFS='|' read -r k b d c a g f ef efile; do
     [ "$k" = "$1" ] || continue
-    brewf=$b; dnfp=$d; copr=$c; aptp=$a; ghrepo=$g; custom=$f; return 0
+    brewf=$b; dnfp=$d; copr=$c; aptp=$a; ghrepo=$g; custom=$f
+    egetfilters=$ef; egetfile=$efile
+    # Bob's release calls aarch64 "arm" and its names do not let eget reliably
+    # distinguish that from x86_64. Resolve the exact archive ourselves.
+    if [ "$egetfilters" = '@bob' ]; then
+      case "$(uname -s)/$(uname -m)" in
+        Linux/aarch64|Linux/arm64)  egetfilters='--asset bob-linux-arm.zip' ;;
+        Linux/x86_64|Linux/amd64)   egetfilters='--asset bob-linux-x86_64.zip' ;;
+        Darwin/arm64|Darwin/aarch64) egetfilters='--asset bob-macos-arm.zip' ;;
+        Darwin/x86_64|Darwin/amd64) egetfilters='--asset bob-macos-x86_64.zip' ;;
+        *) egetfilters='' ;;
+      esac
+    fi
+    return 0
   done <<EOF
 $TOOLS
 EOF
@@ -253,12 +325,22 @@ ensure_tool() {
     [ "$DRY" -eq 1 ] || sudo dnf install -y "$dnfp" || say "  ${YLW}($key dnf install failed — verify below will flag it)${RST}"
   elif have apt-get && [ -n "$aptp" ]; then
     say "  ${GRN}[apt]${RST}    $key ($aptp) ${DIM}(sudo)${RST}"
-    [ "$DRY" -eq 1 ] || sudo apt-get install -y "$aptp" || say "  ${YLW}($key apt install failed — verify below will flag it)${RST}"
+    [ "$DRY" -eq 1 ] || sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a \
+      apt-get -o Dpkg::Use-Pty=0 install -y "$aptp" \
+      || say "  ${YLW}($key apt install failed — verify below will flag it)${RST}"
   elif [ -n "$ghrepo" ]; then
     ensure_eget || { say "  ${YLW}[skip]   $key (no eget)${RST}"; return 0; }
     say "  ${GRN}[eget]${RST}   $key ($ghrepo -> $LOCAL_BIN)"
-    # shellcheck disable=SC2086  # EGET_FILTER is a flag list, unquoted on purpose
-    [ "$DRY" -eq 1 ] || "$EGET" $EGET_FILTER "$ghrepo" --to "$LOCAL_BIN" || say "  ${YLW}($key eget failed — verify below will flag it)${RST}"
+    # shellcheck disable=SC2086  # both filter variables are flag lists on purpose
+    if [ "$DRY" -eq 1 ]; then
+      :
+    elif [ -n "$egetfile" ]; then
+      run_eget $EGET_FILTER $egetfilters --file "$egetfile" "$ghrepo" --to "$LOCAL_BIN" \
+        || say "  ${YLW}($key eget failed — verify below will flag it)${RST}"
+    else
+      run_eget $EGET_FILTER $egetfilters "$ghrepo" --to "$LOCAL_BIN" \
+        || say "  ${YLW}($key eget failed — verify below will flag it)${RST}"
+    fi
   else
     say "  ${YLW}[skip]${RST}   $key — no install method for this machine"
   fi
@@ -268,7 +350,7 @@ ensure_tool() {
 DEFAULT_OFF=" glow "   # in the menu but not pre-selected (toggle to opt in)
 is_default_off() { case "$DEFAULT_OFF" in *" $1 "*) return 0 ;; *) return 1 ;; esac; }
 KEYS=""; ENABLED=" "
-while IFS='|' read -r k _b _d _c _a _g _f; do
+while IFS='|' read -r k _b _d _c _a _g _f _ef _efile; do
   [ -z "$k" ] && continue
   KEYS="$KEYS $k"
   # default-on only what's missing and not opted out

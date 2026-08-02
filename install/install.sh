@@ -182,18 +182,16 @@ seed_zellij_perms() {
 }
 
 # --- post-link: make zsh the default shell ------------------------------------
-# Installing zsh itself is a manual prerequisite — how you install it differs
-# too much per system (macOS ships it, Debian/Ubuntu is `sudo apt install zsh`,
-# Fedora is `sudo dnf install zsh`). But once zsh exists, switching the default
-# shell is the same everywhere, so that part is automated here: register the
-# zsh path in /etc/shells if needed, then chsh to it. Never hard-fails — on any
-# snag it prints the manual command and moves on.
+# install-tools.sh provisions zsh when the OS does not already ship it. Once it
+# exists, switching the default shell is automated here: register the zsh path
+# in /etc/shells if needed, then chsh to it. Never hard-fails — on any snag it
+# prints the manual command and moves on.
 ensure_default_shell() {
   case "${SHELL:-}" in
     */zsh) say "  ${DIM}[ok]     default shell is already zsh ($SHELL)${RST}"; return 0 ;;
   esac
   if ! command -v zsh >/dev/null 2>&1; then
-    say "  ${YLW}[skip]${RST}   zsh not on PATH — install it first (manual prerequisite, see above), then re-run"
+    say "  ${YLW}[skip]${RST}   zsh not on PATH — run install-tools.sh, then re-run"
     return 0
   fi
   zshpath="$(command -v zsh)"
@@ -283,13 +281,9 @@ done
 
 say "${DIM}dotfiles: $DOTFILES${RST}"
 
-# zsh is the one manual prerequisite (see ensure_default_shell below for why).
 if ! command -v zsh >/dev/null 2>&1; then
   say "${YLW}${BOLD}warning: zsh not found on PATH.${RST}"
-  say "${YLW}zsh is a prerequisite of these dotfiles, installed manually by design${RST}"
-  say "${YLW}(it varies per system: macOS ships it; Debian/Ubuntu: sudo apt install zsh;${RST}"
-  say "${YLW}Fedora: sudo dnf install zsh). linking will proceed — that's harmless and${RST}"
-  say "${YLW}useful to do first — but the configs are inert until zsh exists.${RST}"
+  say "${YLW}linking will proceed; install-tools.sh can install zsh afterward.${RST}"
 fi
 
 [ "$DRY" -eq 1 ] && say "${YLW}(dry run — no changes will be made)${RST}"
@@ -324,7 +318,13 @@ if [ -x "$TOOLS_SCRIPT" ] && [ "$ASSUME_YES" -ne 1 ] && { [ -t 0 ] || [ "${INSTA
   printf '\ninstall/upgrade missing tools now? [y/N] '
   read -r ans || ans=""
   case "$ans" in
-    y|Y|yes|YES) if [ "$DRY" -eq 1 ]; then "$TOOLS_SCRIPT" -n; else "$TOOLS_SCRIPT"; fi ;;
+    y|Y|yes|YES)
+      if [ "$DRY" -eq 1 ]; then
+        "$TOOLS_SCRIPT" -n
+      else
+        "$TOOLS_SCRIPT"
+        is_enabled zsh && ensure_default_shell
+      fi ;;
     *)           say "${DIM}skipped — run ./install/install-tools.sh whenever you want.${RST}" ;;
   esac
 fi

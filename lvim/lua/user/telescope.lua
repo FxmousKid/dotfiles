@@ -59,4 +59,3 @@ require("telescope").setup({
 		file_ignore_patterns = file_ignore_patterns,
 	},
 })
-require("telescope").load_extension("file_browser")
