@@ -6,6 +6,9 @@ Scripts to set these dotfiles up on a machine.
 - `install-tools.sh` — installs the CLI programs.
 - `install-lvim.sh` — standalone LunarVim installer (needs `make` and `cargo`;
   installs Neovim via Bob first). Called by `install-tools.sh`, runnable alone.
+- `manifests/tools.sh` — editable tool/source table and version pins.
+- `lib/package-managers.sh` — small Homebrew, DNF/COPR, and apt adapters.
+- `test-manifest.sh` — network-free contract check for manifest edits.
 
 All three are POSIX sh and safe to re-run. `install.sh` and `install-tools.sh`
 are menu-driven and ask before changing anything; `install-lvim.sh` runs
@@ -85,9 +88,9 @@ A program can be in either or both scripts:
 that are already correct. `default` is on/off (pre-checked in the menu),
 `platform` is `all`, `darwin`, or `linux`.
 
-### Install its binary (`install-tools.sh`)
+### Install its binary (`manifests/tools.sh`)
 
-Add a row to `TOOLS` —
+Add a row to `TOOLS` in `install/manifests/tools.sh` —
 `bin|brew|dnf|copr|apt|gh_repo|custom_fn|eget_filters|eget_file`:
 
 ```
@@ -102,7 +105,8 @@ the miss, and you rerun to retry. `bin` is the command it checks for; leave
 a field blank if it doesn't apply. `apt` is filled only where the Debian/Ubuntu
 package ships exactly the binary in `bin` — `fd` stays blank because apt's
 `fd-find` installs it as `fdfind`, which would break the presence check; those
-fall through to eget. For odd installers, write a function and name it in
+fall through to eget. For odd installers, write a function in
+`install-tools.sh` and name it in
 `custom_fn` (see `install_neovim`, `install_zap` — zap refuses to run without
 zsh, since its installer pipes into `zsh -s`). `install_lvim` is a thin wrapper
 around `install/install-lvim.sh`: LunarVim's installer assumes Neovim is
@@ -114,9 +118,15 @@ installer append lines. Its misleading "Profile not found" help block is
 suppressed, while stderr and a post-install file check still expose real
 failures. Then `nvm install --lts` brings node and npm.
 
-The default tool set also installs zsh, `make`, `unzip`, Cargo/Rust, cscope,
-tmux, Clang/clangd, and JDK 21. Cargo is needed to build CodeSnap's native
-generator on Linux ARM64. After
+The default tool set also installs zsh, `make`, `zip`/`unzip`, Cargo/Rust,
+cscope, tmux, Clang/clangd, and JDK 21. SDKMAN owns Java on every platform:
+the manifest pins an exact Temurin 21 candidate, the installer runs SDKMAN in
+noninteractive mode without editing the linked shell config, and the zsh config
+initializes it explicitly. Stable links in `~/.local/bin` follow SDKMAN's
+`candidates/java/current`, so `sdk default java ...` also controls
+noninteractive callers. Cargo is needed to build CodeSnap's native generator on Linux
+ARM64; that build explicitly uses Clang because Fedora 44's GCC 15 rejects the
+plugin's bundled Oniguruma signatures. After
 LunarVim and its plugins finish, `lvim-mason.lua` refreshes Mason and installs
 the servers explicitly configured here: pyright, bash-language-server,
 lua-language-server, jdtls, and kotlin-language-server. The helper waits for
@@ -129,6 +139,13 @@ an archive contains several executable files. The shipped rows use these to
 avoid prompts on Zellij/Yazi/Atuin and to prevent Fastfetch's executable Bash
 completion from being mistaken for the real binary. Bob's `@bob` marker is
 resolved to its exact OS/architecture archive by the script.
+
+The separation is intentional: most edits are a one-line manifest change;
+package-manager syntax stays in `lib/package-managers.sh`; sequencing, custom
+installers, and final verification stay in `install-tools.sh`. After editing
+the table, run `./install/test-manifest.sh` and
+`./install/install-tools.sh -n -y`. Tests may point the orchestrator at a small
+alternate manifest with `INSTALL_TOOLS_MANIFEST=/path/to/tools.sh`.
 
 ## Not handled on purpose
 

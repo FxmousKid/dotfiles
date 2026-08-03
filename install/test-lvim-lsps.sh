@@ -7,6 +7,7 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 LVIM_BIN="${LVIM_BIN:-$HOME/.local/bin/lvim}"
 SMOKE_LUA="$SCRIPT_DIR/lvim-lsp-smoke.lua"
 export PATH="$HOME/.local/bin:$HOME/Releases/nvim-bin:$PATH"
+export TERM="${TERM:-xterm-256color}"
 
 # Mason's npm-backed servers use /usr/bin/env node.  nvm normally adds Node
 # only to interactive shell startup, so expose its newest installation when

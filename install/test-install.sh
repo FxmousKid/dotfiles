@@ -5,6 +5,9 @@ set -euo pipefail
 
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 export PATH="$HOME/.local/bin:$HOME/Releases/nvim-bin:$PATH"
+# SSH/cloud-init runners often omit TERM. Give terminal-aware startup hooks and
+# CLI config validators a conservative value so a headless smoke run is quiet.
+export TERM="${TERM:-xterm-256color}"
 
 if [[ -d "$HOME/.nvm/versions/node" ]]; then
   node_bin="$(find "$HOME/.nvm/versions/node" -mindepth 2 -maxdepth 2 -type d -name bin | sort | tail -1)"

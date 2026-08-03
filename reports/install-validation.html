@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Dotfiles install validation — Ubuntu ARM64</title>
+  <title>Dotfiles install validation — Ubuntu + Fedora ARM64</title>
   <style>
     :root {
       color-scheme: dark;
@@ -102,16 +102,17 @@
 <body>
 <main>
   <header>
-    <div class="eyebrow">Fresh-machine proof · 02 Aug 2026</div>
-    <h1>Ubuntu ARM64 install passes claim by claim.</h1>
-    <p class="lede">The uncommitted <code>feat/apt-support</code> worktree was installed into a pristine QEMU guest, then checked for exact links, executable architecture, editor startup, plugins, Mason packages, and real LSP attachment.</p>
+    <div class="eyebrow">Fresh-machine proof · 02–03 Aug 2026</div>
+    <h1>Ubuntu apt and Fedora DNF pass claim by claim.</h1>
+    <p class="lede">The apt work was proven on pristine Ubuntu ARM64, merged through PR #17, and used as the base for <code>feat/dnf-support</code>. The modular DNF work was then installed from zero on Fedora 44 ARM64 and checked for exact links, clean logs, plugins, native modules, package sources, and real LSP attachment.</p>
     <div class="chips">
       <span class="chip pass">PASS · apt</span>
+      <span class="chip pass">PASS · DNF5 + COPR</span>
       <span class="chip pass">PASS · aarch64</span>
-      <span class="chip pass">PASS · idempotent</span>
-      <span class="chip">branch feat/apt-support</span>
-      <span class="chip">base 885647d</span>
-      <span class="chip">no commit created</span>
+      <span class="chip pass">PASS · clean install log</span>
+      <span class="chip">branch feat/dnf-support</span>
+      <span class="chip">base a708f65</span>
+      <span class="chip">apt PR #17 merged</span>
     </div>
   </header>
 
@@ -119,22 +120,22 @@
     <section class="verdict">
       <div>
         <div class="mark">✓</div>
-        <strong>Ready for the apt side of the branch</strong>
-        <p class="muted">The requested tools and configs work together on Ubuntu 24.04 ARM64. The installer now fails closed when LunarVim, its plugins, native CodeSnap module, or Mason packages do not validate.</p>
+        <strong>Both package-manager paths are proven</strong>
+        <p class="muted">The requested tools and configs work together on Ubuntu 24.04 and Fedora 44 ARM64. The installer fails closed when a package, LunarVim plugin, native CodeSnap module, Mason package, or configured LSP does not validate.</p>
       </div>
     </section>
     <section>
       <h2>Guest envelope</h2>
-      <p><strong>Ubuntu 24.04.4 LTS</strong><br><span class="muted">Linux 6.8 · aarch64 · QEMU virt 11.0<br>4 vCPU · 6 GiB RAM · 20 GiB disk<br>Initial packages: ca-certificates, curl, git</span></p>
+      <p><strong>Ubuntu 24.04.4 + Fedora 44 Cloud</strong><br><span class="muted">aarch64 · QEMU virt 11.0 · Apple HVF<br>each: 4 vCPU · 6 GiB RAM · 20 GiB disk<br>one VM active at a time; only curl + git seeded</span></p>
     </section>
   </div>
 
   <section>
     <div class="stats">
-      <div class="stat"><strong>65</strong><span>LunarVim plugins installed and verified</span></div>
+      <div class="stat"><strong>2 / 2</strong><span>Pristine ARM64 distro installs completed</span></div>
+      <div class="stat"><strong>65</strong><span>LunarVim plugins verified on Fedora</span></div>
       <div class="stat"><strong>6 / 6</strong><span>Configured LSP clients attached to real buffers</span></div>
-      <div class="stat"><strong>10 / 10</strong><span>Priority config links resolve to this repo</span></div>
-      <div class="stat"><strong>&lt; 0.5 GiB</strong><span>Observed guest RAM in use during provisioning checks</span></div>
+      <div class="stat"><strong>0</strong><span>Fedora install-log diagnostic lines</span></div>
     </div>
   </section>
 
@@ -323,19 +324,106 @@
         <summary><span>10. Document the new contract and its reproducibility boundaries</span><span class="file-list">install/README.md<br>lvim/README.md<br>zellij/README.md</span></summary>
         <div class="change-body">
           <div class="explain-grid">
-            <div class="explain"><h3>Macro change</h3><p>The documentation now matches the executable contract: link first, install tools second, zsh is managed, Neovim is pinned, Mason servers are explicit, release filters are deterministic, downloads are bounded, and Fedora remains a separate validation target.</p></div>
+            <div class="explain"><h3>Macro change</h3><p>The documentation now matches the executable contract: link first, install tools second, zsh is managed, Neovim is pinned, Mason servers are explicit, release filters are deterministic, downloads are bounded, and each supported package-manager path has fresh-machine evidence.</p></div>
             <div class="explain"><h3>Why this construction</h3><p>Operational details live beside the scripts they constrain. The README explains not only commands but invariants—why fd does not use apt, why 0.10.4 is pinned, why Cargo is required, and why a marker represents LunarVim completion—so future edits can preserve the reasoning rather than just the current syntax.</p></div>
           </div>
           <pre class="diff"><span class="head">documentation · fresh-machine contract</span><span class="del">- One manual prerequisite: zsh</span><span class="add">+ On a fresh machine, install only git and curl first.</span><span class="add">+ ./install/install.sh -y</span><span class="add">+ ./install/install-tools.sh -y</span><span class="add">+ The default set includes build tools, Clang/clangd, JDK 21 and Cargo.</span><span class="add">+ Mason provisions pyright, Bash, Lua, JDTLS and Kotlin synchronously.</span><span class="add">+ The Neovim and LunarVim rows agree on v0.10.4.</span></pre>
-          <p class="construction"><strong>Design detail:</strong> the docs explicitly avoid claiming Fedora runtime support from Ubuntu evidence. DNF and COPR mappings exist and pass static checks, but the report leaves that matrix cell open until a fresh Fedora ARM64 VM proves it.</p>
+          <p class="construction"><strong>Design detail:</strong> the original report explicitly withheld Fedora support because Ubuntu evidence could not prove DNF behavior. The section below closes that matrix cell only after an independent Fedora ARM64 run exercised DNF5, three COPRs, JDK 21, native plugin compilation, and every configured LSP.</p>
         </div>
       </details>
     </div>
   </section>
 
-  <section class="next">
-    <h2>Next matrix cell: Fedora / DNF</h2>
-    <p class="muted">Not claimed in this report. This pass intentionally used one Ubuntu ARM64 VM to validate apt support and keep host resource use bounded. The manifest's DNF/COPR paths received static checks, but a fresh Fedora ARM64 QEMU run should be the next independent validation before calling DNF supported.</p>
+  <section id="dnf-validation">
+    <div class="diff-intro">
+      <div>
+        <div class="eyebrow">Fedora matrix cell · closed</div>
+        <h2 style="margin-top:8px">DNF support: proof, architecture, and diff</h2>
+        <p class="muted">A checksum-verified Fedora 44 Cloud ARM64 image was booted through QEMU/HVF with 4 vCPU and 6 GiB RAM. The final authoritative run used a new overlay, confirmed the priority commands were absent, linked every repo config, installed from zero, scanned the complete log, and ran both independent smoke suites.</p>
+      </div>
+      <div class="diff-legend">
+        <span class="legend add">PASS · DNF5 5.4.1</span>
+        <span class="legend add">PASS · 3 COPRs</span>
+        <span class="legend add">PASS · 6 LSPs</span>
+      </div>
+    </div>
+
+    <div class="stats" style="margin-top:18px">
+      <div class="stat"><strong>0</strong><span>warning/error/failure/panic/traceback matches</span></div>
+      <div class="stat"><strong>65</strong><span>plugins; CodeSnap ARM64 generator loaded</span></div>
+      <div class="stat"><strong>~0.5 GiB</strong><span>guest RAM used after provisioning</span></div>
+      <div class="stat"><strong>14%</strong><span>of the 20 GiB guest disk used</span></div>
+    </div>
+
+    <table style="margin-top:18px">
+      <thead><tr><th>Fedora claim</th><th>Evidence</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>DNF + COPR routing</td><td>DNF5 <code>5.4.1.0</code>; COPRs <code>varlad/zellij</code>, <code>lihaohong/yazi</code>, and <code>atim/lazygit</code> enabled and installed native ARM64 packages.</td><td class="status">PASS</td></tr>
+        <tr><td>Core toolchain</td><td>zsh <code>5.9</code>; Clang/clangd <code>22.1.8</code>; Cargo/Rust; make; cscope; tmux.</td><td class="status">PASS</td></tr>
+        <tr><td>Editor stack</td><td>Bob <code>4.1.7</code>; exact Neovim <code>0.10.4</code>; LunarVim headless startup; 65 plugins; CodeSnap generator loaded.</td><td class="status">PASS</td></tr>
+        <tr><td>Priority tools + configs</td><td>Atuin <code>18.12.1</code>, Zellij <code>0.42.2</code>, Yazi <code>26.5.6</code>, lazygit <code>0.47.2</code>; exact symlinks and config parsers passed.</td><td class="status">PASS</td></tr>
+        <tr><td>Java + language servers</td><td>SDKMAN <code>5.23.0</code> / native <code>0.7.34</code> owns and defaults Temurin <code>21.0.12-tem</code>; zero OpenJDK RPMs; clangd, pyright, bashls, lua_ls, jdtls, and kotlin_language_server attached sequentially.</td><td class="status">PASS</td></tr>
+      </tbody>
+    </table>
+
+    <div class="change-stack">
+      <details class="change" open>
+        <summary><span>11. Split editable tool data from package-manager mechanics</span><span class="file-list">install/manifests/tools.sh<br>install/lib/package-managers.sh<br>install/install-tools.sh</span></summary>
+        <div class="change-body">
+          <div class="explain-grid">
+            <div class="explain"><h3>Macro change</h3><p>The installer is now three small layers: a human-editable manifest says what to install, package-manager adapters say how Homebrew/DNF/apt invoke their package systems, and the orchestrator owns ordering, custom installs, menus, and verification.</p></div>
+            <div class="explain"><h3>Why this construction</h3><p>A one-line table remains the normal edit path, so modularity does not impose a framework. Sourcing plain POSIX shell keeps values visible and debuggable. <code>INSTALL_TOOLS_MANIFEST</code> permits tiny test manifests without changing production data.</p></div>
+          </div>
+          <pre class="diff"><span class="head">install/install-tools.sh · module boundary</span><span class="del">- NVIM_DEFAULT=...; DEFAULT_OFF=...; TOOLS="..."</span><span class="add">+ MANIFEST_FILE="${INSTALL_TOOLS_MANIFEST:-$SCRIPT_DIR/manifests/tools.sh}"</span><span class="add">+ PACKAGE_MANAGERS_FILE="$SCRIPT_DIR/lib/package-managers.sh"</span><span class="add">+ . "$MANIFEST_FILE"</span><span class="add">+ . "$PACKAGE_MANAGERS_FILE"</span><span class="ctx">  ensure_tool() {</span><span class="del">-   sudo dnf install -y "$dnfp"</span><span class="add">+   install_dnf_package "$key" "$dnfp" "$copr"</span><span class="ctx">  }</span></pre>
+          <p class="construction"><strong>Function-level reason:</strong> adapters deliberately receive only a display key, package name, and optional COPR. They report problems but let the orchestrator reach its authoritative verification pass, so one package failure cannot hide the state of every later tool.</p>
+        </div>
+      </details>
+
+      <details class="change" open>
+        <summary><span>12. Support DNF4 and DNF5 COPR without version guessing</span><span class="file-list">install/lib/package-managers.sh<br>install/manifests/tools.sh</span></summary>
+        <div class="change-body">
+          <div class="explain-grid">
+            <div class="explain"><h3>Macro change</h3><p>Zellij, Yazi, and lazygit use their maintained Fedora COPRs while normal Fedora packages stay on the default repositories.</p></div>
+            <div class="explain"><h3>Why this construction</h3><p>The adapter probes <code>dnf copr --help</code> instead of parsing version text. If absent, it tries the established DNF4 plugin package and then DNF5’s plugin package, finally verifying the command. Capability detection survives distro packaging differences better than a version branch.</p></div>
+          </div>
+          <pre class="diff"><span class="head">install/lib/package-managers.sh · COPR capability</span><span class="add">+ dnf copr --help &gt;/dev/null 2&gt;&amp;1 &amp;&amp; return 0</span><span class="add">+ sudo dnf install -y dnf-plugins-core &gt;/dev/null 2&gt;&amp;1 \\</span><span class="add">+   || sudo dnf install -y dnf5-plugins &gt;/dev/null 2&gt;&amp;1</span><span class="add">+ dnf copr --help &gt;/dev/null 2&gt;&amp;1</span><span class="ctx">  ...</span><span class="add">+ zellij|zellij|zellij|varlad/zellij|...</span><span class="add">+ yazi|yazi|yazi|lihaohong/yazi|...</span><span class="add">+ lazygit|lazygit|lazygit|atim/lazygit|...</span></pre>
+        </div>
+      </details>
+
+      <details class="change" open>
+        <summary><span>13. Put every JDK version under SDKMAN ownership</span><span class="file-list">install/install-tools.sh<br>install/manifests/tools.sh<br>zsh/zshrc<br>zsh/hosts/coachm5pro.zsh<br>lvim/config.lua<br>lvim/ftplugin/{java,kotlin}.lua</span></summary>
+        <div class="change-body">
+          <div class="explain-grid">
+            <div class="explain"><h3>Macro change</h3><p>SDKMAN now owns Java on Homebrew, apt, and DNF machines alike. The manifest pins <code>21.0.12-tem</code>; SDKMAN installs and defaults it; zsh initializes SDKMAN generically; LunarVim and its JVM language servers read SDKMAN’s candidate tree.</p></div>
+            <div class="explain"><h3>Why this construction</h3><p>JDKs are versioned developer SDKs, so a version manager is a better ownership boundary than three unrelated system packages or a hand-extracted archive. SDKMAN makes future parallel JDKs, defaults, upgrades, and removals user-editable with one consistent command while retaining the Java 21 constraint required by Kotlin.</p></div>
+          </div>
+          <pre class="diff"><span class="head">manifest + custom installer · SDKMAN ownership</span><span class="del">- java|openjdk@21|||openjdk-21-jdk-headless||install_java||</span><span class="add">+ JAVA_SDKMAN_VERSION='21.0.12-tem'</span><span class="add">+ SDKMAN_INSTALL_URL='https://get.sdkman.io?ci=true&amp;rcupdate=false'</span><span class="add">+ java||||||install_java||</span><span class="ctx">  install_java() {</span><span class="add">+   install_sdkman || return 1</span><span class="add">+   sdk install java "$JAVA_SDKMAN_VERSION"</span><span class="add">+   sdk default java "$JAVA_SDKMAN_VERSION"</span><span class="ctx">  }</span></pre>
+          <p class="construction"><strong>Function-level reason:</strong> SDKMAN’s official CI mode answers prompts, disables color and self-updates, and <code>rcupdate=false</code> prevents an external installer from editing the repo-linked zsh config. SDKMAN initialization moved out of <code>hosts/coachm5pro.zsh</code> into the generic zsh tool-integration block because Java is no longer machine-specific. Stable command links point through SDKMAN’s <code>current</code> symlink, so a later <code>sdk default java ...</code> updates noninteractive callers too.</p>
+        </div>
+      </details>
+
+      <details class="change" open>
+        <summary><span>14. Make native plugin compilation deterministic on Fedora</span><span class="file-list">lvim/lua/plugins.lua</span></summary>
+        <div class="change-body">
+          <div class="explain-grid">
+            <div class="explain"><h3>Macro change</h3><p>CodeSnap’s native ARM64 generator is explicitly built with the Clang already installed for C/C++ LSP work.</p></div>
+            <div class="explain"><h3>Why this construction</h3><p>Fedora 44’s GCC 15 treats incompatible signatures in the plugin’s bundled Oniguruma source as errors; Clang compiles the same upstream source successfully. Setting <code>CC</code> on the plugin build command is local, transparent, and avoids carrying a fork or weakening compiler flags globally.</p></div>
+          </div>
+          <pre class="diff"><span class="head">lvim/lua/plugins.lua · native build compiler</span><span class="del">- { "fxmouskid/codesnap.nvim", build = "make build_generator" },</span><span class="add">+ { "fxmouskid/codesnap.nvim", build = "CC=clang make build_generator" },</span></pre>
+        </div>
+      </details>
+
+      <details class="change" open>
+        <summary><span>15. Add cheap edit-time contracts and quiet headless tests</span><span class="file-list">install/test-manifest.sh<br>install/test-{install,lvim-lsps}.sh<br>install/README.md<br>lvim/README.md</span></summary>
+        <div class="change-body">
+          <div class="explain-grid">
+            <div class="explain"><h3>Macro change</h3><p>A network-free test now rejects malformed rows, duplicate keys, missing priority tools, floating Neovim versions, a non-Java-21 SDKMAN pin, or an SDKMAN URL that could prompt or mutate the linked shell config. Headless suites supply a conservative <code>TERM</code> so terminal-aware hooks remain quiet.</p></div>
+            <div class="explain"><h3>Why this construction</h3><p>The manifest is intentionally simple enough that POSIX shell plus <code>awk</code> can validate it. That keeps the feedback loop fast and the dependency surface at zero; expensive QEMU validation remains the final integration layer, not the first syntax checker.</p></div>
+          </div>
+          <pre class="diff"><span class="head">install/test-manifest.sh · editable-data contract</span><span class="add">+ printf '%s\\n' "$TOOLS" | awk -F '|' 'NF != 9 { bad = 1 } seen[$1]++ { bad = 1 }'</span><span class="add">+ for required in zsh nvim lvim atuin zellij yazi lazygit clang clangd java; do ...</span><span class="add">+ case "$NVIM_DEFAULT" in v[0-9]*.[0-9]*.[0-9]*) ;; *) exit 1 ;; esac</span><span class="add">+ case "$JAVA_SDKMAN_VERSION" in 21.*-*) ;; *) exit 1 ;; esac</span><span class="add">+ test "$SDKMAN_INSTALL_URL" = 'https://get.sdkman.io?ci=true&amp;rcupdate=false'</span><span class="ctx">  ...</span><span class="add">+ export TERM="${TERM:-xterm-256color}"</span></pre>
+        </div>
+      </details>
+    </div>
   </section>
 
   <section>
@@ -343,6 +431,7 @@
     <table>
       <tbody>
         <tr><td><code>./install/install.sh -y</code></td><td class="muted">Create and re-check repo-owned links.</td></tr>
+        <tr><td><code>./install/test-manifest.sh</code></td><td class="muted">Validate tool rows, required keys, version pin, and source template without network access.</td></tr>
         <tr><td><code>./install/install-tools.sh -y</code></td><td class="muted">Install defaults and verify outcomes.</td></tr>
         <tr><td><code>./install/test-install.sh</code></td><td class="muted">Assert links, commands, exact Neovim, startup, Zellij, and tmux.</td></tr>
         <tr><td><code>./install/test-lvim-lsps.sh</code></td><td class="muted">Attach all configured LSPs sequentially.</td></tr>
@@ -350,7 +439,7 @@
     </table>
   </section>
 
-  <footer>Generated from the uncommitted working tree. The validation VM was shut down after evidence collection.</footer>
+  <footer>Ubuntu apt support was merged in PR #17. Fedora evidence was generated from the uncommitted <code>feat/dnf-support</code> worktree; unrelated pre-existing local edits are excluded from the diff narrative.</footer>
 </main>
 </body>
 </html>
