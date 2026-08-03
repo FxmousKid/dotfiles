@@ -51,4 +51,10 @@ if present). The 42-header identity (`vim.g.user` / `vim.g.mail`) is set in the
   machines — track it if you ever want fully reproducible installs.
 - The installer provisions the language servers this config starts: clangd
   from the system package manager, plus pyright, Bash, Lua, JDTLS and Kotlin
-  through Mason. JDK 21 is installed for the JVM-based servers.
+  through Mason. SDKMAN installs and owns the pinned Temurin JDK 21 used by the
+  JVM-based servers. LunarVim reads SDKMAN's `candidates/java/current`, while
+  the Kotlin filetype config selects an installed SDKMAN Java 21 candidate even
+  if you later make another Java version your interactive default.
+- CodeSnap's native generator builds with Clang. This is portable across the
+  tested macOS/Ubuntu/Fedora hosts and avoids a GCC 15 incompatibility in the
+  plugin's bundled Oniguruma source.

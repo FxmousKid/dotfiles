@@ -18,7 +18,7 @@
 #  defaults (DEFAULT_OFF entries like glow stay opt-in), -n dry-runs (prints
 #  the method per tool, changes nothing).
 #
-#  Add a tool = add one row to the TOOLS table below.
+#  Add a tool = add one row to install/manifests/tools.sh.
 # =============================================================================
 
 set -eu
@@ -45,50 +45,23 @@ EGET="$LOCAL_BIN/eget"
 # --asset takes a substring, ^ negates it, and the flag is repeatable; the
 # match is case-sensitive, so cover both AppImage spellings.
 EGET_FILTER='--asset ^.deb --asset ^.rpm --asset ^.AppImage --asset ^.appimage'
-# Default Neovim: first release with upstream linux-arm64 binaries (older ones
-# make bob fetch a non-runnable x86_64 tarball on arm boxes), and it passes
-# LunarVim's ">= 0.9" check. Keep in lockstep with install-lvim.sh.
-NVIM_DEFAULT='v0.10.4'
 DRY=0
 ASSUME_YES=0
 
-# Tool manifest — fields:
-#   bin | brew | dnf | copr | apt | gh_repo | custom_fn | eget_filters | eget_file
-# (empty field = method not available for that tool)
-# (apt is filled only where the Debian/Ubuntu package ships exactly the binary
-#  in `bin`; fd stays blank because apt's fd-find installs it as `fdfind`,
-#  which would break the presence check — others fall through to eget)
-TOOLS="
-zsh|zsh|zsh||zsh||||
-make|make|make||make||||
-unzip|unzip|unzip||unzip||||
-cargo|rust|cargo||cargo||||
-clang|llvm|clang||clang||||
-clangd|llvm|clang-tools-extra||clangd||||
-java|openjdk@21|java-21-openjdk-devel||openjdk-21-jdk-headless||||
-tmux|tmux|tmux||tmux||||
-cscope|cscope|cscope||cscope||||
-zellij|zellij|zellij|varlad/zellij||zellij-org/zellij||--asset ^no-web|
-yazi|yazi|yazi|lihaohong/yazi||sxyazi/yazi||--asset ^musl|
-atuin|atuin|atuin|||atuinsh/atuin||--asset ^musl --asset ^update --asset ^server|
-lazygit|lazygit|lazygit|atim/lazygit||jesseduffield/lazygit|||
-fastfetch|fastfetch|fastfetch|||fastfetch-cli/fastfetch||--asset ^polyfilled --asset ^.zip|*/usr/bin/fastfetch
-eza|eza|eza|||eza-community/eza||--asset ^no_libgit --asset ^.zip|
-delta|git-delta|git-delta|||dandavison/delta|||
-rg|ripgrep|ripgrep||ripgrep|BurntSushi/ripgrep|||
-fd|fd|fd-find|||sharkdp/fd||--asset ^musl|
-fzf|fzf|fzf||fzf|junegunn/fzf|||
-glow|glow|glow|||charmbracelet/glow|||
-tree|tree|tree||tree||||
-gh|gh|gh||gh|cli/cli|||
-ag|the_silver_searcher|the_silver_searcher||silversearcher-ag||||
-bob|||||MordechaiHadad/bob||@bob|
-nvim|neovim|neovim||||install_neovim||
-nvm||||||install_nvm||
-node||||||install_node||
-zap||||||install_zap||
-lvim||||||install_lvim||
-"
+# Keep editable data and distro mechanics out of this orchestrator. A custom
+# manifest path is useful for testing a small subset without editing the repo.
+MANIFEST_FILE="${INSTALL_TOOLS_MANIFEST:-$SCRIPT_DIR/manifests/tools.sh}"
+PACKAGE_MANAGERS_FILE="$SCRIPT_DIR/lib/package-managers.sh"
+for required_file in "$MANIFEST_FILE" "$PACKAGE_MANAGERS_FILE"; do
+  [ -r "$required_file" ] \
+    || { printf 'missing installer module: %s\n' "$required_file" >&2; exit 1; }
+done
+# Runtime paths are validated above; INSTALL_TOOLS_MANIFEST may intentionally
+# point at a temporary test manifest, so ShellCheck cannot follow it statically.
+# shellcheck disable=SC1090
+. "$MANIFEST_FILE"
+# shellcheck disable=SC1090
+. "$PACKAGE_MANAGERS_FILE"
 
 # --- output helpers ----------------------------------------------------------
 if [ -t 1 ]; then
@@ -129,6 +102,7 @@ is_installed() {
   case "$1" in
     zap) [ -f "${XDG_DATA_HOME:-$HOME/.local/share}/zap/zap.zsh" ] ;;
     nvm) [ -s "$HOME/.nvm/nvm.sh" ] ;;
+    java) [ -x "${SDKMAN_DIR:-$HOME/.sdkman}/candidates/java/$JAVA_SDKMAN_VERSION/bin/java" ] ;;
     # nvm installs node inside ~/.nvm, invisible to this script's PATH —
     # glob-through-ls spots any installed version (POSIX-fine).
     node) have node || ls "$HOME/.nvm/versions/node"/*/bin/node >/dev/null 2>&1 ;;
@@ -200,6 +174,50 @@ install_neovim() {
     || { say "  ${YLW}bob ran but $dir/nvim doesn't execute (wrong arch? check \`bob list\`)${RST}"; return 1; }
   mkdir -p "$LOCAL_BIN"
   ln -sf "$dir/nvim" "$LOCAL_BIN/nvim"
+}
+install_sdkman() {
+  sdkman_dir="${SDKMAN_DIR:-$HOME/.sdkman}"
+  SDKMAN_DIR="$sdkman_dir"
+  export SDKMAN_DIR
+  if [ -s "$sdkman_dir/bin/sdkman-init.sh" ]; then
+    say "  ${DIM}[ok]     SDKMAN already installed at $sdkman_dir${RST}"
+    return 0
+  fi
+
+  say "  ${GRN}[sdkman]${RST} install version manager (CI mode; no profile edits)"
+  tmp_sdkman=$(mktemp)
+  if ! curl --connect-timeout 20 --max-time 180 -fsSL "$SDKMAN_INSTALL_URL" -o "$tmp_sdkman" \
+    || ! bash "$tmp_sdkman"; then
+    rm -f "$tmp_sdkman"
+    return 1
+  fi
+  rm -f "$tmp_sdkman"
+  [ -s "$sdkman_dir/bin/sdkman-init.sh" ]
+}
+install_java() {
+  install_sdkman || return 1
+  sdkman_dir="${SDKMAN_DIR:-$HOME/.sdkman}"
+  say "  ${GRN}[sdkman]${RST} java $JAVA_SDKMAN_VERSION (install + default)"
+  SDKMAN_DIR="$sdkman_dir" bash -c '
+    . "$SDKMAN_DIR/bin/sdkman-init.sh"
+    sdk install java "$1" || exit 1
+    sdk default java "$1"
+  ' _ "$JAVA_SDKMAN_VERSION" || return 1
+
+  java_home="$sdkman_dir/candidates/java/current"
+  [ -x "$java_home/bin/java" ] || return 1
+  JAVA_HOME="$java_home"
+  PATH="$JAVA_HOME/bin:$PATH"
+  export JAVA_HOME PATH
+
+  # These stable links follow SDKMAN's `current` symlink, so changing the
+  # default with `sdk default java ...` also updates non-interactive callers.
+  mkdir -p "$LOCAL_BIN"
+  for java_command in java javac jar javadoc javap; do
+    [ ! -x "$java_home/bin/$java_command" ] \
+      || ln -sf "$java_home/bin/$java_command" "$LOCAL_BIN/$java_command"
+  done
+  "$java_home/bin/java" -version >/dev/null 2>&1
 }
 install_nvm() {
   # PROFILE=/dev/null: the stock installer appends source lines to the shell
@@ -311,23 +329,11 @@ ensure_tool() {
     say "  ${GRN}[custom]${RST} $key ($custom)"
     [ "$DRY" -eq 1 ] || "$custom" || say "  ${YLW}($key custom installer reported a problem)${RST}"
   elif have brew && [ -n "$brewf" ]; then
-    say "  ${GRN}[brew]${RST}   $key ($brewf)"
-    # every installer below is `|| say`-guarded: under set -e an unguarded
-    # failure would abort the whole run mid-loop and the verify pass — the
-    # actual arbiter of success — would never print.
-    [ "$DRY" -eq 1 ] || brew install "$brewf" || say "  ${YLW}($key brew install failed — verify below will flag it)${RST}"
+    install_brew_package "$key" "$brewf"
   elif have dnf && [ -n "$dnfp" ]; then
-    if [ -n "$copr" ]; then
-      say "  ${GRN}[copr]${RST}   enable $copr ${DIM}(sudo)${RST}"
-      [ "$DRY" -eq 1 ] || sudo dnf copr enable -y "$copr" || say "  ${YLW}($key copr enable failed)${RST}"
-    fi
-    say "  ${GRN}[dnf]${RST}    $key ($dnfp) ${DIM}(sudo)${RST}"
-    [ "$DRY" -eq 1 ] || sudo dnf install -y "$dnfp" || say "  ${YLW}($key dnf install failed — verify below will flag it)${RST}"
+    install_dnf_package "$key" "$dnfp" "$copr"
   elif have apt-get && [ -n "$aptp" ]; then
-    say "  ${GRN}[apt]${RST}    $key ($aptp) ${DIM}(sudo)${RST}"
-    [ "$DRY" -eq 1 ] || sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a \
-      apt-get -o Dpkg::Use-Pty=0 install -y "$aptp" \
-      || say "  ${YLW}($key apt install failed — verify below will flag it)${RST}"
+    install_apt_package "$key" "$aptp"
   elif [ -n "$ghrepo" ]; then
     ensure_eget || { say "  ${YLW}[skip]   $key (no eget)${RST}"; return 0; }
     say "  ${GRN}[eget]${RST}   $key ($ghrepo -> $LOCAL_BIN)"
@@ -347,7 +353,6 @@ ensure_tool() {
 }
 
 # --- selection state ---------------------------------------------------------
-DEFAULT_OFF=" glow "   # in the menu but not pre-selected (toggle to opt in)
 is_default_off() { case "$DEFAULT_OFF" in *" $1 "*) return 0 ;; *) return 1 ;; esac; }
 KEYS=""; ENABLED=" "
 while IFS='|' read -r k _b _d _c _a _g _f _ef _efile; do

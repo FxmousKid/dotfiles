@@ -2,7 +2,9 @@ lvim.plugins = {
 	-- Loading Copilot only when editing begins keeps non-interactive install and
 	-- smoke runs from spawning its authenticated language server.
 	{ "github/copilot.vim", event = "InsertEnter" },
-	{ "fxmouskid/codesnap.nvim", build = "make build_generator" },
+	-- Fedora 44's GCC 15 rejects the older bundled Oniguruma C signatures.
+	-- Clang builds the same native module cleanly and is an installer dependency.
+	{ "fxmouskid/codesnap.nvim", build = "CC=clang make build_generator" },
 	{ "p00f/clangd_extensions.nvim" },
 	{ "Djancyp/better-comments.nvim" },
 	{ "mg979/vim-visual-multi" },
