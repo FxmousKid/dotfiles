@@ -17,6 +17,7 @@ Zellij terminal multiplexer config.
 
 - Theme: tokyo-night · layout: zj-minimal
 - Mouse on, pane frames off, startup tips off.
+- `Alt m` toggles the vendored MultiView monitoring dashboard.
 - Clipboard transport uses portable OSC52.
 
 ## Notes

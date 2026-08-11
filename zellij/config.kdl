@@ -148,6 +148,14 @@ keybinds clear-defaults=true {
         bind "Alt [" { PreviousSwapLayout; }
         bind "Alt ]" { NextSwapLayout; }
         bind "Alt f" { ToggleFloatingPanes; }
+        bind "Alt m" {
+            MessagePlugin "multiview" {
+                name "multiview:toggle"
+                launch_new false
+                floating true
+                title "MultiView"
+            }
+        }
 //        bind "Ctrl g" { SwitchToMode "locked"; }
         bind "Ctrl h" { MoveFocusOrTab "left"; }
         bind "Alt i" { MoveTab "left"; }
@@ -259,6 +267,17 @@ plugins {
     status-bar location="zellij:status-bar"
     strider location="zellij:strider"
     tab-bar location="zellij:tab-bar"
+    multiview location="file:~/.config/zellij/plugins/multiview.wasm" {
+        grid "4x2"
+        grid_presets "4x2,3x2,2x2,auto"
+        border "rounded"
+        border_color "#aa8ee6"
+        selected_border_color "#bb9af7"
+        title_color "#c0caf5"
+        muted_border_color "#565f89"
+        poll_interval_ms "500"
+        poll_batch_size "2"
+    }
     welcome-screen location="zellij:session-manager" {
         welcome_screen true
     }

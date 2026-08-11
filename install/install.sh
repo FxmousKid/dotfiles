@@ -158,27 +158,64 @@ do_links() {
   esac
 }
 
-# --- post-link: zjstatus permissions -----------------------------------------
-# The zellij status bar (zjstatus.wasm) needs its plugin permissions granted or
-# it renders an empty bar. The grant prompt can't be answered in a 1-row bar
-# pane, so we pre-seed it. Path + format match exactly what zellij writes.
-seed_zellij_perms() {
-  wasm="$CONFIG/zellij/plugins/zjstatus.wasm"
+# --- post-link: zellij plugin permissions ------------------------------------
+# Vendored plugins need their least-privilege grants before first use. The
+# zjstatus prompt cannot be answered in its 1-row pane, and pre-seeding
+# MultiView avoids an approval overlay in the monitoring workflow. Path +
+# format match exactly what Zellij writes.
+seed_zellij_plugin_perms() {
+  label="$1"
+  wasm="$2"
+  grants="$3"
+  perm="$4"
   [ -e "$wasm" ] || return 0
+  entry_count=0
+  if [ -f "$perm" ]; then
+    entry_count="$(grep -Fxc "\"$wasm\" {" "$perm" 2>/dev/null || true)"
+  fi
+  if [ "$entry_count" -eq 1 ]; then
+    current_grants="$(awk -v wanted="\"$wasm\" {" '
+      $0 == wanted { inside = 1; next }
+      inside && $0 == "}" { exit }
+      inside { print }
+    ' "$perm")"
+    if [ "$current_grants" = "$grants" ]; then
+      say "  ${DIM}[ok]     $label permissions already granted${RST}"; return 0
+    fi
+    say "  ${YLW}[warn]${RST}   $label has a custom permission entry; leaving it unchanged"
+    return 0
+  fi
+  if [ "$entry_count" -gt 1 ]; then
+    say "  ${YLW}[warn]${RST}   $label has duplicate permission entries; leaving them unchanged"
+    return 0
+  fi
+  if [ "$DRY" -eq 1 ]; then
+    say "  ${GRN}[grant]${RST}  $label permissions ${DIM}(dry)${RST}"; return 0
+  fi
+  mkdir -p "$(dirname "$perm")"
+  printf '"%s" {\n%s\n}\n' "$wasm" "$grants" >> "$perm"
+  say "  ${GRN}[grant]${RST}  $label permissions -> $perm"
+}
+
+seed_zellij_perms() {
   case "$OSKEY" in
     darwin) perm="$HOME/Library/Caches/org.Zellij-Contributors.Zellij/permissions.kdl" ;;
     *)      perm="${XDG_CACHE_HOME:-$HOME/.cache}/zellij/permissions.kdl" ;;
   esac
-  if [ -f "$perm" ] && grep -qF "$wasm" "$perm" 2>/dev/null; then
-    say "  ${DIM}[ok]     zjstatus permissions already granted${RST}"; return 0
-  fi
-  if [ "$DRY" -eq 1 ]; then
-    say "  ${GRN}[grant]${RST}  zjstatus permissions ${DIM}(dry)${RST}"; return 0
-  fi
-  mkdir -p "$(dirname "$perm")"
-  printf '"%s" {\n    RunCommands\n    ReadApplicationState\n    ChangeApplicationState\n}\n' \
-    "$wasm" >> "$perm"
-  say "  ${GRN}[grant]${RST}  zjstatus permissions -> $perm"
+  seed_zellij_plugin_perms \
+    "zjstatus" \
+    "$CONFIG/zellij/plugins/zjstatus.wasm" \
+    "    RunCommands
+    ReadApplicationState
+    ChangeApplicationState" \
+    "$perm"
+  seed_zellij_plugin_perms \
+    "MultiView" \
+    "$CONFIG/zellij/plugins/multiview.wasm" \
+    "    ReadApplicationState
+    ReadPaneContents
+    ChangeApplicationState" \
+    "$perm"
 }
 
 # --- post-link: make zsh the default shell ------------------------------------
