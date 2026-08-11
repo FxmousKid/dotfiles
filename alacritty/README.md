@@ -7,7 +7,8 @@ Alacritty terminal config.
 - `alacritty.toml` — main file; imports the others below.
 - `font.toml` — JetBrainsMono Nerd Font, size and offset.
 - `window.toml` — no decorations, padding, opacity, blur, windowed start.
-- `keyboard.toml` — Alt bindings for LunarVim, Shift-Return, Cmd-W.
+- `keyboard.toml` — Alt bindings for LunarVim and MultiView, Shift-Return,
+  Cmd-W.
 - `3024-theme.toml` — colors.
 
 ## Subfolders

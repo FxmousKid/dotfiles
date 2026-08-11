@@ -4,6 +4,9 @@ bindings = [
 	{ key = "J", mods = "Alt", chars = "\u001bj" },
 	{ key = "K", mods = "Alt", chars = "\u001bk" },
 
+	# macOS Option defaults to character composition; emit Alt + M for MultiView
+	{ key = "M", mods = "Alt", chars = "\u001bm" },
+
 	# sends a newline to the CLI instead of executing the command
 	{ key = "Return", mods = "Shift", chars = "\u001B\r" },
 

@@ -17,7 +17,8 @@ Zellij terminal multiplexer config.
 
 - Theme: tokyo-night · layout: zj-minimal
 - Mouse on, pane frames off, startup tips off.
-- `Alt m` toggles the vendored MultiView monitoring dashboard.
+- `Alt m` toggles the vendored MultiView monitoring dashboard. The Alacritty
+  keymap explicitly emits `Esc m` because macOS Option otherwise composes `µ`.
 - Clipboard transport uses portable OSC52.
 
 ## Notes
