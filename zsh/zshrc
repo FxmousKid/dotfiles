@@ -148,6 +148,13 @@ export SDKMAN_DIR="${SDKMAN_DIR:-$HOME/.sdkman}"
 # opam (OCaml)
 [[ -r "$HOME/.opam/opam-init/init.zsh" ]] && source "$HOME/.opam/opam-init/init.zsh" >/dev/null 2>&1
 
+# --- Claude Code x zellij ------------------------------------------------------
+# Pins a session id on every interactive `claude` so zellij can resurrect a pane
+# back onto the same conversation. Paired with the post_command_discovery_hook in
+# zellij/config.kdl; see zellij/hooks/claude-resurrect.sh for the why.
+[[ -r "$HOME/.config/zellij/shell/claude-session.zsh" ]] \
+  && source "$HOME/.config/zellij/shell/claude-session.zsh"
+
 # --- Per-machine config ------------------------------------------------------
 # Loaded last so it can override anything above. device_name() comes from
 # ~/.zshenv; guard in case zshenv didn't load, so we never error here.
