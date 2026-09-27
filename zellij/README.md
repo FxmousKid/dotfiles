@@ -18,8 +18,8 @@ Zellij terminal multiplexer config.
 ## Highlights
 
 - Theme: tokyo-night · layout: zj-minimal
-- Built-in one-line compact bar: tabs and mode, with no weather, clock, Git
-  polling, or external status-bar plugin.
+- One-line zjstatus bar with the original purple styling, mode/session on the
+  left and centered tabs. Weather, clock/date, and Git polling are disabled.
 - `Ctrl t`, then `n`, and `Ctrl b`, then `c`, explicitly load `zj-minimal`,
   including in running sessions that cached the previous default layout.
 - Mouse on, pane frames off, startup tips off.
@@ -40,9 +40,8 @@ The hook and its paired `--session-id` wrapper are disabled; their files are
 retained for reference. MultiView remains available on demand and is not loaded
 at startup.
 
-During the September 2026 cleanup, the old status plugin panes were removed from
-running sessions without restarting their terminals. Those existing tabs have
-no status bar; newly created tabs use the built-in bar. A bare CLI
+During the September 2026 cleanup, command widgets were removed while keeping
+the original zjstatus styling. A bare CLI
 `zellij action new-tab` or a break-pane action can still use a running server's
 cached old template. Until that session is eventually replaced, use the keyboard
 shortcuts above or `zellij action new-tab --layout zj-minimal`.

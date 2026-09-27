@@ -2,8 +2,29 @@ layout {
     default_tab_template {
         children
         pane size=1 borderless=true {
-            // Built-in tabs/mode bar: no per-tab shell commands or network polls.
-            plugin location="zellij:compact-bar"
+            plugin location="file:~/.config/zellij/plugins/zjstatus.wasm" {
+                format_left   "#[fg=#aa8ee6,bold] {mode} #[fg=#565f89]│#[fg=#c0caf5,bold] {session} "
+                format_center "{tabs}"
+                format_right  ""
+                format_space  ""
+
+                hide_frame_for_single_pane "false"
+
+                mode_normal        "normal"
+                mode_tmux          "tmux"
+                mode_pane          "pane"
+                mode_tab           "tab"
+                mode_resize        "resize"
+                mode_scroll        "scroll"
+                mode_search        "search"
+                mode_session       "session"
+                mode_locked        "locked"
+                mode_default_to_mode "normal"
+
+                tab_normal   "#[fg=#565f89] {index}:{name} "
+                tab_active   "#[fg=#aa8ee6,bold] {index}:{name} "
+                // No command widgets: no weather, Git, or clock/date polling.
+            }
         }
     }
 }
