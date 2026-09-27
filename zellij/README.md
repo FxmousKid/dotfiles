@@ -9,8 +9,8 @@ Zellij terminal multiplexer config.
 
 ## Subfolders
 
-- [hooks](hooks/) — `post_command_discovery_hook` scripts.
-- [shell](shell/) — shell snippets sourced from `zsh/zshrc`.
+- [hooks](hooks/) — legacy command-rewrite hook, disabled.
+- [shell](shell/) — legacy Claude wrapper, no longer sourced.
 - [layouts](layouts/README.md) — custom layouts.
 - [themes](themes/README.md) — theme files.
 - [plugins](plugins/README.md) — local plugin binaries.
@@ -18,37 +18,44 @@ Zellij terminal multiplexer config.
 ## Highlights
 
 - Theme: tokyo-night · layout: zj-minimal
+- Built-in one-line compact bar: tabs and mode, with no weather, clock, Git
+  polling, or external status-bar plugin.
+- `Ctrl t`, then `n`, and `Ctrl b`, then `c`, explicitly load `zj-minimal`,
+  including in running sessions that cached the previous default layout.
 - Mouse on, pane frames off, startup tips off.
 - `Alt m` toggles the vendored MultiView monitoring dashboard. The Alacritty
   keymap explicitly emits `Esc m` because macOS Option otherwise composes `µ`.
 - Clipboard transport uses portable OSC52.
-- Sessions resurrect onto their own Claude Code conversation, and panes come back
-  with their scrollback (`serialize_pane_viewport` + 10k lines).
+- Session/layout and scrollback saving remain enabled (`serialize_pane_viewport`
+  + 10k lines). Automatic Claude conversation rewriting is disabled.
 
 ## Notes
 
-### Claude Code session resurrection
+### Performance and Claude recovery
 
-Zellij serializes the literal argv it finds running in a pane, so a resurrected
-pane used to re-run bare `claude` and open an empty chat. Two pieces fix that:
+Zellij 0.44.3 runs `post_command_discovery_hook` synchronously for every row of
+`ps -ao ppid,args`, including processes outside the current session. Recurring
+command discovery therefore spawned many shells and blocked the PTY thread.
+The hook and its paired `--session-id` wrapper are disabled; their files are
+retained for reference. MultiView remains available on demand and is not loaded
+at startup.
 
-- `shell/claude-session.zsh` pins `--session-id <uuid>` on every interactive
-  `claude` (sourced from `zsh/zshrc`), so the conversation id is *in* the argv.
-- `hooks/claude-resurrect.sh`, wired as `post_command_discovery_hook`, rewrites
-  that into `claude --resume <uuid>` at serialization time — replaying
-  `--session-id` verbatim fails with "Session ID <uuid> is already in use".
+During the September 2026 cleanup, the old status plugin panes were removed from
+running sessions without restarting their terminals. Those existing tabs have
+no status bar; newly created tabs use the built-in bar. A bare CLI
+`zellij action new-tab` or a break-pane action can still use a running server's
+cached old template. Until that session is eventually replaced, use the keyboard
+shortcuts above or `zellij action new-tab --layout zj-minimal`.
 
-Panes started as bare `claude` fall back to `--continue`, which reopens the last
-conversation in that pane's cwd (zellij serializes cwd per pane). Subcommands
-(`claude agents`, `gateway`, `ultrareview`, ...) and headless `-p` runs take no
-session flag, so both sides pass them through untouched.
+See [diagnostic results](../reports/zellij-performance.md) for measurements.
 
-Two limits worth knowing. The hook is handed only `$RESURRECT_COMMAND` — no pane
-id and no pane cwd — so it cannot tell two panes apart on its own; and a pane
-sitting at a shell prompt when the session was serialized comes back as a shell,
-because Zellij records shell panes with no command at all. Resurrected commands
-also wait behind a "Press ENTER to run" banner; `zellij attach -f` runs them
-immediately.
+New shells call Claude directly. In an already-open shell, run
+`unfunction claude 2>/dev/null` to remove the old wrapper without restarting the
+shell. Existing Claude processes are unaffected. To reopen a conversation, use
+`claude --resume <id>` (or `claude --continue` for the last chat in that directory).
+An older saved command containing `--session-id <id>` must use `--resume <id>`
+when replayed. Detaching and reattaching a running session still keeps its
+processes alive normally.
 
 ### Clipboard
 

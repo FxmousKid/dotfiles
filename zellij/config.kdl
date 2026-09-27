@@ -55,7 +55,7 @@ keybinds clear-defaults=true {
         bind "j" { GoToNextTab; }
         bind "k" { GoToPreviousTab; }
         bind "l" { GoToNextTab; }
-        bind "n" { NewTab; SwitchToMode "normal"; }
+        bind "n" { NewTab { layout "zj-minimal"; }; SwitchToMode "normal"; }
         bind "r" { SwitchToMode "renametab"; TabNameInput 0; }
         bind "s" { ToggleActiveSyncTab; SwitchToMode "normal"; }
         bind "Ctrl t" { SwitchToMode "normal"; }
@@ -241,7 +241,7 @@ keybinds clear-defaults=true {
         bind "," { SwitchToMode "renametab"; }
         bind "[" { SwitchToMode "scroll"; }
         bind "Ctrl b" { Write 2; SwitchToMode "normal"; }
-        bind "c" { NewTab; SwitchToMode "normal"; }
+        bind "c" { NewTab { layout "zj-minimal"; }; SwitchToMode "normal"; }
         bind "h" { MoveFocus "left"; SwitchToMode "normal"; }
         bind "j" { MoveFocus "down"; SwitchToMode "normal"; }
         bind "k" { MoveFocus "up"; SwitchToMode "normal"; }
@@ -443,14 +443,9 @@ serialize_pane_viewport true
 // 
 scrollback_lines_to_serialize 10000
  
-// Rewrite each command Zellij discovers in a pane before it is serialized. The hook is run
-// by the default shell, is handed the discovered argv in $RESURRECT_COMMAND, and whatever it
-// prints on STDOUT is serialized in its place. It gets no pane identity (no pane id, and $PWD
-// is the server's cwd, not the pane's) and is called ~20x/second, so keep it to builtins.
-// Ours turns `claude --session-id <uuid>` into `claude --resume <uuid>` so a resurrected pane
-// reopens its own conversation instead of starting an empty one. See hooks/claude-resurrect.sh.
-// 
-post_command_discovery_hook "$HOME/.config/zellij/hooks/claude-resurrect.sh"
+// No post_command_discovery_hook: in 0.44.3 it synchronously spawns a shell
+// for every row of `ps -ao ppid,args` during recurring command discovery.
+// This blocks the PTY thread even when the hook itself uses only builtins.
  
 // Enable or disable the rendering of styled and colored underlines (undercurl).
 // May need to be disabled for certain unsupported terminals

@@ -4,7 +4,8 @@ Local Zellij plugin binaries.
 
 ## Files
 
-- `zjstatus.wasm` — the status bar plugin.
+- `zjstatus.wasm` — legacy status bar, retained but no longer loaded by the
+  default layout. The default bar is Zellij's built-in `compact-bar`.
 - `multiview.wasm` — MultiView v0.1.0, a live multi-tab monitoring dashboard.
 
 ## Notes
