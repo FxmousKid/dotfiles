@@ -1,3 +1,7 @@
+#custom stuff
+alias trsh="alias prev=\"cd \$PWD\" && cd \"\$HOME/.local/share/Trash/files\""
+alias claude-api='ANTHROPIC_API_KEY=$(cat ~/.claude/.anthropic-personal-key) claude'
+
 # bob (nvim manager)
 export PATH="$HOME/.local/share/bob/nvim-bin:$PATH"
 
