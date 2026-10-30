@@ -99,15 +99,90 @@ fi
 
 # --- Custom functions --------------------------------------------------------
 
-# Function to share static files to my vps
+# Share a file on https://share.iyan.nz/<token>/<name>.
+#   share ./notes.html
+#   share --qa-pass ./QA-PASS-4.html --project Work --family "DB migration v3" \
+#         --subject Interaction --pass 4 --title "The schedule"
+# --qa-pass also writes ~/share/<token>/.qap.json (those titles only, no home path).
+# The private dashboard uses it as the card title. QAP's Share button calls this.
 share() {
-    local f="$1"
-    [ -f "$f" ] || { echo "usage: share <file>"; return 1; }
-    local tok name
-    tok=$(openssl rand -hex 5)
-    name=$(basename "$f")
+    local file="" qa=0
+    local project="" family="" subject="" pass="" title="" qa_project=""
+    local project_description="" family_description="" subject_description=""
+    while (( $# )); do
+        case "$1" in
+            --qa-pass)
+                qa=1
+                if (( $# >= 2 )) && [[ "$2" != --* ]]; then
+                    file="$2"
+                    shift 2
+                else
+                    shift
+                fi
+                ;;
+            --project) (( $# >= 2 )) || { echo "share: --project needs a value" >&2; return 1; }; project="$2"; shift 2 ;;
+            --family) (( $# >= 2 )) || { echo "share: --family needs a value" >&2; return 1; }; family="$2"; shift 2 ;;
+            --subject) (( $# >= 2 )) || { echo "share: --subject needs a value" >&2; return 1; }; subject="$2"; shift 2 ;;
+            --pass) (( $# >= 2 )) || { echo "share: --pass needs a value" >&2; return 1; }; pass="$2"; shift 2 ;;
+            --title) (( $# >= 2 )) || { echo "share: --title needs a value" >&2; return 1; }; title="$2"; shift 2 ;;
+            --qa-project) (( $# >= 2 )) || { echo "share: --qa-project needs a value" >&2; return 1; }; qa_project="$2"; shift 2 ;;
+            --project-description) (( $# >= 2 )) || { echo "share: --project-description needs a value" >&2; return 1; }; project_description="$2"; shift 2 ;;
+            --family-description) (( $# >= 2 )) || { echo "share: --family-description needs a value" >&2; return 1; }; family_description="$2"; shift 2 ;;
+            --subject-description) (( $# >= 2 )) || { echo "share: --subject-description needs a value" >&2; return 1; }; subject_description="$2"; shift 2 ;;
+            --) shift; break ;;
+            -*) echo "share: unknown option: $1" >&2; return 1 ;;
+            *)
+                if [[ -n "$file" ]]; then
+                    echo "share: one file only" >&2
+                    return 1
+                fi
+                file="$1"
+                shift
+                ;;
+        esac
+    done
+    if [[ -z "$file" && $# -gt 0 ]]; then
+        file="$1"
+        shift
+    fi
+    if (( $# )); then
+        echo "share: one file only" >&2
+        return 1
+    fi
+    [[ -n "$file" && -f "$file" ]] || { echo "usage: share <file>  |  share --qa-pass <file> --project T --family T --subject T --pass N --title T" >&2; return 1; }
+    local tok name meta
+    tok=$(openssl rand -hex 5) || return 1
+    name="${file:t}"
     ssh fxmousVPS "mkdir -p ~/share/$tok" || return 1
-    scp -q "$f" "fxmousVPS:~/share/$tok/" || return 1
+    scp -q -- "$file" "fxmousVPS:~/share/$tok/$name" || return 1
+    if (( qa )); then
+        meta=$(
+            SHARE_PROJECT="$project" SHARE_FAMILY="$family" SHARE_SUBJECT="$subject" \
+            SHARE_PASS="$pass" SHARE_TITLE="$title" SHARE_QA_PROJECT="$qa_project" \
+            SHARE_PROJECT_DESCRIPTION="$project_description" \
+            SHARE_FAMILY_DESCRIPTION="$family_description" \
+            SHARE_SUBJECT_DESCRIPTION="$subject_description" \
+            python3 - <<'PY'
+import json, os, re
+def clean(value):
+    value = (value or "").replace("\x00", "").strip()
+    return re.sub(r"(?<![A-Za-z0-9._-])(?:file://(?:localhost)?)?(?:/Users|/home)/[^/\s\"']+", "~", value)
+print(json.dumps({
+    "kind": "qa-pass",
+    "project": clean(os.environ.get("SHARE_PROJECT", "")),
+    "family": clean(os.environ.get("SHARE_FAMILY", "")),
+    "subject": clean(os.environ.get("SHARE_SUBJECT", "")),
+    "pass": clean(os.environ.get("SHARE_PASS", "")),
+    "title": clean(os.environ.get("SHARE_TITLE", "")),
+    "qa_project": clean(os.environ.get("SHARE_QA_PROJECT", "")),
+    "project_description": clean(os.environ.get("SHARE_PROJECT_DESCRIPTION", "")),
+    "family_description": clean(os.environ.get("SHARE_FAMILY_DESCRIPTION", "")),
+    "subject_description": clean(os.environ.get("SHARE_SUBJECT_DESCRIPTION", "")),
+}, ensure_ascii=False, indent=2))
+PY
+        ) || return 1
+        print -r -- "$meta" | ssh fxmousVPS "cat > ~/share/$tok/.qap.json" || return 1
+    fi
     echo "https://share.iyan.nz/$tok/$name"
 }
 
