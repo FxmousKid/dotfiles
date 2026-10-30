@@ -15,3 +15,8 @@ TERM = "xterm-256color"
 
 [colors]
 transparent_background_colors = true
+
+[[keyboard.bindings]]
+key = "Return"
+mods = "Shift"
+chars = "\u001B\r"

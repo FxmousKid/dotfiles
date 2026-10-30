@@ -1,29 +1,71 @@
 #!/bin/sh
 
+# Entry point Karabiner calls. Compiles maximize-windowed.swift on first run (and
+# whenever the source changes), then hands over the arguments it was given.
+#
+# The binary deliberately stays at this fixed path: macOS grants accessibility
+# permission per executable, so relocating it means re-approving it in System
+# Settings before the shortcut works again.
+
 set -eu
 
-log="/tmp/alacritty-windowed-maximize.log"
+# shellcheck disable=SC1007  # `CDPATH= cd` is a deliberate one-shot assignment
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 src="$script_dir/maximize-windowed.swift"
 bin="$script_dir/maximize-windowed.bin"
+log="${TMPDIR:-/tmp}/alacritty-windowed-maximize.log"
 
-{
-	printf '\n[%s] invoked\n' "$(date '+%Y-%m-%d %H:%M:%S')"
-	printf 'HOME=%s\n' "${HOME:-}"
-	printf 'script_dir=%s\n' "$script_dir"
-	printf 'src=%s\n' "$src"
-	printf 'bin=%s\n' "$bin"
-} >> "$log"
+note() {
+	printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" >>"$log"
+}
 
-if [ ! -x "$bin" ] || [ "$src" -nt "$bin" ]; then
-	{
-		printf '[%s] compiling\n' "$(date '+%Y-%m-%d %H:%M:%S')"
-		swiftc "$src" -o "$bin"
-		chmod +x "$bin"
-	} >> "$log" 2>&1
+# Keep the log from growing without bound.
+if [ -f "$log" ] && [ "$(wc -c <"$log")" -gt 262144 ]; then
+	tail -c 65536 "$log" >"$log.trimmed" && mv "$log.trimmed" "$log"
 fi
 
-"$bin" >> "$log" 2>&1
+if [ "${MAXIMIZE_WINDOWED_DEBUG:-0}" = 1 ]; then
+	note "invoked args=$*"
+fi
+
+if [ ! -x "$bin" ] || [ "$src" -nt "$bin" ]; then
+	if ! command -v swiftc >/dev/null 2>&1; then
+		note 'swiftc not found — install the Xcode command line tools'
+		exit 1
+	fi
+
+	note 'compiling'
+
+	# Build to a temp path first so a concurrent invocation never executes a
+	# half-written binary.
+	tmp_bin="$bin.$$"
+	if swiftc -O "$src" -o "$tmp_bin" >>"$log" 2>&1; then
+		chmod +x "$tmp_bin"
+		mv -f "$tmp_bin" "$bin"
+	else
+		rm -f "$tmp_bin"
+		note 'compile failed'
+		# An older build beats no window management at all.
+		if [ ! -x "$bin" ]; then
+			exit 1
+		fi
+		note 'falling back to the previous binary'
+	fi
+fi
+
+set +e
+output=$("$bin" "$@" 2>&1)
 status=$?
-printf '[%s] exit=%s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$status" >> "$log"
+set -e
+
+if [ -n "$output" ]; then
+	note "$output"
+	# Karabiner discards this; a human running --dry-run wants to read it.
+	printf '%s\n' "$output"
+fi
+
+if [ "$status" -ne 0 ]; then
+	note "exit=$status"
+fi
+
 exit "$status"
