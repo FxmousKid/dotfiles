@@ -6,6 +6,7 @@ Config for Atuin (shell history search).
 
 - `config.toml` — mostly defaults, plus: full-screen UI, Enter runs the picked
   command, and `vim-normal` keymap at startup.
+- [themes/](themes/README.md) — color themes and customization.
 
 ## Notes
 

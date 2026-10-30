@@ -1,0 +1,35 @@
+# Lunar Moon — a dark-terminal companion to lazygit/config.yml and lvim's lunar.
+# Foreground colors only; the terminal keeps its background and transparency.
+# https://docs.atuin.sh/latest/guide/theming/
+
+[theme]
+name = "lunar-moon"
+parent = "default"
+
+[colors]
+# LazyGit's pale foreground and purple focus.
+Base = "#c8d3f5"
+Important = "#a184df"
+Title = "#c099ff"
+
+# Guidance also colors relative timestamps ("17h ago"). Keep it subdued and
+# distinct from the command word, following the default themes' role contrast.
+Guidance = "#737aa2"
+Annotation = "#737aa2"
+Muted = "#a9b1d6"
+
+# Lunar green for successful durations (exit 0), amber for warnings/search
+# matches, rose for errors.
+AlertInfo = "#9ece6a"
+AlertWarn = "#ffc777"
+AlertError = "#f7768e"
+
+# Default-like syntax separation, using the Lunar / LazyGit palette:
+# blue commands, lavender flags, amber strings, cyan variables, neutral pipes.
+# Keep green reserved for successful execution.
+SyntaxCommand = "#82aaff"
+SyntaxFlag = "#c099ff"
+SyntaxString = "#ffc777"
+SyntaxVariable = "#89ddff"
+SyntaxOperator = "#c8d3f5"
+SyntaxComment = "#737aa2"
